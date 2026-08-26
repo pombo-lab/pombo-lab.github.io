@@ -292,7 +292,7 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .pi-facts a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
 @media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
 .fact-list{list-style:none;margin:0;padding:0}
-.fact-list li{position:relative;padding-left:14px;margin-bottom:6px}
+.fact-list li{position:relative;padding-left:14px;margin-bottom:6px;display:block}
 .fact-list li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1px;background:var(--muted)}
 .fact-list li:last-child{margin-bottom:0}
 .fact-list--inline{display:flex;flex-wrap:wrap;gap:0}
@@ -548,7 +548,7 @@ const DATA = {
     { name:"Jing He",
       initials:"JH",
       site:"A",
-      role:"Postdoctoral Researcher; Department of Biology, School of Arts & Sciences",
+      role:"Postdoctoral Fellow; Department of Biology, School of Arts & Sciences",
       topic:"One line on what this person works on.",
       email:"jhe109@jh.edu" },
 
@@ -577,7 +577,7 @@ const DATA = {
     { name:"Luiz Gustavo dos Anjos Borges",
       initials:"LB",
       site:"B",
-      role:"Postdoctoral Researcher; Berlin Institute for Medical Systems Biology",
+      role:"Postdoctoral Fellow; Berlin Institute for Medical Systems Biology",
       topic:"One line on what this person works on.",
       email:"luiz.borges@mdc-berlin.de" },
 
@@ -788,7 +788,7 @@ const DATA = {
     intro: "We are recruiting at all levels. If you think our research is exciting, please reach out!",
     sections: [
       {
-        title: "Post Docs",
+        title: "Postdoctoral Fellows",
         body: "We are looking for highly motivated postdocs with expertise in molecular biology, genomics, cell biology, and/or microscopy. Please contact Ana if interested!"
       },
       {
