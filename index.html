@@ -233,6 +233,7 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 }
 .pill--a{color:var(--color_a);border-color:rgba(43,92,184,.35);background:rgba(43,92,184,.07)}
 .pill--b{color:#8A5205;border-color:rgba(217,138,31,.4);background:rgba(217,138,31,.1)}
+.pill-group{display:inline-flex;flex-wrap:wrap;gap:5px}
 
 /* page header --------------------------------------------------*/
 .page-head{background:var(--ink);color:var(--paper);padding:clamp(44px,6vw,78px) 0 clamp(30px,4vw,46px)}
@@ -288,6 +289,7 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   border-bottom:1px solid var(--line);font-size:15.5px}
 .pi-facts .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);padding-top:4px}
+.pi-facts a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
 @media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
 
 .alumni-table{width:100%;border-collapse:collapse;font-size:15.5px}
@@ -471,6 +473,12 @@ const DATA = {
     }
   },
 
+  /* Former locations, used only by the alumni table.
+     Add more codes here if you need them (e.g. O: "Oxford").  */
+  pastSites: {
+    L: { short: "London", name: "MRC London Institute of Medical Sciences / Imperial College London" }
+  },
+
   /* --- people --------------------------------------------- */
   pi: {
     name: "Ana Pombo",
@@ -482,117 +490,130 @@ const DATA = {
       "Her lab developed Genome Architecture Mapping (GAM), a ligation-free method that infers chromatin contacts from the DNA content of thin nuclear slices, and which resolves the multi-way interactions that pairwise methods largely miss. During her doctoral work at Oxford she described transcription factories in the mammalian nucleus.",
       "Since 2024, the group has been operating at two sites: the Johns Hopkins University in Baltimore, MD, USA, and the Max Delbrück Center in Berlin, Germany."
     ],
+    // Each row is [label, value]. The value is rendered as HTML,
+    // so <a href="...">links</a> work. Do not paste untrusted content.
     facts: [
       ["Appointments", "Bloomberg Distinguished Professor of Genome Biology · Department of Biology, Krieger School of Arts and Sciences, Johns Hopkins University · Department of Molecular Biology and Genetics, Johns Hopkins University School of Medicine"],
       ["Berlin", "Guest Group Leader, Berlin Institute for Medical Systems Biology, Max Delbrück Center for Molecular Medicine"],
-      ["Email", "apombo1@jh.edu"],
+      ["Email", '<a href="mailto:apombo1@jh.edu">apombo1@jh.edu</a>'],
       ["Education", "DPhil in Physiological Sciences, Sir William Dunn School of Pathology, University of Oxford (1998) · BSc and MSc in Biochemistry, University of Lisbon (1988–1992)"],
       ["Previously", "Professor (W3) of Biology, Humboldt University of Berlin (2013–2025) · Senior Group Leader, Max Delbrück Center, Berlin (2013–) · Professor of Cell Biology, Institute of Clinical Sciences, Imperial College London (2012–2015) · Group Leader, MRC London Institute of Medical Sciences (2000–2013) · Royal Society Dorothy Hodgkin Fellow, University of Oxford (1998–2002)"],
       ["Selected honors", "Gottfried Wilhelm Leibniz Prize (2025) · Elected member, EMBO (2018) · Robert Feulgen Prize, Society for Histochemistry (2007) · Hayward Junior Research Fellowship, Oriel College, Oxford (1997–2000)"],
-      ["Links", "Google Scholar · ORCID · PubMed · CV (PDF)"]
+      ["Links", '<a href="#">Google Scholar</a> · <a href="#">ORCID</a> · <a href="#">PubMed</a> · <a href="#">CV (PDF)</a>']
     ]
   },
 
-  // Replace these placeholder cards with the real group. Fields:
-  // site ("A" or "B"), name (Alphabetical order of last name), role, topic, email, and optional initials / photo.
+  // Fields: site ("A" or "B"), name (alphabetical by last name),
+  // role, topic, email, and optional initials / photo.
   members: [
-    // Site A - JHU
-    { name:"Julian Du", 
-     initials:"JD", 
-     site:"A", 
-     role:"Master Student; Biomedical Engineering, School of Medicine", 
-     topic:"One line on what this person works on.", 
-     email:"zdu19@jh.edu" },
-    
-    { name:"Jing He", 
-    initials:"JH", 
-    site:"A", 
-    role:"Postdoctoral Researcher; Department of Biology, School of Arts & Sciences",   
-    topic:"One line on what this person works on.", 
-    email:"jhe109@jh.edu" },
-    
-    { name:"Derek Hui", 
-     initials:"DH", 
-     site:"A", 
-     role:"PhD Student; Cell, Molecular, Developmental Biology, and Biophysics, School of Arts & Sciences", 
-     topic:"One line on what this person works on.", 
-     email:"mhui3@jh.edu" },
-    
-    { name:"Alexander D. Park", 
-    initials:"ADP", 
-    site:"A", 
-    role:"PhD Student; Human Genetics & Genomics Program, School of Medicine",   
-    topic:"Alex is interested in understanding causality of 3D genome structure in gene expression, genetic variants, and cellular states.", 
-    email:"apark55@jhmi.edu" },
+    /* ---- Site A — JHU, Baltimore ---- */
+    { name:"Julian Du",
+      initials:"JD",
+      site:"A",
+      role:"Master Student; Biomedical Engineering, School of Medicine",
+      topic:"One line on what this person works on.",
+      email:"zdu19@jh.edu" },
 
-    { name:"Li Wang", 
-    initials:"LW", 
-    site:"A", 
-    role:"Senior Scientist; Department of Biology, School of Arts & Sciences",   
-    topic:"One line on what this person works on.", 
-    email:"lwang258@jh.edu" },
-    
-    { name:"[Add member]", initials:"03", site:"A", role:"Research Technician",     topic:"One line on what this person works on.", email:"" },
-    { name:"[Add member]", initials:"04", site:"B", role:"Postdoctoral Researcher", topic:"One line on what this person works on.", email:"" },
-    
-    // Site B - MDC
-    { name:"Luiz Gustavo dos Anjos Borges", 
-    initials:"LB", 
-    site:"B", 
-    role:"Postdoctoral Researcher; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"luiz.borges@mdc-berlin.de" },
+    { name:"Jing He",
+      initials:"JH",
+      site:"A",
+      role:"Postdoctoral Researcher; Department of Biology, School of Arts & Sciences",
+      topic:"One line on what this person works on.",
+      email:"jhe109@jh.edu" },
 
-    { name:"Sergej Herzog", 
-    initials:"SH", 
-    site:"B", 
-    role:"Technical Assistant; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"sergej.herzog@mdc-berlin.de" },
-    
-    { name:"Berta Jimenez-Alfaro Hacha", 
-    initials:"BJ", 
-    site:"B", 
-    role:"PhD Student; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"berta.jimenez-alfarohacha@mdc-berlin.de" },
-    
-    { name:"Alexander Kukalev", 
-    initials:"AK", 
-    site:"B", 
-    role:"Senior Scientist; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"alexander.kukalev@mdc-berlin.de" },
+    { name:"Derek Hui",
+      initials:"DH",
+      site:"A",
+      role:"PhD Student; Cell, Molecular, Developmental Biology, and Biophysics, School of Arts & Sciences",
+      topic:"One line on what this person works on.",
+      email:"mhui3@jh.edu" },
 
-    { name:"Ali Mamivand", 
-    initials:"AM", 
-    site:"B", 
-    role:"PhD Student; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"ali.mamivand@mdc-berlin.de" },
+    { name:"Alexander D. Park",
+      initials:"ADP",
+      site:"A",
+      role:"PhD Student; Human Genetics & Genomics Program, School of Medicine",
+      topic:"Alex is interested in understanding causality of 3D genome structure in gene expression, genetic variants, and cellular states.",
+      email:"apark55@jhmi.edu" },
 
-    { name:"Simon O. Middeldorf", 
-    initials:"SM", 
-    site:"B", 
-    role:"Master Student; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"simon.middeldorf@mdc-berlin.de" },
+    { name:"Li Wang",
+      initials:"LW",
+      site:"A",
+      role:"Senior Scientist; Department of Biology, School of Arts & Sciences",
+      topic:"One line on what this person works on.",
+      email:"lwang258@jh.edu" },
 
-    { name:"Dominik Szabó", 
-    initials:"DS", 
-    site:"B", 
-    role:"PhD Student; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"dominik.szabo@mdc-berlin.de" },
-    
-    { name:"Christoph Thieme", 
-    initials:"CT", 
-    site:"B", 
-    role:"Senior Scientist; Berlin Institute for Medical Systems Biology",   
-    topic:"One line on what this person works on.", 
-    email:"christoph.thieme@mdc-berlin.de" },
-    
+    /* ---- Site B — MDC, Berlin ---- */
+    { name:"Luiz Gustavo dos Anjos Borges",
+      initials:"LB",
+      site:"B",
+      role:"Postdoctoral Researcher; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"luiz.borges@mdc-berlin.de" },
+
+    { name:"Sergej Herzog",
+      initials:"SH",
+      site:"B",
+      role:"Technical Assistant; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"sergej.herzog@mdc-berlin.de" },
+
+    { name:"Berta Jimenez-Alfaro Hacha",
+      initials:"BJ",
+      site:"B",
+      role:"PhD Student; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"berta.jimenez-alfarohacha@mdc-berlin.de" },
+
+    { name:"Alexander Kukalev",
+      initials:"AK",
+      site:"B",
+      role:"Senior Scientist; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"alexander.kukalev@mdc-berlin.de" },
+
+    { name:"Ali Mamivand",
+      initials:"AM",
+      site:"B",
+      role:"PhD Student; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"ali.mamivand@mdc-berlin.de" },
+
+    { name:"Simon O. Middeldorf",
+      initials:"SM",
+      site:"B",
+      role:"Master Student; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"simon.middeldorf@mdc-berlin.de" },
+
+    { name:"Dominik Szabó",
+      initials:"DS",
+      site:"B",
+      role:"PhD Student; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"dominik.szabo@mdc-berlin.de" },
+
+    { name:"Christoph Thieme",
+      initials:"CT",
+      site:"B",
+      role:"Senior Scientist; Berlin Institute for Medical Systems Biology",
+      topic:"One line on what this person works on.",
+      email:"christoph.thieme@mdc-berlin.de" }
+
+    /* ---- Template for a new entry — copy, uncomment, edit ----
+    ,{ name:"[Full name]",
+       initials:"XX",
+       site:"A",
+       role:"Research Technician; [department]",
+       topic:"One line on what this person works on.",
+       email:"" }
+    ---------------------------------------------------------- */
+  ],
+
+  /* --- alumni ---------------------------------------------
+     site: "A" JHU · "B" MDC Berlin · "L" London (pre-2013).
+     Rows are sorted automatically by their most recent year.  */
   alumni: [
+    alumni: [
     { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           thesis:"—", now:"—" },
     { name:"Julia Markowski",               years:"2022",      site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral fellow, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
     { name:"Mattia Conte",                  years:"2022",      site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral fellow (Nicodemi lab), Naples University, Naples, IT" },
@@ -624,31 +645,27 @@ const DATA = {
     { name:"Markus Schüler",                years:"2013–2016", site:"B",   degree:"Postdoc",       thesis:"—", now:"Head of Data Strategy, mobile.de/eBay, Berlin, DE" },
     { name:"Mariano Barbieri",              years:"2013–2016", site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral Fellow, Göttingen, DE (with Argyris Papantonis)" },
     { name:"Robert A. Beagrie",             years:"2011–2016", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Group Leader, Sir Henry Dale fellow, Wellcome Trust Centre, Oxford, UK" },
-    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Career break" },
+    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/B", degree:"MRes / PhD / Postdoc", thesis:"—", now:"—"},
     { name:"Marisa Saponaro",               years:"2015",      site:"B",   degree:"MSc",           thesis:"—", now:"Clinical Research Associate, Syneos Health Clinical Solutions, Rome, IT" },
     { name:"Kedar Natarajan",               years:"2009–2013", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Associate Professor, University of Southern Denmark, Odense, Denmark" },
     { name:"Sheila Q. Xie",                 years:"2000–2013", site:"L/B", degree:"Postdoc",       thesis:"—", now:"Senior Postdoctoral Fellow, MRC-LMS, UK (with Michelle Percharde)" },
-    { name:"Liron-Mark Lavitas",            years:"2008–2013", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
+    { name:"Liron-Mark Lavitas",            years:"2007–2013", site:"L/B", degree:"MRes / PhD / Postdoc", thesis:"—", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
     { name:"Inês de Castro",                years:"2007–2013", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Lecturer, Brunel University London, UK" },
     { name:"C. Ribeiro de Almeida",         years:"2011–2013", site:"L/B", degree:"Postdoc",       thesis:"—", now:"Group Leader, Babraham Institute, Cambridge, UK" },
     { name:"Mita Pabari",                   years:"2008–2012", site:"L",   degree:"Postdoc",       thesis:"—", now:"Medical Writer, MIMS (Hong Kong) Limited" },
     { name:"Inês de Santiago",              years:"2007–2012", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Senior Principal Scientist – Computational Biology, e-Therapeutics PLC, Oxford, UK" },
-    { name:"Emily Brookes",                 years:"2007–2011", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Lecturer in Biomedical Research & Group Leader, University of Southampton, UK" },
+    { name:"Emily Brookes",                 years:"2006–2011", site:"L",   degree:"MRes /PhD / Postdoc", thesis:"—", now:"Lecturer in Biomedical Research & Group Leader, University of Southampton, UK" },
     { name:"Andre Möller",                  years:"2004–2010", site:"L",   degree:"Postdoc",       thesis:"—", now:"Assistant Editor, BMC Biology, BioMed Central" },
     { name:"Patrizia Beolchi",              years:"2009",      site:"L",   degree:"MSc",           thesis:"—", now:"Clinical Trial Manager, Medpace, London, UK" },
-    { name:"Kelly J. Morris",               years:"2008",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Miguel R. Branco",              years:"2003–2008", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Reader, Queen Mary University London, Blizard Institute, London, UK" },
-    { name:"Liron Mark Lavitas",            years:"2007",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
+    { name:"Miguel R. Branco",              years:"2003–2008", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Professor of Genome Regulation; Centre Lead, Queen Mary University London, Blizard Institute, London, UK" },
     { name:"Pippa Hadland (neé Clarke)",    years:"2007",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
     { name:"Jonathan Pavelin",              years:"2007",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Julie K. Stock",                years:"2003–2007", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Biotech and Pharma Consultant, Freelance and Blue Hearth Diagnostics, UK" },
-    { name:"Emily Brookes",                 years:"2006",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
+    { name:"Julie K. Stock",                years:"2003–2007", site:"L",   degree:"MRes / PhD / Postdoc", thesis:"—", now:"Biotech and Pharma Consultant, Freelance and Blue Hearth Diagnostics, UK" },
     { name:"Nikolay Popov",                 years:"2006",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
     { name:"Claire Mitchell",               years:"2005",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
     { name:"Edward Andres",                 years:"2005",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
     { name:"Pascale V. Guillot",            years:"2001–2004", site:"L",   degree:"Postdoc",       thesis:"—", now:"Professor of Stem Cell and Gene Therapy, UCL Great Ormond Street Institute of Child Health, London, UK" },
     { name:"Sonya Martin",                  years:"2000–2004", site:"L",   degree:"PhD",           thesis:"—", now:"Microscopy Support Officer, Microscopy Academic Units, University of Southampton, Southampton, UK" },
-    { name:"Julie K. Stock",                years:"2003",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
     { name:"James Dixon",                   years:"2002",      site:"L",   degree:"MRes",          thesis:"—", now:"—" }
   ],
 
@@ -703,8 +720,10 @@ const DATA = {
     { date:"2026-06-02", tag:"Lab",     title:"Ana Pombo joins Johns Hopkins as Bloomberg Distinguished Professor of Genome Biology", body:"The Baltimore laboratory opens with appointments in the Department of Biology and the Department of Molecular Biology and Genetics. The Berlin laboratory continues at the Max Delbrück Center.", link:"" },
     { date:"2025-05-22", tag:"Press",   title:"Named among Berlin's most important minds in science", body:"Tagesspiegel included Ana Pombo in its 2025 list of one hundred figures in Berlin science.", link:"" },
     { date:"2024-12-11", tag:"Award",   title:"Gottfried Wilhelm Leibniz Prize awarded by the DFG", body:"The prize, announced by the German Research Foundation, carries 2.5 million euros in research funding.", link:"" },
-    { date:"2023-06-19", tag:"Paper",   title:"Multiplex-GAM published in Nature Methods", body:"The scaled-up protocol shows that genome architecture mapping captures complex multi-way contacts that pairwise methods largely miss.", link:"#/publications" },
-    { date:"2026-01-01", tag:"[Edit]",  title:"[Add your next news item here]", body:"Newest items appear first. Keep the date in YYYY-MM-DD form; the tag becomes the small label above the headline.", link:"" }
+    { date:"2023-06-19", tag:"Paper",   title:"Multiplex-GAM published in Nature Methods", body:"The scaled-up protocol shows that genome architecture mapping captures complex multi-way contacts that pairwise methods largely miss.", link:"#/publications" }
+    /* Template — copy, uncomment, edit. Newest items appear first.
+    ,{ date:"2026-09-01", tag:"[Tag]", title:"[Headline]", body:"[One or two sentences.]", link:"" }
+    */
   ],
 
   /* --- publications ---------------------------------------
@@ -776,8 +795,9 @@ const DATA = {
 
   /* ---------- helpers ------------------------------------- */
   const $ = (s, r) => (r || document).querySelector(s);
-  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
-  const initials = n => n.replace(/prof\.|dr\./gi, "").trim().split(/\s+/)
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  const initials = n => String(n).replace(/prof\.|dr\./gi, "").trim().split(/\s+/)
     .map(w => w[0]).join("").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "—";
   const fmtDate = iso => {
     const d = new Date(iso + "T00:00:00");
@@ -790,24 +810,41 @@ const DATA = {
     });
     return out;
   };
-  const sitePill = k => k === "A"
-    ? '<span class="pill pill--a">' + esc(DATA.sites.A.short) + "</span>"
-    : '<span class="pill pill--b">' + esc(DATA.sites.B.short) + "</span>";
+
+  /* Site codes used by the alumni table. "A"/"B" are the current
+     sites; anything in DATA.pastSites (e.g. "L") is a former one.
+     A value like "L/B" renders as two pills.                    */
+  const siteLabel = k =>
+    (DATA.sites[k] && DATA.sites[k].short) ||
+    (DATA.pastSites && DATA.pastSites[k] && DATA.pastSites[k].short) || k;
+  const siteClass = k => k === "A" ? "pill--a" : k === "B" ? "pill--b" : "";
+  const sitePill = code => '<span class="pill-group">' +
+    String(code || "—").split("/").map(part => {
+      const k = part.trim();
+      return '<span class="pill ' + siteClass(k) + '">' + esc(siteLabel(k)) + "</span>";
+    }).join("") + "</span>";
+
+  /* last four-digit year in a string like "2014–2020" */
+  const lastYear = s => {
+    const m = String(s || "").match(/\d{4}/g);
+    return m ? Number(m[m.length - 1]) : 0;
+  };
 
   /* ---------- navigation model ---------------------------- */
   const NAV = [
     { label:"Home", href:"#/" },
     { label:"People", href:"#/people/pi", children:[
-      { label:"PI",            href:"#/people/pi" },
+      { label:"PI",               href:"#/people/pi" },
       { label:DATA.sites.A.short, href:"#/people/site-a", tag:"a" },
       { label:DATA.sites.B.short, href:"#/people/site-b", tag:"b" },
-      { label:"Alumni",        href:"#/people/alumni" }
+      { label:"Alumni",           href:"#/people/alumni" }
     ]},
-    { label:"Research", href:"#/research", children:[
-      { label:"Research Overview", href:"#/research" },
-      { label:DATA.areas[0].title, href:"#/research/" + DATA.areas[0].id },
-      { label:DATA.areas[1].title, href:"#/research/" + DATA.areas[1].id }
-    ]},
+    // Research children are generated from DATA.areas, so adding or
+    // removing an area updates the menu automatically.
+    { label:"Research", href:"#/research", children:
+      [{ label:"Research Overview", href:"#/research" }].concat(
+        DATA.areas.map(a => ({ label:a.title, href:"#/research/" + a.id })))
+    },
     { label:"News", href:"#/news" },
     { label:"Publications", href:"#/publications" },
     { label:"Patents", href:"#/patents" },
@@ -880,11 +917,15 @@ const DATA = {
     const top = "#/" + (route.split("/")[1] || "");
     NAV.forEach((item, i) => {
       const li = $("#nav").children[i];
+      if (!li) return;
       const itemTop = "#/" + (item.href.split("/")[1] || "");
       if (itemTop === top) $(".nav-link", li).setAttribute("aria-current", "page");
-      if (item.children) item.children.forEach((c, j) => {
-        if (c.href === "#" + route) li.querySelectorAll(".menu a")[j].setAttribute("aria-current", "page");
-      });
+      if (item.children) {
+        const links = li.querySelectorAll(".menu a");
+        item.children.forEach((c, j) => {
+          if (c.href === "#" + route && links[j]) links[j].setAttribute("aria-current", "page");
+        });
+      }
     });
   }
 
@@ -905,7 +946,8 @@ const DATA = {
   const RESEARCH_TABS = NAV[2].children;
 
   const avatarFor = (p, cls) => p.photo
-    ? '<div class="avatar ' + cls + '" style="background-image:url(' + esc(p.photo) + ')"></div>'
+    ? '<div class="avatar ' + cls + '" style="background-image:url(&quot;' + esc(p.photo) + '&quot;)">' +
+      "</div>"
     : '<div class="avatar ' + cls + '">' + esc(p.initials || initials(p.name)) + "</div>";
 
   const personCard = p => {
@@ -1058,7 +1100,7 @@ const DATA = {
     let t;
     const onResize = () => {
       clearTimeout(t);
-      t = setTimeout(() => { if (!document.getElementById("chromatin")) return; size(); seed(); }, 150);
+      t = setTimeout(() => { if (!document.body.contains(cv)) return; size(); seed(); }, 150);
     };
     window.addEventListener("resize", onResize);
 
@@ -1066,6 +1108,7 @@ const DATA = {
     const stop = () => {
       if (!document.body.contains(cv)) {
         cancelAnimationFrame(raf);
+        clearTimeout(t);
         window.removeEventListener("resize", onResize);
         window.removeEventListener("hashchange", stop);
       }
@@ -1083,7 +1126,7 @@ const DATA = {
         '<p class="eyebrow" style="margin:10px 0 20px">' + esc(pi.role) + "</p>" +
         pi.bio.map(b => '<p class="lead" style="font-size:17px">' + esc(b) + "</p>").join("") +
         '<ul class="pi-facts">' + pi.facts.map(f =>
-          '<li><span class="k">' + esc(f[0]) + "</span><span>" + esc(f[1]) + "</span></li>").join("") +
+          '<li><span class="k">' + esc(f[0]) + "</span><span>" + f[1] + "</span></li>").join("") +
         "</ul></div>" +
       "</div></div></section>";
   };
@@ -1103,20 +1146,29 @@ const DATA = {
       "</div></section>";
   };
 
-  P.peopleAlumni = () =>
-    pageHead("People / Alumni", "Alumni", "Where people went after the group, and what they worked on while they were here.") +
-    subtabs(PEOPLE_TABS, "/people/alumni") +
-    '<section class="section--tight"><div class="wrap"><table class="alumni-table"><thead><tr>' +
-      "<th>Name</th><th>Years</th><th>Site</th><th>Position</th><th>Thesis</th><th>Now</th>" +
-    "</tr></thead><tbody>" + DATA.alumni.map(a =>
-      "<tr>" +
-        '<td data-k="Name"><strong>' + esc(a.name) + "</strong></td>" +
-        '<td data-k="Years" class="mono muted" style="font-size:13px">' + esc(a.years) + "</td>" +
-        '<td data-k="Site">' + sitePill(a.site) + "</td>" +
-        '<td data-k="Position">' + esc(a.degree) + "</td>" +
-        '<td data-k="Thesis" class="muted">' + esc(a.thesis) + "</td>" +
-        '<td data-k="Now">' + esc(a.now) + "</td>" +
-      "</tr>").join("") + "</tbody></table></div></section>";
+  P.peopleAlumni = () => {
+    // Sort newest-leaving first, then alphabetically within a year.
+    const rows = DATA.alumni.slice().sort((a, b) =>
+      lastYear(b.years) - lastYear(a.years) || a.name.localeCompare(b.name));
+    // Only show the Thesis column once at least one title has been added.
+    const showThesis = rows.some(a => a.thesis && a.thesis !== "—");
+
+    return pageHead("People / Alumni", "Alumni",
+        "Where people went after the group, and what they worked on while they were here.") +
+      subtabs(PEOPLE_TABS, "/people/alumni") +
+      '<section class="section--tight"><div class="wrap"><table class="alumni-table"><thead><tr>' +
+        "<th>Name</th><th>Years</th><th>Site</th><th>Position</th>" +
+        (showThesis ? "<th>Thesis</th>" : "") + "<th>Now</th>" +
+      "</tr></thead><tbody>" + rows.map(a =>
+        "<tr>" +
+          '<td data-k="Name"><strong>' + esc(a.name) + "</strong></td>" +
+          '<td data-k="Years" class="mono muted" style="font-size:13px">' + esc(a.years) + "</td>" +
+          '<td data-k="Site">' + sitePill(a.site) + "</td>" +
+          '<td data-k="Position">' + esc(a.degree) + "</td>" +
+          (showThesis ? '<td data-k="Thesis" class="muted">' + esc(a.thesis) + "</td>" : "") +
+          '<td data-k="Now">' + esc(a.now) + "</td>" +
+        "</tr>").join("") + "</tbody></table></div></section>";
+  };
 
   P.researchOverview = () =>
     pageHead("Research / Overview", "Research Overview", DATA.researchIntro) +
@@ -1124,7 +1176,8 @@ const DATA = {
     '<section class="section--tight"><div class="wrap">' +
       '<div class="grid grid-3" style="margin-bottom:clamp(34px,4vw,54px)">' +
         DATA.researchThemes.map((t, i) =>
-          '<div class="card"><p class="eyebrow">Theme 0' + (i + 1) + "</p><h3>" + esc(t) + "</h3></div>").join("") +
+          '<div class="card"><p class="eyebrow">Theme ' + String(i + 1).padStart(2, "0") +
+          "</p><h3>" + esc(t) + "</h3></div>").join("") +
       "</div>" +
       DATA.areas.map(a =>
         '<article class="split" style="padding:clamp(26px,3vw,40px) 0;border-top:1px solid var(--line)">' +
@@ -1251,17 +1304,17 @@ const DATA = {
 
   /* ---------- router -------------------------------------- */
   const ROUTES = {
-    "/":                        { title:"Home",              render:P.home },
-    "/people/pi":               { title:"Principal Investigator", render:P.peoplePI },
+    "/":                        { title:"Home",                          render:P.home },
+    "/people/pi":               { title:"Principal Investigator",        render:P.peoplePI },
     "/people/site-a":           { title:"People · " + DATA.sites.A.short, render:() => P.peopleSite("A") },
     "/people/site-b":           { title:"People · " + DATA.sites.B.short, render:() => P.peopleSite("B") },
-    "/people/alumni":           { title:"Alumni",            render:P.peopleAlumni },
-    "/research":                { title:"Research",          render:P.researchOverview },
-    "/news":                    { title:"News",              render:P.news },
-    "/publications":            { title:"Publications",      render:P.publications },
-    "/patents":                 { title:"Patents",           render:P.patents },
-    "/join":                    { title:"Join",              render:P.join },
-    "/support":                 { title:"Support",           render:P.support }
+    "/people/alumni":           { title:"Alumni",                        render:P.peopleAlumni },
+    "/research":                { title:"Research",                      render:P.researchOverview },
+    "/news":                    { title:"News",                          render:P.news },
+    "/publications":            { title:"Publications",                  render:P.publications },
+    "/patents":                 { title:"Patents",                       render:P.patents },
+    "/join":                    { title:"Join",                          render:P.join },
+    "/support":                 { title:"Support",                       render:P.support }
   };
 
   function route() {
@@ -1269,9 +1322,8 @@ const DATA = {
     let page = ROUTES[path];
     if (!page && path.indexOf("/research/") === 0) {
       const id = path.split("/")[2];
-      if (DATA.areas.some(a => a.id === id)) {
-        page = { title:DATA.areas.find(a => a.id === id).title, render:() => P.researchArea(id) };
-      }
+      const area = DATA.areas.find(a => a.id === id);
+      if (area) page = { title:area.title, render:() => P.researchArea(id) };
     }
     if (!page) page = { title:"Not found", render:P.notFound };
 
