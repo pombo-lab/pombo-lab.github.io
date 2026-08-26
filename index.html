@@ -291,7 +291,15 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   color:var(--muted);padding-top:4px}
 .pi-facts a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
 @media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
-
+.fact-list{list-style:none;margin:0;padding:0}
+.fact-list li{position:relative;padding-left:14px;margin-bottom:6px}
+.fact-list li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1px;background:var(--muted)}
+.fact-list li:last-child{margin-bottom:0}
+.fact-list--inline{display:flex;flex-wrap:wrap;gap:0}
+.fact-list--inline li{padding-left:0;margin-bottom:0}
+.fact-list--inline li::before{display:none}
+.fact-list--inline li:not(:last-child)::after{content:"·";margin:0 8px;color:var(--muted)}
+  
 .alumni-table{width:100%;border-collapse:collapse;font-size:15.5px}
 .alumni-table th{
   text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
@@ -476,7 +484,7 @@ const DATA = {
   /* Former locations, used only by the alumni table.
      Add more codes here if you need them (e.g. O: "Oxford").  */
   pastSites: {
-    L: { short: "London", name: "MRC London Institute of Medical Sciences / Imperial College London" }
+    L: { short: "ICL", name: "MRC London Institute of Medical Sciences / Imperial College London" }
   },
 
   /* --- people --------------------------------------------- */
@@ -492,14 +500,37 @@ const DATA = {
     ],
     // Each row is [label, value]. The value is rendered as HTML,
     // so <a href="...">links</a> work. Do not paste untrusted content.
-    facts: [
-      ["Appointments", "Bloomberg Distinguished Professor of Genome Biology · Department of Biology, Krieger School of Arts and Sciences, Johns Hopkins University · Department of Molecular Biology and Genetics, Johns Hopkins University School of Medicine"],
+        facts: [
+      ["Appointments", "<ul class='fact-list'>" +
+        "<li>Bloomberg Distinguished Professor of Genome Biology</li>" +
+        "<li>Department of Biology, Krieger School of Arts and Sciences, Johns Hopkins University</li>" +
+        "<li>Department of Molecular Biology and Genetics, Johns Hopkins University School of Medicine</li>" +
+      "</ul>"],
       ["Berlin", "Guest Group Leader, Berlin Institute for Medical Systems Biology, Max Delbrück Center for Molecular Medicine"],
       ["Email", '<a href="mailto:apombo1@jh.edu">apombo1@jh.edu</a>'],
-      ["Education", "DPhil in Physiological Sciences, Sir William Dunn School of Pathology, University of Oxford (1998) · BSc and MSc in Biochemistry, University of Lisbon (1988–1992)"],
-      ["Previously", "Professor (W3) of Biology, Humboldt University of Berlin (2013–2025) · Senior Group Leader, Max Delbrück Center, Berlin (2013–) · Professor of Cell Biology, Institute of Clinical Sciences, Imperial College London (2012–2015) · Group Leader, MRC London Institute of Medical Sciences (2000–2013) · Royal Society Dorothy Hodgkin Fellow, University of Oxford (1998–2002)"],
-      ["Selected honors", "Gottfried Wilhelm Leibniz Prize (2025) · Elected member, EMBO (2018) · Robert Feulgen Prize, Society for Histochemistry (2007) · Hayward Junior Research Fellowship, Oriel College, Oxford (1997–2000)"],
-      ["Links", '<a href="#">Google Scholar</a> · <a href="#">ORCID</a> · <a href="#">PubMed</a> · <a href="#">CV (PDF)</a>']
+      ["Education", "<ul class='fact-list'>" +
+        "<li>DPhil in Physiological Sciences, Sir William Dunn School of Pathology, University of Oxford (1998)</li>" +
+        "<li>BSc and MSc in Biochemistry, University of Lisbon (1988–1992)</li>" +
+      "</ul>"],
+      ["Previously", "<ul class='fact-list'>" +
+        "<li>Professor (W3) of Biology, Humboldt University of Berlin (2013–2025)</li>" +
+        "<li>Senior Group Leader, Max Delbrück Center, Berlin (2013–)</li>" +
+        "<li>Professor of Cell Biology, Institute of Clinical Sciences, Imperial College London (2012–2015)</li>" +
+        "<li>Group Leader, MRC London Institute of Medical Sciences (2000–2013)</li>" +
+        "<li>Royal Society Dorothy Hodgkin Fellow, University of Oxford (1998–2002)</li>" +
+      "</ul>"],
+      ["Selected honors", "<ul class='fact-list'>" +
+        "<li>Gottfried Wilhelm Leibniz Prize (2025)</li>" +
+        "<li>Elected member, EMBO (2018)</li>" +
+        "<li>Robert Feulgen Prize, Society for Histochemistry (2007)</li>" +
+        "<li>Hayward Junior Research Fellowship, Oriel College, Oxford (1997–2000)</li>" +
+      "</ul>"],
+      ["Links", "<ul class='fact-list fact-list--inline'>" +
+        "<li><a href='#'>Google Scholar</a></li>" +
+        "<li><a href='#'>ORCID</a></li>" +
+        "<li><a href='#'>PubMed</a></li>" +
+        "<li><a href='#'>CV (PDF)</a></li>" +
+      "</ul>"]
     ]
   },
 
@@ -613,59 +644,62 @@ const DATA = {
      site: "A" JHU · "B" MDC Berlin · "L" London (pre-2013).
      Rows are sorted automatically by their most recent year.  */
   alumni: [
-    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           thesis:"—", now:"—" },
-    { name:"Julia Markowski",               years:"2022",      site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral fellow, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
-    { name:"Mattia Conte",                  years:"2022",      site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral fellow (Nicodemi lab), Naples University, Naples, IT" },
-    { name:"Federico Billeci",              years:"2022",      site:"B",   degree:"MSc",           thesis:"—", now:"Data Scientist, Integra Therapeutics, SP" },
-    { name:"Jennifer A. Giannini",          years:"2019–2022", site:"B",   degree:"PhD",           thesis:"—", now:"Scientific content creator, Labforward, Berlin, DE" },
-    { name:"Simona Bianco",                 years:"2021",      site:"B",   degree:"Postdoc",       thesis:"—", now:"Assistant Professor, Naples University, Naples, IT" },
-    { name:"Chloe Tang",                    years:"2021",      site:"B",   degree:"MSc",           thesis:"—", now:"PhD student, Rippe lab, DKFZ, Heidelberg, DE" },
-    { name:"Rita Moldovan",                 years:"2021",      site:"B",   degree:"BSc",           thesis:"—", now:"—" },
-    { name:"Lavanya Iyer",                  years:"2020–2021", site:"B",   degree:"Postdoc",       thesis:"—", now:"Task Force Lead, Single-cell Omics, Evotec, Göttingen, DE" },
-    { name:"Ehsan Irani",                   years:"2017–2021", site:"B",   degree:"Postdoc",       thesis:"—", now:"Senior Data Scientist, IntelliSense.io" },
-    { name:"Gesa Loof",                     years:"2015–2021", site:"B",   degree:"PhD / Postdoc", thesis:"—", now:"Postdoctoral fellow, Inst. Biology Development, Marseille, FR (with Thomas Lecuit)" },
-    { name:"Cleis Battaglia",               years:"2019–2020", site:"B",   degree:"MSc",           thesis:"—", now:"PhD student, Marenduzzo lab, Univ. Edinburgh, UK" },
-    { name:"Ana Miguel Fernandes",          years:"2014–2020", site:"B",   degree:"PhD / Postdoc", thesis:"—", now:"Data scientist, OLX Group, Berlin, DE" },
-    { name:"Rieke Kempfer",                 years:"2014–2020", site:"B",   degree:"PhD / Postdoc", thesis:"—", now:"NGS specialist, SOPHiA Genetics, Geneva, Switzerland" },
-    { name:"David Pride",                   years:"2018",      site:"B",   degree:"MSc",           thesis:"—", now:"Medical Trainee, Texas Tech School of Medicine, El Paso, US" },
-    { name:"Vahid Assimi",                  years:"2018",      site:"B",   degree:"MSc",           thesis:"—", now:"PhD student, Hinsz lab, MPI Molecular Genetics, Berlin, DE" },
-    { name:"Konstantina Skourti-Stathaki",  years:"2015–2018", site:"B",   degree:"Postdoc",       thesis:"—", now:"Principal Scientist, RNA Biology, MiNA Therapeutics, London, UK" },
-    { name:"Elena Torlai Triglia",          years:"2012–2018", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Postdoctoral fellow, Broad Institute, Boston, US (with Brad Bernstein)" },
-    { name:"Giulia Caglio",                 years:"2014–2018", site:"B",   degree:"PhD",           thesis:"—", now:"Full Stack Data Scientist, Consultant, Catenion, Berlin, DE" },
-    { name:"Marta Slimak-Mastrobuoni",      years:"2014–2018", site:"B",   degree:"Postdoc",       thesis:"—", now:"Commercial Development Manager Europe, Sterilex, Berlin, DE" },
-    { name:"Dorothee Krämer",               years:"2013–2018", site:"B",   degree:"PhD",           thesis:"—", now:"Global Medical Grant Developer, Medscape, Grenoble, FR" },
-    { name:"Franka Rang",                   years:"2017",      site:"B",   degree:"MSc",           thesis:"—", now:"PhD student, Kind lab, Hubrecht Institute, Utrecht, NL" },
-    { name:"Daria Ivanova",                 years:"2017",      site:"B",   degree:"BSc",           thesis:"—", now:"—" },
-    { name:"Tiago Rito",                    years:"2013–2017", site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral fellow, Crick Institute, London, UK (with James Briscoe)" },
-    { name:"Joao Dias",                     years:"2010–2017", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Postdoctoral Fellow, Montpellier, FR (with Monsef Benkirane)" },
-    { name:"Carmelo Ferrai",                years:"2008–2017", site:"L/B", degree:"Postdoc",       thesis:"—", now:"Postdoctoral Fellow, Göttingen, DE (with Philipp Stroebel)" },
-    { name:"Leonid Serebreni",              years:"2016",      site:"B",   degree:"MSc",           thesis:"—", now:"Postdoctoral Fellow, Junker lab, MDC, Berlin, DE" },
-    { name:"A. Julieta Ramirez Cuellar",    years:"2016",      site:"B",   degree:"MSc",           thesis:"—", now:"Business co-founder, Guanajuato, Mexico" },
-    { name:"Markus Schüler",                years:"2013–2016", site:"B",   degree:"Postdoc",       thesis:"—", now:"Head of Data Strategy, mobile.de/eBay, Berlin, DE" },
-    { name:"Mariano Barbieri",              years:"2013–2016", site:"B",   degree:"Postdoc",       thesis:"—", now:"Postdoctoral Fellow, Göttingen, DE (with Argyris Papantonis)" },
-    { name:"Robert A. Beagrie",             years:"2011–2016", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Group Leader, Sir Henry Dale fellow, Wellcome Trust Centre, Oxford, UK" },
-    { name:"Marisa Saponaro",               years:"2015",      site:"B",   degree:"MSc",           thesis:"—", now:"Clinical Research Associate, Syneos Health Clinical Solutions, Rome, IT" },
-    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/B", degree:"MRes / PhD / Postdoc", thesis:"—", now:"Career break" },
-    { name:"Kedar Natarajan",               years:"2009–2013", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Associate Professor, University of Southern Denmark, Odense, Denmark" },
-    { name:"Sheila Q. Xie",                 years:"2000–2013", site:"L/B", degree:"Postdoc",       thesis:"—", now:"Senior Postdoctoral Fellow, MRC-LMS, UK (with Michelle Percharde)" },
-    { name:"Liron-Mark Lavitas",            years:"2007–2013", site:"L/B", degree:"MRes / PhD / Postdoc", thesis:"—", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
-    { name:"Inês de Castro",                years:"2007–2013", site:"L/B", degree:"PhD / Postdoc", thesis:"—", now:"Lecturer, Brunel University London, UK" },
-    { name:"C. Ribeiro de Almeida",         years:"2011–2013", site:"L/B", degree:"Postdoc",       thesis:"—", now:"Group Leader, Babraham Institute, Cambridge, UK" },
-    { name:"Mita Pabari",                   years:"2008–2012", site:"L",   degree:"Postdoc",       thesis:"—", now:"Medical Writer, MIMS (Hong Kong) Limited" },
-    { name:"Inês de Santiago",              years:"2007–2012", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Senior Principal Scientist – Computational Biology, e-Therapeutics PLC, Oxford, UK" },
-    { name:"Emily Brookes",                 years:"2006–2011", site:"L",   degree:"MRes / PhD / Postdoc", thesis:"—", now:"Lecturer in Biomedical Research & Group Leader, University of Southampton, UK" },
-    { name:"Andre Möller",                  years:"2004–2010", site:"L",   degree:"Postdoc",       thesis:"—", now:"Assistant Editor, BMC Biology, BioMed Central" },
-    { name:"Patrizia Beolchi",              years:"2009",      site:"L",   degree:"MSc",           thesis:"—", now:"Clinical Trial Manager, Medpace, London, UK" },
-    { name:"Miguel R. Branco",              years:"2003–2008", site:"L",   degree:"PhD / Postdoc", thesis:"—", now:"Reader, Queen Mary University London, Blizard Institute, London, UK" },
-    { name:"Pippa Hadland (née Clarke)",    years:"2007",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Jonathan Pavelin",              years:"2007",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Julie K. Stock",                years:"2003–2007", site:"L",   degree:"MRes / PhD / Postdoc", thesis:"—", now:"Biotech and Pharma Consultant, Freelance and Blue Hearth Diagnostics, UK" },
-    { name:"Nikolay Popov",                 years:"2006",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Claire Mitchell",               years:"2005",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Edward Andres",                 years:"2005",      site:"L",   degree:"MRes",          thesis:"—", now:"—" },
-    { name:"Pascale V. Guillot",            years:"2001–2004", site:"L",   degree:"Postdoc",       thesis:"—", now:"Professor of Stem Cell and Gene Therapy, UCL Great Ormond Street Institute of Child Health, London, UK" },
-    { name:"Sonya Martin",                  years:"2000–2004", site:"L",   degree:"PhD",           thesis:"—", now:"Microscopy Support Officer, Microscopy Academic Units, University of Southampton, Southampton, UK" },
-    { name:"James Dixon",                   years:"2002",      site:"L",   degree:"MRes",          thesis:"—", now:"—" }
+    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
+    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
+    { name:"",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
+    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
+    { name:"Julia Markowski",               years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Peter Park lab, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
+    { name:"Mattia Conte",                  years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Nicodemi lab, Naples University, Naples, IT" },
+    { name:"Federico Billeci",              years:"2022",      site:"B",   degree:"MSc",           now:"Data Scientist, Integra Therapeutics, SP" },
+    { name:"Jennifer A. Giannini",          years:"2019–2022", site:"B",   degree:"PhD",           now:"Scientific content creator, Labforward, Berlin, DE" },
+    { name:"Simona Bianco",                 years:"2021",      site:"B",   degree:"Postdoc",       now:"Assistant Professor, Naples University, Naples, IT" },
+    { name:"Chloe Tang",                    years:"2021",      site:"B",   degree:"MSc",           now:"PhD Student, Rippe lab, DKFZ, Heidelberg, DE" },
+    { name:"Rita Moldovan",                 years:"2021",      site:"B",   degree:"BSc",           now:"—" },
+    { name:"Lavanya Iyer",                  years:"2020–2021", site:"B",   degree:"Postdoc",       now:"Task Force Lead, Single-cell Omics, Evotec, Göttingen, DE" },
+    { name:"Ehsan Irani",                   years:"2017–2021", site:"B",   degree:"Postdoc",       now:"Senior Data Scientist, IntelliSense.io" },
+    { name:"Gesa Loof",                     years:"2015–2021", site:"B",   degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Inst. Biology Development, Marseille, FR (with Thomas Lecuit)" },
+    { name:"Cleis Battaglia",               years:"2019–2020", site:"B",   degree:"MSc",           now:"PhD Student, Marenduzzo lab, Univ. Edinburgh, UK" },
+    { name:"Ana Miguel Fernandes",          years:"2014–2020", site:"B",   degree:"PhD / Postdoc", now:"Data scientist, OLX Group, Berlin, DE" },
+    { name:"Rieke Kempfer",                 years:"2014–2020", site:"B",   degree:"PhD / Postdoc", now:"NGS specialist, SOPHiA Genetics, Geneva, Switzerland" },
+    { name:"David Pride",                   years:"2018",      site:"B",   degree:"MSc",           now:"Medical Trainee, Texas Tech School of Medicine, El Paso, US" },
+    { name:"Vahid Assimi",                  years:"2018",      site:"B",   degree:"MSc",           now:"PhD Student, Hinsz lab, MPI Molecular Genetics, Berlin, DE" },
+    { name:"Konstantina Skourti-Stathaki",  years:"2015–2018", site:"B",   degree:"Postdoc",       now:"Principal Scientist, RNA Biology, MiNA Therapeutics, London, UK" },
+    { name:"Elena Torlai Triglia",          years:"2012–2018", site:"L/B", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Broad Institute, Boston, US (with Brad Bernstein)" },
+    { name:"Giulia Caglio",                 years:"2014–2018", site:"B",   degree:"PhD",           now:"Full Stack Data Scientist, Consultant, Catenion, Berlin, DE" },
+    { name:"Marta Slimak-Mastrobuoni",      years:"2014–2018", site:"B",   degree:"Postdoc",       now:"Commercial Development Manager Europe, Sterilex, Berlin, DE" },
+    { name:"Dorothee Krämer",               years:"2013–2018", site:"B",   degree:"PhD",           now:"Global Medical Grant Developer, Medscape, Grenoble, FR" },
+    { name:"Franka Rang",                   years:"2017",      site:"B",   degree:"MSc",           now:"PhD Student, Kind lab, Hubrecht Institute, Utrecht, NL" },
+    { name:"Daria Ivanova",                 years:"2017",      site:"B",   degree:"BSc",           now:"—" },
+    { name:"Tiago Rito",                    years:"2013–2017", site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Crick Institute, London, UK (with James Briscoe)" },
+    { name:"Joao Dias",                     years:"2010–2017", site:"L/B", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Montpellier, FR (with Monsef Benkirane)" },
+    { name:"Carmelo Ferrai",                years:"2008–2017", site:"L/B", degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Philipp Stroebel)" },
+    { name:"Leonid Serebreni",              years:"2016",      site:"B",   degree:"MSc",           now:"Postdoctoral Fellow, Junker lab, MDC, Berlin, DE" },
+    { name:"A. Julieta Ramirez Cuellar",    years:"2016",      site:"B",   degree:"MSc",           now:"Business co-founder, Guanajuato, Mexico" },
+    { name:"Markus Schüler",                years:"2013–2016", site:"B",   degree:"Postdoc",       now:"Head of Data Strategy, mobile.de/eBay, Berlin, DE" },
+    { name:"Mariano Barbieri",              years:"2013–2016", site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Argyris Papantonis)" },
+    { name:"Robert A. Beagrie",             years:"2011–2016", site:"L/B", degree:"PhD / Postdoc", now:"Group Leader, Sir Henry Dale fellow, Wellcome Trust Centre, Oxford, UK" },
+    { name:"Marisa Saponaro",               years:"2015",      site:"B",   degree:"MSc",           now:"Clinical Research Associate, Syneos Health Clinical Solutions, Rome, IT" },
+    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/B", degree:"MRes / PhD / Postdoc", now:"—" },
+    { name:"Kedar Natarajan",               years:"2009–2013", site:"L/B", degree:"PhD / Postdoc", now:"Associate Professor, University of Southern Denmark, Odense, Denmark" },
+    { name:"Sheila Q. Xie",                 years:"2000–2013", site:"L/B", degree:"Postdoc",       now:"Senior Postdoctoral Fellow, MRC-LMS, UK (with Michelle Percharde)" },
+    { name:"Liron-Mark Lavitas",            years:"2007–2013", site:"L/B", degree:"MRes / PhD / Postdoc", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
+    { name:"Inês de Castro",                years:"2007–2013", site:"L/B", degree:"PhD / Postdoc", now:"Lecturer, Brunel University London, UK" },
+    { name:"C. Ribeiro de Almeida",         years:"2011–2013", site:"L/B", degree:"Postdoc",       now:"Group Leader, Babraham Institute, Cambridge, UK" },
+    { name:"Mita Pabari",                   years:"2008–2012", site:"L",   degree:"Postdoc",       now:"Medical Writer, MIMS (Hong Kong) Limited" },
+    { name:"Inês de Santiago",              years:"2007–2012", site:"L",   degree:"PhD / Postdoc", now:"Senior Principal Scientist, Computational Biology, e-Therapeutics PLC, Oxford, UK" },
+    { name:"Emily Brookes",                 years:"2006–2011", site:"L",   degree:"MRes / PhD / Postdoc", now:"Lecturer in Biomedical Research & Group Leader, University of Southampton, UK" },
+    { name:"Andre Möller",                  years:"2004–2010", site:"L",   degree:"Postdoc",       now:"Assistant Editor, BMC Biology, BioMed Central" },
+    { name:"Patrizia Beolchi",              years:"2009",      site:"L",   degree:"MSc",           now:"Clinical Trial Manager, Medpace, London, UK" },
+    { name:"Miguel R. Branco",              years:"2003–2008", site:"L",   degree:"PhD / Postdoc", now:"Professor; Centre Lead, Blizard Institute, Queen Mary University London, London, UK" },
+    { name:"Pippa Hadland (née Clarke)",    years:"2007",      site:"L",   degree:"MRes",          now:"—" },
+    { name:"Jonathan Pavelin",              years:"2007",      site:"L",   degree:"MRes",          now:"—" },
+    { name:"Julie K. Stock",                years:"2003–2007", site:"L",   degree:"MRes / PhD / Postdoc", now:"Biotech and Pharma Consultant, Freelance and Blue Hearth Diagnostics, UK" },
+    { name:"Nikolay Popov",                 years:"2006",      site:"L",   degree:"MRes",          now:"—" },
+    { name:"Claire Mitchell",               years:"2005",      site:"L",   degree:"MRes",          now:"—" },
+    { name:"Edward Andres",                 years:"2005",      site:"L",   degree:"MRes",          now:"—" },
+    { name:"Pascale V. Guillot",            years:"2001–2004", site:"L",   degree:"Postdoc",       now:"Professor of Stem Cell and Gene Therapy, UCL Great Ormond Street Institute of Child Health, London, UK" },
+    { name:"Sonya Martin",                  years:"2000–2004", site:"L",   degree:"PhD",           now:"Microscopy Support Officer, Microscopy Academic Units, University of Southampton, Southampton, UK" },
+    { name:"James Dixon",                   years:"2002",      site:"L",   degree:"MRes",          now:"—" }
   ],
 
   /* --- research ------------------------------------------- */
@@ -759,7 +793,7 @@ const DATA = {
       },
       {
         title: "Graduate Students",
-        body: 'We are affiliated with the CMDB (KSAS), <a href="https://www.hopkinsmedicine.org/genetic-medicine/education-training/human-genetics-genomics-graduate-program">Human Genetics and Genomics</a>, and BCMB (SOM) graduate programs, but are happy to hear from students in other graduate programs as well. If you are interested in a rotation, please contact Ana.'
+        body: 'We are affiliated with the CMDB (KSAS), <a href="https://www.hopkinsmedicine.org/genetic-medicine/education-training/human-genetics-genomics-graduate-program">Human Genetics and Genomics</a>, and BCMB (SOM) graduate programs, but are happy to hear from Students in other graduate programs as well. If you are interested in a rotation, please contact Ana.'
       },
       {
         title: "Undergraduates",
