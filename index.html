@@ -1157,7 +1157,7 @@ const DATA = {
         '<div class="person" style="border:0;background:none">' + avatarFor(pi, "is-a") + "</div>" +
         '<div><h2 style="font-size:clamp(26px,3.4vw,38px)">' + esc(pi.name) + "</h2>" +
         '<p class="eyebrow" style="margin:10px 0 20px">' + esc(pi.role) + "</p>" +
-        pi.bio.map(b => '<p class="lead" style="font-size:17px">' + esc(b) + "</p>").join("") +
+        pi.bio.map(b => '<p class="lead" style="font-size:17px;max-width:none">' + esc(b) + "</p>").join("") +
         '<ul class="pi-facts">' + pi.facts.map(f =>
           '<li><span class="k">' + esc(f[0]) + "</span><span>" + f[1] + "</span></li>").join("") +
         "</ul></div>" +
