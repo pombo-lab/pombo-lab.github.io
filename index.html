@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pombo Lab — Baltimore · Berlin</title>
+<meta name="description" content="Genome architecture and epigenetic regulation. A research group at Johns Hopkins University and the Max Delbrück Center." />
+
+<!--
+  ============================================================
+  POMBO LAB — website template
+  ------------------------------------------------------------
+  All editable content lives in ONE place:
+  search this file for  === SITE DATA ===  (near the bottom).
+  Anything written in [square brackets] is a placeholder that
+  still needs your real content.
+  Routing is hash based (#/people/pi), so it works on GitHub
+  Pages, Netlify, or a plain file:// open — no build step.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   1. TOKENS
+   ============================================================ */
+:root{
+  --ink:#0B1020;
+  --ink-soft:#151D33;
+  --paper:#EDEFF3;
+  --paper-2:#F7F8FA;
+  --white:#FFFFFF;
+  --muted:#5D6A80;
+  --line:#D6DBE4;
+  --line-dark:#2A3350;
+  --color_a:#2B5CB8;    /* Site A — Johns Hopkins University, Baltimore */
+  --color_b:#D98A1F;    /* Site B — Max Delbrück Center, Berlin */
+
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --wrap:1180px;
+  --pad:clamp(20px,4vw,40px);
+  --radius:3px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+/* ============================================================
+   2. BASE
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+h1,h2,h3,h4{font-family:var(--display);font-weight:800;line-height:1.04;letter-spacing:-.02em;margin:0}
+p{margin:0 0 1em}
+p:last-child{margin-bottom:0}
+
+:focus-visible{outline:2.5px solid var(--color_a);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--pad)}
+.section{padding:clamp(52px,7vw,96px) 0}
+.section--tight{padding:clamp(36px,4.5vw,60px) 0}
+.section--dark{background:var(--ink);color:var(--paper)}
+.section--white{background:var(--white)}
+
+.skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:10px 16px;z-index:200}
+.skip:focus{left:12px;top:12px}
+
+/* utility type ------------------------------------------------ */
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 14px;
+}
+.section--dark .eyebrow{color:#8C9AB5}
+.lead{font-size:clamp(18px,2vw,21px);line-height:1.55;color:#39435A;max-width:62ch}
+.section--dark .lead{color:#B9C3D6}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono)}
+
+/* the seam — recurring motif: a hairline that joins two nodes -- */
+.seam{display:flex;align-items:center;gap:10px;margin:0 0 30px}
+.seam::after{content:"";flex:1;height:1px;background:var(--line)}
+.section--dark .seam::after{background:var(--line-dark)}
+.seam .dot{width:7px;height:7px;border-radius:50%;background:var(--color_a)}
+.seam .dot--b{background:var(--color_b)}
+
+/* ============================================================
+   3. HEADER + NAV
+   ============================================================ */
+.site-head{
+  position:sticky;top:0;z-index:100;
+  background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.head-inner{
+  max-width:var(--wrap);margin:0 auto;padding:0 var(--pad);
+  height:70px;display:flex;align-items:center;justify-content:space-between;gap:24px;
+}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:800;
+  font-size:19px;letter-spacing:-.02em;white-space:nowrap}
+.brand-mark{display:block;width:34px;height:12px;flex:none}
+.brand small{display:block;font-family:var(--mono);font-weight:400;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+.nav{display:flex;align-items:center;gap:2px;list-style:none;margin:0;padding:0}
+.nav > li{position:relative}
+.nav-link{
+  display:block;padding:10px 13px;border-radius:var(--radius);
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#2A3348;transition:background .15s var(--ease),color .15s var(--ease);
+  background:none;border:0;cursor:pointer;
+}
+.nav-link:hover{background:rgba(43,92,184,.1);color:var(--color_a)}
+.nav-link[aria-current="page"]{color:var(--color_a)}
+.nav-link[aria-current="page"]::after{
+  content:"";display:block;height:2px;background:var(--color_a);margin-top:5px;border-radius:2px
+}
+.nav-link .caret{display:inline-block;margin-left:6px;font-size:9px;transform:translateY(-1px);opacity:.6}
+
+.menu{
+  position:absolute;top:100%;left:0;min-width:235px;
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:0 18px 40px -22px rgba(11,16,32,.5);
+  padding:8px;list-style:none;margin:0;display:none;
+}
+.nav li.open > .menu{display:block}
+.menu a{
+  display:flex;align-items:baseline;gap:10px;padding:9px 11px;border-radius:2px;font-size:15px;
+}
+.menu a:hover{background:var(--paper-2)}
+.menu a[aria-current="page"]{color:var(--color_a);font-weight:600}
+.menu .idx{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.menu .tag-a{color:var(--color_a)}
+.menu .tag-b{color:var(--color_b)}
+
+.burger{display:none;border:1px solid var(--line);background:var(--white);
+  border-radius:var(--radius);padding:9px 12px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+
+@media (max-width:900px){
+  .burger{display:block}
+  .nav{
+    position:absolute;top:70px;left:0;right:0;flex-direction:column;align-items:stretch;
+    gap:0;background:var(--white);border-bottom:1px solid var(--line);padding:10px var(--pad) 22px;
+    max-height:calc(100vh - 70px);overflow:auto;display:none;
+  }
+  .nav.open{display:flex}
+  .nav-link{padding:13px 4px;font-size:13px}
+  .nav-link[aria-current="page"]::after{display:none}
+  .menu{position:static;display:none;border:0;box-shadow:none;padding:0 0 8px 16px;
+    border-left:1px solid var(--line);margin-left:4px}
+  .nav li.open > .menu{display:block}
+}
+
+/* ============================================================
+   4. HERO — the signature: two sites joined by one live seam
+   ============================================================ */
+.hero{
+  background:var(--ink);color:var(--paper);
+  padding:clamp(60px,9vw,120px) 0 clamp(40px,5vw,64px);
+  position:relative;overflow:hidden;
+}
+.hero::before{ /* faint ruled grid, like a lab notebook */
+  content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--line-dark) 1px,transparent 1px);
+  background-size:100% 46px;opacity:.28;pointer-events:none;
+}
+.hero > *{position:relative}
+.hero h1{
+  font-size:clamp(40px,7.6vw,90px);letter-spacing:-.035em;max-width:17ch;margin:0 0 26px;
+}
+.hero h1 em{font-style:normal;color:var(--color_b)}
+.hero .lead{color:#AFBAD0;max-width:58ch}
+
+/* chromatin polymer — the moving signature of the home page */
+.chromatin{
+  display:block;width:100%;height:clamp(210px,30vw,380px);
+  margin-top:clamp(20px,3.5vw,44px);
+}
+
+/* ============================================================
+   5. GENERIC BLOCKS
+   ============================================================ */
+.grid{display:grid;gap:clamp(18px,2.4vw,28px)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.grid-3{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:620px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);
+  gap:clamp(26px,5vw,70px);align-items:start}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+
+.card{
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  padding:clamp(20px,2.4vw,28px);transition:transform .2s var(--ease),box-shadow .2s var(--ease);
+}
+.card h3{font-size:21px;margin:0 0 10px;letter-spacing:-.025em}
+.card p{font-size:15.5px;color:#414B61;margin-bottom:0}
+a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,32,.65)}
+
+.btn{
+  display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:var(--radius);
+  background:var(--ink);color:var(--white);font-family:var(--mono);font-size:12.5px;
+  letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--ink);
+  transition:background .18s var(--ease),transform .18s var(--ease);cursor:pointer;
+}
+.btn:hover{background:var(--color_a);border-color:var(--color_a);transform:translateY(-2px)}
+.btn--ghost{background:transparent;color:var(--ink)}
+.btn--ghost:hover{color:#fff}
+.section--dark .btn--ghost{color:var(--paper);border-color:#3B4666}
+
+.pill{
+  display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:20px;
+  border:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);background:var(--white);
+}
+.pill--a{color:var(--color_a);border-color:rgba(43,92,184,.35);background:rgba(43,92,184,.07)}
+.pill--b{color:#8A5205;border-color:rgba(217,138,31,.4);background:rgba(217,138,31,.1)}
+
+/* page header --------------------------------------------------*/
+.page-head{background:var(--ink);color:var(--paper);padding:clamp(44px,6vw,78px) 0 clamp(30px,4vw,46px)}
+.page-head h1{font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;max-width:19ch}
+.page-head .lead{margin-top:18px;color:#AFBAD0}
+.crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#7C8AA6;margin:0 0 16px}
+
+/* sub tabs -----------------------------------------------------*/
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);
+  padding:14px 0 0;margin-bottom:clamp(28px,4vw,44px)}
+.subtabs a,.chip{
+  padding:10px 15px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);border-radius:var(--radius) var(--radius) 0 0;
+  border:0;background:none;cursor:pointer;
+}
+.subtabs a:hover{color:var(--ink);background:var(--white)}
+.subtabs a[aria-current="page"]{color:var(--ink);background:var(--white);
+  border:1px solid var(--line);border-bottom-color:var(--white);margin-bottom:-1px}
+
+/* filter chips -------------------------------------------------*/
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:clamp(26px,3.5vw,38px)}
+.chip{border:1px solid var(--line);border-radius:20px;background:var(--white);padding:8px 15px}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ============================================================
+   6. PEOPLE
+   ============================================================ */
+.people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(16px,2.2vw,26px)}
+.person{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.person .avatar{
+  aspect-ratio:1/1;display:grid;place-items:center;font-family:var(--display);font-weight:800;
+  font-size:44px;letter-spacing:-.04em;color:var(--white);background:var(--ink-soft);
+  background-size:cover;background-position:center;
+}
+.person .avatar.is-a{background-image:linear-gradient(150deg,#2B5CB8,#0B1020)}
+.person .avatar.is-b{background-image:linear-gradient(150deg,#D98A1F,#0B1020)}
+.person .body{padding:16px 17px 19px;border-top:3px solid var(--color_a)}
+.person.is-b .body{border-top-color:var(--color_b)}
+.person h3{font-size:18px;margin:0 0 3px}
+.person .role{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 9px}
+.person .topic{font-size:14px;color:#414B61;line-height:1.45;margin:0 0 10px}
+.person .mail{font-family:var(--mono);font-size:12px;color:var(--color_a);word-break:break-all}
+.person .mail:hover{text-decoration:underline}
+
+.pi-card{display:grid;grid-template-columns:250px minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:start}
+@media (max-width:720px){.pi-card{grid-template-columns:1fr}}
+.pi-card .avatar{border-radius:var(--radius);font-size:64px}
+.pi-facts{list-style:none;margin:22px 0 0;padding:0;border-top:1px solid var(--line)}
+.pi-facts li{display:grid;grid-template-columns:158px minmax(0,1fr);gap:16px;padding:12px 0;
+  border-bottom:1px solid var(--line);font-size:15.5px}
+.pi-facts .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding-top:4px}
+@media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
+
+.alumni-table{width:100%;border-collapse:collapse;font-size:15.5px}
+.alumni-table th{
+  text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:400;padding:0 14px 10px 0;border-bottom:1px solid var(--line);
+}
+.alumni-table td{padding:14px 14px 14px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.alumni-table tr:hover td{background:var(--white)}
+@media (max-width:720px){
+  .alumni-table thead{display:none}
+  .alumni-table tr{display:block;border-bottom:1px solid var(--line);padding:14px 0}
+  .alumni-table td{display:block;border:0;padding:2px 0}
+  .alumni-table td[data-k]::before{content:attr(data-k) " — ";font-family:var(--mono);
+    font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+}
+
+/* ============================================================
+   7. RESEARCH
+   ============================================================ */
+.area-hero{border-left:3px solid var(--color_a);padding-left:clamp(18px,3vw,32px)}
+.area-num{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--muted)}
+.bullets{list-style:none;margin:0;padding:0}
+.bullets li{position:relative;padding:0 0 0 26px;margin-bottom:13px;font-size:16px;color:#37415A}
+.bullets li::before{content:"";position:absolute;left:0;top:11px;width:12px;height:1px;background:var(--color_a)}
+.figure{
+  background:var(--ink);border-radius:var(--radius);color:#8C9AB5;min-height:230px;
+  display:grid;place-items:center;text-align:center;padding:26px;font-family:var(--mono);
+  font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1px);
+  background-size:18px 18px;
+}
+
+/* ============================================================
+   8. NEWS
+   ============================================================ */
+.news-item{
+  display:grid;grid-template-columns:118px minmax(0,1fr);gap:clamp(14px,3vw,34px);
+  padding:26px 0;border-bottom:1px solid var(--line);
+}
+.news-item:first-child{border-top:1px solid var(--line)}
+.news-item .date{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;padding-top:5px}
+.news-item h3{font-size:21px;margin:0 0 8px;letter-spacing:-.025em}
+.news-item p{font-size:15.5px;color:#414B61;margin:0 0 10px}
+.news-item .more{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color_a)}
+.news-item .more:hover{text-decoration:underline}
+@media (max-width:620px){.news-item{grid-template-columns:1fr;gap:6px}}
+
+/* ============================================================
+   9. PUBLICATIONS / PATENTS
+   ============================================================ */
+.year-block{margin-bottom:clamp(34px,4.5vw,56px)}
+.year-block h2{
+  font-family:var(--mono);font-weight:500;font-size:13px;letter-spacing:.2em;color:var(--muted);
+  display:flex;align-items:center;gap:14px;margin:0 0 8px;
+}
+.year-block h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.pub{display:grid;grid-template-columns:34px minmax(0,1fr);gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
+.pub .n{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:4px}
+.pub h3{font-family:var(--body);font-weight:600;font-size:17.5px;line-height:1.42;letter-spacing:0;margin:0 0 7px}
+.pub .authors{font-size:15px;color:#414B61;margin:0 0 7px}
+.pub .authors strong{color:var(--ink);font-weight:600}
+.pub .venue{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.pub .venue em{font-style:normal;color:var(--ink)}
+.pub .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.pub .links a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:20px;padding:4px 11px;color:var(--muted);background:var(--white)}
+.pub .links a:hover{border-color:var(--color_a);color:var(--color_a)}
+.pub.is-featured{background:var(--white);border:1px solid var(--line);border-left:3px solid var(--color_b);
+  padding:20px 22px;border-radius:var(--radius);margin-bottom:8px}
+
+/* ============================================================
+   10. JOIN + SUPPORT
+   ============================================================ */
+.prose{max-width:70ch}
+.prose h2{font-size:clamp(24px,3vw,32px);margin:0 0 14px;letter-spacing:-.03em}
+.prose section{padding:26px 0;border-top:1px solid var(--line)}
+.prose section:first-of-type{border-top:0;padding-top:0}
+.prose h3{font-size:21px;margin:0 0 10px;letter-spacing:-.025em}
+.prose p{font-size:16.5px;color:#37415A}
+.prose a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
+
+.logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:clamp(14px,2vw,22px)}
+.logo{
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);
+  height:130px;display:grid;place-items:center;padding:20px;text-align:center;
+  transition:border-color .18s var(--ease);
+}
+a.logo:hover{border-color:var(--color_a)}
+.logo img{max-height:72px;max-width:100%;width:auto;object-fit:contain}
+.logo .placeholder{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);line-height:1.4}
+
+/* ============================================================
+   11. FOOTER
+   ============================================================ */
+.site-foot{background:var(--ink);color:#8C9AB5;padding:clamp(44px,6vw,72px) 0 34px;font-size:15px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:clamp(24px,4vw,50px)}
+@media (max-width:760px){.foot-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.foot-grid{grid-template-columns:1fr}}
+.site-foot h4{font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:#6C7B98;margin:0 0 14px}
+.site-foot a:hover{color:#fff;text-decoration:underline}
+.foot-list{list-style:none;margin:0;padding:0}
+.foot-list li{margin-bottom:9px}
+.foot-name{font-family:var(--display);font-weight:800;font-size:24px;color:var(--paper);
+  letter-spacing:-.025em;margin:0 0 12px}
+.foot-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;
+  margin-top:clamp(34px,4vw,52px);padding-top:22px;border-top:1px solid var(--line-dark);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:#5D6C8A}
+
+/* view transition */
+#view{animation:rise .38s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#view{animation:none}}
+</style>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-head">
+  <div class="head-inner">
+    <a class="brand" href="#/" id="brand">
+      <svg class="brand-mark" viewBox="0 0 34 12" aria-hidden="true">
+        <line x1="5" y1="6" x2="29" y2="6" stroke="#0B1020" stroke-width="1.5"/>
+        <circle cx="5" cy="6" r="4" fill="#2B5CB8"/>
+        <circle cx="29" cy="6" r="4" fill="#D98A1F"/>
+      </svg>
+      <span id="brand-name">Pombo Lab<small id="brand-sub">Baltimore · Berlin</small></span>
+    </a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav">Menu</button>
+    <ul class="nav" id="nav"></ul>
+  </div>
+</header>
+
+<main id="main"><div id="view"></div></main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid" id="foot-grid"></div>
+    <div class="foot-bottom" id="foot-bottom"></div>
+  </div>
+</footer>
+
+<!-- ==========================================================
+     === SITE DATA ===  Edit everything below to make it yours.
+     [square brackets] mark placeholders still to be filled.
+     ========================================================== -->
+<script>
+const DATA = {
+
+  /* --- identity ------------------------------------------- */
+  lab: {
+    name: "Pombo Lab",
+    tagline: "Baltimore · Berlin",
+    heroTitle: "How the genome folds, and what that folding does.",
+    heroLead: "We map the physical organization of chromosomes inside the nucleus and ask how that organization controls gene expression. The group works across two sites, in Baltimore and in Berlin, sharing methods, data, and authorship.",
+    about: "Epigenetic regulation and chromatin architecture: measuring where genes sit in three-dimensional space, and what that position does to their activity.",
+    email: "apombo1@jh.edu",
+    // Names bolded automatically in publication and patent author lists.
+    highlightAuthors: ["Pombo, A.", "A. Pombo", "Pombo A"]
+  },
+
+  /* --- the two sites -------------------------------------- */
+  sites: {
+    A: {
+      key: "A",
+      short: "JHU",
+      name: "Johns Hopkins University",
+      dept: "Department of Biology, Krieger School of Arts and Sciences · Department of Molecular Biology and Genetics, School of Medicine",
+      address: "Baltimore, Maryland, USA",
+      note: "Genome Architecture Mapping, imaging, disease models."
+    },
+    B: {
+      key: "B",
+      short: "MDC",
+      name: "Max Delbrück Center",
+      dept: "Berlin Institute for Medical Systems Biology (BIMSB)",
+      address: "Berlin-Buch, Germany",
+      note: "Epigenetic regulation and chromatin architecture."
+    }
+  },
+
+  /* --- people --------------------------------------------- */
+  pi: {
+    name: "Ana Pombo",
+    role: "Bloomberg Distinguished Professor of Genome Biology",
+    initials: "AP",
+    photo: "img/ana1.jpeg",                       // e.g. "img/pombo.jpg" — blank shows the monogram
+    bio: [
+      "Ana Pombo studies how chromosomes are organized within the nucleus and how that organization shapes gene regulation, cellular identity, and disease. Her group develops the experimental and computational methods needed to place regulatory sequences in physical space relative to the genes they control.",
+      "Her lab developed Genome Architecture Mapping (GAM), a ligation-free method that infers chromatin contacts from the DNA content of thin nuclear slices, and which resolves the multi-way interactions that pairwise methods largely miss. During her doctoral work at Oxford she described transcription factories in the mammalian nucleus.",
+      "Since 2024, the group has been operating at two sites: the Johns Hopkins University in Baltimore, MD, USA, and the Max Delbrück Center in Berlin, Germany."
+    ],
+    facts: [
+      ["Appointments", "Bloomberg Distinguished Professor of Genome Biology · Department of Biology, Krieger School of Arts and Sciences, Johns Hopkins University · Department of Molecular Biology and Genetics, Johns Hopkins University School of Medicine"],
+      ["Berlin", "Guest Group Leader, Berlin Institute for Medical Systems Biology, Max Delbrück Center for Molecular Medicine"],
+      ["Email", "apombo1@jh.edu"],
+      ["Education", "DPhil in Physiological Sciences, Sir William Dunn School of Pathology, University of Oxford (1998) · BSc and MSc in Biochemistry, University of Lisbon (1988–1992)"],
+      ["Previously", "Professor (W3) of Biology, Humboldt University of Berlin (2013–2025) · Senior Group Leader, Max Delbrück Center, Berlin (2013–) · Professor of Cell Biology, Institute of Clinical Sciences, Imperial College London (2012–2015) · Group Leader, MRC London Institute of Medical Sciences (2000–2013) · Royal Society Dorothy Hodgkin Fellow, University of Oxford (1998–2002)"],
+      ["Selected honors", "Gottfried Wilhelm Leibniz Prize (2025) · Elected member, EMBO (2018) · Robert Feulgen Prize, Society for Histochemistry (2007) · Hayward Junior Research Fellowship, Oriel College, Oxford (1997–2000)"],
+      ["Links", "Google Scholar · ORCID · PubMed · CV (PDF)"]
+    ]
+  },
+
+  // Replace these placeholder cards with the real group. Fields:
+  // name, site ("A" or "B"), role, topic, email, and optional initials / photo.
+  members: [
+    { name:"[Add member]", initials:"01", site:"A", role:"Postdoctoral Researcher", topic:"One line on what this person works on.", email:"" },
+    { name:"Alexander Park", 
+    initials:"ADP", 
+    site:"A", 
+    role:"PhD Student; Human Genetics & Genomics Program, School of Medicine",   
+    topic:"Alex is interested in understanding causality of 3D genome structure in gene expression, genetic variants, and cellular states.", 
+    email:"apark55@jhmi.edu" },
+    { name:"[Add member]", initials:"03", site:"A", role:"Research Technician",     topic:"One line on what this person works on.", email:"" },
+    { name:"[Add member]", initials:"04", site:"B", role:"Postdoctoral Researcher", topic:"One line on what this person works on.", email:"" },
+    { name:"Alexander Kukalev", initials:"AK", site:"B", role:"Senior Sceintist",             topic:"Sasha knows everything.", email:"" },
+    { name:"", initials:"06", site:"B", role:"Bioinformatician",        topic:"One line on what this person works on.", email:"" }
+  ],
+
+  alumni: [
+    { name:"[Alumnus name]", years:"2019–2024", site:"B", degree:"PhD",     thesis:"Thesis title", now:"Current position, Institution" },
+    { name:"[Alumnus name]", years:"2018–2022", site:"B", degree:"Postdoc", thesis:"—",            now:"Current position, Institution" }
+  ],
+
+  /* --- research ------------------------------------------- */
+  researchIntro: "The group works on the interplay between gene regulation and genome architecture, from the local action of transcription factors, through long-range contacts that connect regulatory sequences to their target genes, to the positioning of whole chromosomes within the nucleus. Method development and biological questions advance together: we build the measurement when the existing one cannot answer the question.",
+  researchThemes: [
+    "Genome Architecture Mapping",
+    "Transcription and chromatin states",
+    "Genome folding in disease"
+  ],
+  areas: [
+    {
+      id:"area-01", num:"01", title:"Research Area 01",
+      kicker:"Genome Architecture Mapping",
+      lead:"A ligation-free way to measure where every part of the genome sits relative to every other part.",
+      body:[
+        "GAM cryosections nuclei into thin slices, sequences the DNA in each slice, and infers contacts from which regions are found together. Because it does not depend on ligation or on cell dissociation, it reports multi-way contacts and works on tissue sections where other assays struggle.",
+        "Current work extends the method to more cell types and to haplotype-resolved analysis, and develops the statistical models needed to read three-way and higher-order contacts out of slice data."
+      ],
+      bullets:[
+        "Multi-way contacts between active genes, enhancers, and super-enhancers",
+        "Haplotype-specific folding in hybrid genomes with dense SNP coverage",
+        "GAM in tissue sections and rare cell populations",
+        "Open protocols, analysis pipelines, and published contact matrices"
+      ],
+      figure:"Figure 01 — nuclear cryosections to contact matrix",
+      collaborators:"[Add collaborating groups]",
+      funding:"[Add funding sources]"
+    },
+    {
+      id:"area-02", num:"02", title:"Research Area 02",
+      kicker:"Epigenetic regulation and transcription",
+      lead:"How chromatin states and polymerase activity relate to the folding we measure.",
+      body:[
+        "Binding of transcription factors at regulatory sequences recruits chromatin remodellers and the transcription machinery. Polymerases may then stay poised for later activation, during differentiation, stress, or disease, or transcribe immediately. We ask how these states map onto the physical organization of the genome.",
+        "The work combines genomics, imaging, and computational modelling, with a running interest in what changes when regulation fails: in neuronal cell types, in development, and in disease models."
+      ],
+      bullets:[
+        "RNA polymerase II states and poised versus active transcription",
+        "Polycomb domains and repressive chromatin in three dimensions",
+        "Cell-type specific topologies in neurons and during differentiation",
+        "Modelling that links contact data to regulatory outcome"
+      ],
+      figure:"Figure 02 — chromatin state and contact frequency",
+      collaborators:"[Add collaborating groups]",
+      funding:"[Add funding sources]"
+    }
+  ],
+
+  /* --- news (newest first; date is YYYY-MM-DD) ------------- */
+  news: [
+    { date:"2026-06-02", tag:"Lab",     title:"Ana Pombo joins Johns Hopkins as Bloomberg Distinguished Professor of Genome Biology", body:"The Baltimore laboratory opens with appointments in the Department of Biology and the Department of Molecular Biology and Genetics. The Berlin laboratory continues at the Max Delbrück Center.", link:"" },
+    { date:"2025-05-22", tag:"Press",   title:"Named among Berlin's most important minds in science", body:"Tagesspiegel included Ana Pombo in its 2025 list of one hundred figures in Berlin science.", link:"" },
+    { date:"2024-12-11", tag:"Award",   title:"Gottfried Wilhelm Leibniz Prize awarded by the DFG", body:"The prize, announced by the German Research Foundation, carries 2.5 million euros in research funding.", link:"" },
+    { date:"2023-06-19", tag:"Paper",   title:"Multiplex-GAM published in Nature Methods", body:"The scaled-up protocol shows that genome architecture mapping captures complex multi-way contacts that pairwise methods largely miss.", link:"#/publications" },
+    { date:"2026-01-01", tag:"[Edit]",  title:"[Add your next news item here]", body:"Newest items appear first. Keep the date in YYYY-MM-DD form; the tag becomes the small label above the headline.", link:"" }
+  ],
+
+  /* --- publications ---------------------------------------
+     Starting selection only — verify details and extend from
+     Google Scholar or PubMed before publishing the site.       */
+  publications: [
+    { year:2025, featured:true, title:"Extensive folding variability between homologous chromosomes revealed by haplotype-resolved Genome Architecture Mapping", authors:"Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., et al., Pombo, A.", venue:"Molecular Systems Biology", detail:"21(7), 735–775", links:{ DOI:"#", PDF:"#", Data:"#" } },
+    { year:2024, title:"Epigenetic regulatory layers in the three-dimensional nucleus", authors:"Willemin, A., Szabó, D., Pombo, A.", venue:"Molecular Cell", detail:"84(3), 415–428", links:{ DOI:"#" } },
+    { year:2024, title:"[Add 2024 research article]", authors:"Carvalho, S., Zea-Redondo, L., et al., Pombo, A.", venue:"Biology Open", detail:"13(4), bio060415", links:{ DOI:"#" } },
+    { year:2023, featured:true, title:"Multiplex-GAM: genome-wide identification of chromatin contacts yields insights overlooked by Hi-C", authors:"Beagrie, R. A., Thieme, C. J., Annunziatella, C., et al., Pombo, A.", venue:"Nature Methods", detail:"20, 1037–1047", links:{ DOI:"#", PDF:"#", Code:"#" } },
+    { year:2021, title:"Cell-type specialization is encoded by specific chromatin topologies", authors:"Winick-Ng, W., Kukalev, A., Harabula, I., et al., Pombo, A.", venue:"Nature", detail:"599, 684–691", links:{ DOI:"#", PDF:"#" } },
+    { year:2020, title:"Methods for mapping 3D chromosome architecture", authors:"Kempfer, R., Pombo, A.", venue:"Nature Reviews Genetics", detail:"21(4), 207–226", links:{ DOI:"#" } },
+    { year:2017, featured:true, title:"Complex multi-enhancer contacts captured by Genome Architecture Mapping", authors:"Beagrie, R. A., Scialdone, A., Schueler, M., et al., Pombo, A.", venue:"Nature", detail:"543, 519–524", links:{ DOI:"#", PDF:"#" } },
+    { year:2015, title:"Three-dimensional genome architecture: players and mechanisms", authors:"Pombo, A., Dillon, N.", venue:"Nature Reviews Molecular Cell Biology", detail:"16, 245–257", links:{ DOI:"#" } }
+  ],
+
+  /* --- patents -------------------------------------------- */
+  patents: [
+    { year:2026, title:"[Add patent title]", inventors:"Pombo, A., [co-inventors]", number:"[Application or publication number]", status:"Filed", office:"[USPTO / EPO / WIPO]" },
+    { year:2025, title:"[Add patent title]", inventors:"Pombo, A., [co-inventors]", number:"[Application or publication number]", status:"Granted", office:"[USPTO / EPO / WIPO]" }
+  ],
+
+  /* --- join ------------------------------------------------
+     NOTE: the text below is rendered as raw HTML, so you can use
+     <a href="...">links</a> and <em> inside it. Do not paste
+     untrusted content here.                                    */
+  join: {
+    title: "Join Us!",
+    intro: "We are recruiting at all levels. If you think our research is exciting, please reach out!",
+    sections: [
+      {
+        title: "Post Docs",
+        body: "We are looking for highly motivated postdocs with expertise in molecular biology, genomics, cell biology, and/or microscopy. Please contact Ana if interested!"
+      },
+      {
+        title: "Graduate Students",
+        body: 'We are affiliated with the CMDB (KSAS), <a href="https://www.hopkinsmedicine.org/genetic-medicine/education-training/human-genetics-genomics-graduate-program">Human Genetics and Genomics</a>, and BCMB (SOM) graduate programs, but are happy to hear from students in other graduate programs as well. If you are interested in a rotation, please contact Ana.'
+      },
+      {
+        title: "Undergraduates",
+        body: "Undergraduates interested in a research experience in our lab should be willing to commit at least 10 hours per week to research."
+      }
+    ]
+  },
+
+  /* --- support ---------------------------------------------
+     Add a logo file to your img/ folder and give its path below.
+     Leave logo blank and the name shows as a placeholder box.   */
+  support: {
+    intro: "We gratefully acknowledge the support of the following organizations.",
+    logos: [
+      { name:"Johns Hopkins University",              logo:"", url:"https://www.jhu.edu" },
+      { name:"Max Delbrück Center",                   logo:"", url:"https://www.mdc-berlin.de" },
+      { name:"Deutsche Forschungsgemeinschaft (DFG)", logo:"", url:"https://www.dfg.de" },
+      { name:"[Add funder]",                          logo:"", url:"" },
+      { name:"[Add funder]",                          logo:"", url:"" },
+      { name:"[Add funder]",                          logo:"", url:"" }
+    ]
+  }
+};
+</script>
+
+<!-- ==========================================================
+     APP — navigation, router, and page renderers
+     ========================================================== -->
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- helpers ------------------------------------- */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const initials = n => n.replace(/prof\.|dr\./gi, "").trim().split(/\s+/)
+    .map(w => w[0]).join("").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "—";
+  const fmtDate = iso => {
+    const d = new Date(iso + "T00:00:00");
+    return isNaN(d) ? iso : d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+  };
+  const boldAuthors = s => {
+    let out = esc(s);
+    (DATA.lab.highlightAuthors || []).forEach(n => {
+      out = out.split(esc(n)).join("<strong>" + esc(n) + "</strong>");
+    });
+    return out;
+  };
+  const sitePill = k => k === "A"
+    ? '<span class="pill pill--a">' + esc(DATA.sites.A.short) + "</span>"
+    : '<span class="pill pill--b">' + esc(DATA.sites.B.short) + "</span>";
+
+  /* ---------- navigation model ---------------------------- */
+  const NAV = [
+    { label:"Home", href:"#/" },
+    { label:"People", href:"#/people/pi", children:[
+      { label:"PI",            href:"#/people/pi" },
+      { label:DATA.sites.A.short, href:"#/people/site-a", tag:"a" },
+      { label:DATA.sites.B.short, href:"#/people/site-b", tag:"b" },
+      { label:"Alumni",        href:"#/people/alumni" }
+    ]},
+    { label:"Research", href:"#/research", children:[
+      { label:"Research Overview", href:"#/research" },
+      { label:DATA.areas[0].title, href:"#/research/" + DATA.areas[0].id },
+      { label:DATA.areas[1].title, href:"#/research/" + DATA.areas[1].id }
+    ]},
+    { label:"News", href:"#/news" },
+    { label:"Publications", href:"#/publications" },
+    { label:"Patents", href:"#/patents" },
+    { label:"Join", href:"#/join" },
+    { label:"Support", href:"#/support" }
+  ];
+
+  function buildNav() {
+    $("#nav").innerHTML = NAV.map(item => {
+      const menu = item.children ? '<ul class="menu">' + item.children.map(c =>
+        '<li><a href="' + c.href + '"><span class="idx ' + (c.tag ? "tag-" + c.tag : "") + '">' +
+        (c.tag ? "◆" : "—") + '</span>' + esc(c.label) + "</a></li>").join("") + "</ul>" : "";
+      return '<li class="' + (item.children ? "has-menu" : "") + '">' +
+        '<a class="nav-link" href="' + item.href + '"' + (item.children ? ' aria-haspopup="true" aria-expanded="false"' : "") + ">" +
+        esc(item.label) + (item.children ? '<span class="caret">▾</span>' : "") + "</a>" + menu + "</li>";
+    }).join("");
+
+    const nav = $("#nav");
+    const isTouchLayout = () => window.matchMedia("(max-width:900px)").matches;
+
+    let closeTimer = null;
+    nav.querySelectorAll("li.has-menu").forEach(li => {
+      const link = $(".nav-link", li);
+      li.addEventListener("mouseenter", () => {
+        clearTimeout(closeTimer);
+        if (!isTouchLayout()) openMenu(li);
+      });
+      li.addEventListener("mouseleave", () => {
+        if (isTouchLayout()) return;
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => closeMenu(li), 260);   // grace period
+      });
+      link.addEventListener("click", e => {
+        if (isTouchLayout()) { e.preventDefault(); li.classList.contains("open") ? closeMenu(li) : openMenu(li); }
+      });
+      link.addEventListener("keydown", e => {
+        if (e.key === "ArrowDown") { e.preventDefault(); openMenu(li); const a = $(".menu a", li); if (a) a.focus(); }
+        if (e.key === "Escape") closeMenu(li);
+      });
+    });
+    document.addEventListener("click", e => {
+      if (!e.target.closest("li.has-menu")) nav.querySelectorAll("li.open").forEach(closeMenu);
+    });
+    function openMenu(li) {
+      nav.querySelectorAll("li.open").forEach(o => { if (o !== li) closeMenu(o); });
+      li.classList.add("open"); $(".nav-link", li).setAttribute("aria-expanded", "true");
+    }
+    function closeMenu(li) {
+      li.classList.remove("open"); $(".nav-link", li).setAttribute("aria-expanded", "false");
+    }
+
+    const burger = $("#burger");
+    burger.addEventListener("click", () => {
+      const isOpen = nav.classList.toggle("open");
+      burger.setAttribute("aria-expanded", String(isOpen));
+      burger.textContent = isOpen ? "Close" : "Menu";
+    });
+    nav.addEventListener("click", e => {
+      if (e.target.closest("a") && isTouchLayout()) {
+        if (e.target.closest("li.has-menu > .nav-link")) return;
+        nav.classList.remove("open");
+        burger.setAttribute("aria-expanded", "false");
+        burger.textContent = "Menu";
+      }
+    });
+  }
+
+  function markActive(route) {
+    document.querySelectorAll("#nav a").forEach(a => a.removeAttribute("aria-current"));
+    const top = "#/" + (route.split("/")[1] || "");
+    NAV.forEach((item, i) => {
+      const li = $("#nav").children[i];
+      const itemTop = "#/" + (item.href.split("/")[1] || "");
+      if (itemTop === top) $(".nav-link", li).setAttribute("aria-current", "page");
+      if (item.children) item.children.forEach((c, j) => {
+        if (c.href === "#" + route) li.querySelectorAll(".menu a")[j].setAttribute("aria-current", "page");
+      });
+    });
+  }
+
+  /* ---------- shared partials ----------------------------- */
+  const pageHead = (crumb, title, lead) =>
+    '<header class="page-head"><div class="wrap">' +
+      '<p class="crumb">' + esc(crumb) + "</p>" +
+      "<h1>" + title + "</h1>" +
+      (lead ? '<p class="lead">' + esc(lead) + "</p>" : "") +
+    "</div></header>";
+
+  const subtabs = (items, current) =>
+    '<div class="wrap"><nav class="subtabs" aria-label="Section">' + items.map(i =>
+      '<a href="' + i.href + '"' + (i.href === "#" + current ? ' aria-current="page"' : "") + ">" + esc(i.label) + "</a>"
+    ).join("") + "</nav></div>";
+
+  const PEOPLE_TABS   = NAV[1].children;
+  const RESEARCH_TABS = NAV[2].children;
+
+  const avatarFor = (p, cls) => p.photo
+    ? '<div class="avatar ' + cls + '" style="background-image:url(' + esc(p.photo) + ')"></div>'
+    : '<div class="avatar ' + cls + '">' + esc(p.initials || initials(p.name)) + "</div>";
+
+  const personCard = p => {
+    const cls = p.site === "B" ? "is-b" : "is-a";
+    return '<article class="person ' + cls + '">' + avatarFor(p, cls) + '<div class="body">' +
+      "<h3>" + esc(p.name) + "</h3>" +
+      '<p class="role">' + esc(p.role) + "</p>" +
+      '<p class="topic">' + esc(p.topic) + "</p>" +
+      (p.email ? '<a class="mail" href="mailto:' + esc(p.email) + '">' + esc(p.email) + "</a>" : "") +
+      "</div></article>";
+  };
+
+  /* ---------- pages --------------------------------------- */
+  const P = {};
+
+  P.home = () => {
+    const latest = DATA.news.slice().sort((x, y) => y.date.localeCompare(x.date)).slice(0, 3);
+    return (
+      '<section class="hero"><div class="wrap">' +
+        "<h1>" + DATA.lab.heroTitle + "</h1>" +
+        '<p class="lead">' + esc(DATA.lab.heroLead) + "</p>" +
+        '<canvas class="chromatin" id="chromatin" aria-hidden="true"></canvas>' +
+      "</div></section>" +
+
+      '<section class="section section--white"><div class="wrap split">' +
+        '<div><h2 style="font-size:clamp(28px,3.6vw,40px)">Research</h2></div>' +
+        '<div><p class="lead" style="margin-bottom:26px">' + esc(DATA.researchIntro) + "</p>" +
+        '<div class="grid grid-2">' + DATA.areas.map(a =>
+          '<a class="card" href="#/research/' + a.id + '">' +
+          "<h3>" + esc(a.kicker) + "</h3><p>" + esc(a.lead) + "</p></a>").join("") +
+        "</div></div>" +
+      "</div></section>" +
+
+      '<section class="section"><div class="wrap">' +
+        '<h2 style="font-size:clamp(28px,3.6vw,40px);margin-bottom:26px">News</h2>' +
+        latest.map(n =>
+          '<article class="news-item"><div class="date">' + esc(fmtDate(n.date)) + "</div><div>" +
+          "<h3>" + esc(n.title) + "</h3><p>" + esc(n.body) + "</p>" +
+          "</div></article>").join("") +
+        '<p style="margin-top:30px"><a class="btn btn--ghost" href="#/news">All news →</a></p>' +
+      "</div></section>"
+    );
+  };
+
+  /* ---------- chromatin polymer --------------------------- */
+  function startChromatin() {
+    const cv = document.getElementById("chromatin");
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    const still = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+    const N = 96;          // beads
+    const L = 9;           // rest length between neighbours
+    const beads = [];
+    let w = 0, h = 0, raf = 0;
+
+    function size() {
+      const r = cv.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height;
+      cv.width = Math.round(w * dpr);
+      cv.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function seed() {
+      beads.length = 0;
+      for (let i = 0; i < N; i++) {
+        const t = i / (N - 1);
+        beads.push({
+          x: w * (0.08 + 0.84 * t),
+          y: h * 0.5 + Math.sin(t * 9) * h * 0.16 + Math.sin(t * 23) * h * 0.05,
+          vx: 0, vy: 0
+        });
+      }
+    }
+
+    function step() {
+      // springs along the chain
+      for (let i = 0; i < N - 1; i++) {
+        const a = beads[i], b = beads[i + 1];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.hypot(dx, dy) || 1e-6;
+        const f = (d - L) * 0.16;
+        dx /= d; dy /= d;
+        a.vx += dx * f; a.vy += dy * f;
+        b.vx -= dx * f; b.vy -= dy * f;
+      }
+      // bending stiffness — keeps the chain smooth rather than kinked
+      for (let i = 1; i < N - 1; i++) {
+        const p = beads[i - 1], c = beads[i], n = beads[i + 1];
+        c.vx += ((p.x + n.x) / 2 - c.x) * 0.035;
+        c.vy += ((p.y + n.y) / 2 - c.y) * 0.035;
+      }
+      // self-avoidance
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 3; j < N; j++) {
+          const a = beads[i], b = beads[j];
+          let dx = b.x - a.x, dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy, R = L * 1.9;
+          if (d2 < R * R && d2 > 1e-6) {
+            const d = Math.sqrt(d2), f = (R - d) * 0.045;
+            dx /= d; dy /= d;
+            a.vx -= dx * f; a.vy -= dy * f;
+            b.vx += dx * f; b.vy += dy * f;
+          }
+        }
+      }
+      // thermal noise + soft confinement + damping
+      const cx = w / 2, cy = h / 2, rx = w * 0.42, ry = h * 0.40;
+      for (let i = 0; i < N; i++) {
+        const p = beads[i];
+        p.vx += (Math.random() - 0.5) * 0.5;
+        p.vy += (Math.random() - 0.5) * 0.5;
+        const nx = (p.x - cx) / rx, ny = (p.y - cy) / ry;
+        const r = Math.hypot(nx, ny);
+        if (r > 1) { p.vx -= nx * (r - 1) * 1.6; p.vy -= ny * (r - 1) * 1.6; }
+        p.vx *= 0.90; p.vy *= 0.90;
+        p.x += p.vx; p.y += p.vy;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const g = ctx.createLinearGradient(0, 0, w, 0);
+      g.addColorStop(0, "#5B86E8");
+      g.addColorStop(1, "#E5A44A");
+
+      // soft halo, then the fibre itself
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      for (const pass of [{ lw: 13, a: 0.10 }, { lw: 3.2, a: 0.95 }]) {
+        ctx.beginPath();
+        ctx.moveTo(beads[0].x, beads[0].y);
+        for (let i = 1; i < N - 1; i++) {
+          ctx.quadraticCurveTo(beads[i].x, beads[i].y,
+            (beads[i].x + beads[i + 1].x) / 2, (beads[i].y + beads[i + 1].y) / 2);
+        }
+        ctx.strokeStyle = g; ctx.globalAlpha = pass.a; ctx.lineWidth = pass.lw;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() { step(); draw(); raf = requestAnimationFrame(loop); }
+
+    size(); seed();
+    if (still) { for (let i = 0; i < 240; i++) step(); draw(); }
+    else loop();
+
+    let t;
+    const onResize = () => {
+      clearTimeout(t);
+      t = setTimeout(() => { if (!document.getElementById("chromatin")) return; size(); seed(); }, 150);
+    };
+    window.addEventListener("resize", onResize);
+
+    // stop the loop when the home page is replaced
+    const stop = () => {
+      if (!document.body.contains(cv)) {
+        cancelAnimationFrame(raf);
+        window.removeEventListener("resize", onResize);
+        window.removeEventListener("hashchange", stop);
+      }
+    };
+    window.addEventListener("hashchange", stop);
+  }
+
+  P.peoplePI = () => {
+    const pi = DATA.pi;
+    return pageHead("People / Principal Investigator", "Principal Investigator") +
+      subtabs(PEOPLE_TABS, "/people/pi") +
+      '<section class="section--tight"><div class="wrap"><div class="pi-card">' +
+        '<div class="person" style="border:0;background:none">' + avatarFor(pi, "is-a") + "</div>" +
+        '<div><h2 style="font-size:clamp(26px,3.4vw,38px)">' + esc(pi.name) + "</h2>" +
+        '<p class="eyebrow" style="margin:10px 0 20px">' + esc(pi.role) + "</p>" +
+        pi.bio.map(b => '<p class="lead" style="font-size:17px">' + esc(b) + "</p>").join("") +
+        '<ul class="pi-facts">' + pi.facts.map(f =>
+          '<li><span class="k">' + esc(f[0]) + "</span><span>" + esc(f[1]) + "</span></li>").join("") +
+        "</ul></div>" +
+      "</div></div></section>";
+  };
+
+  P.peopleSite = key => {
+    const s = DATA.sites[key];
+    const list = DATA.members.filter(m => m.site === key);
+    const other = key === "A" ? "b" : "a";
+    return pageHead("People / " + s.short, esc(s.name), s.dept) +
+      subtabs(PEOPLE_TABS, key === "A" ? "/people/site-a" : "/people/site-b") +
+      '<section class="section--tight"><div class="wrap">' +
+        '<p class="eyebrow">' + list.length + " at this site · " + esc(s.address) + "</p>" +
+        '<div class="people-grid">' + list.map(personCard).join("") + "</div>" +
+        '<p style="margin-top:34px" class="muted">Looking for someone at the other site? ' +
+          '<a href="#/people/site-' + other + '" style="color:var(--color_a);text-decoration:underline">See ' +
+          esc(key === "A" ? DATA.sites.B.short : DATA.sites.A.short) + "</a>.</p>" +
+      "</div></section>";
+  };
+
+  P.peopleAlumni = () =>
+    pageHead("People / Alumni", "Alumni", "Where people went after the group, and what they worked on while they were here.") +
+    subtabs(PEOPLE_TABS, "/people/alumni") +
+    '<section class="section--tight"><div class="wrap"><table class="alumni-table"><thead><tr>' +
+      "<th>Name</th><th>Years</th><th>Site</th><th>Position</th><th>Thesis</th><th>Now</th>" +
+    "</tr></thead><tbody>" + DATA.alumni.map(a =>
+      "<tr>" +
+        '<td data-k="Name"><strong>' + esc(a.name) + "</strong></td>" +
+        '<td data-k="Years" class="mono muted" style="font-size:13px">' + esc(a.years) + "</td>" +
+        '<td data-k="Site">' + sitePill(a.site) + "</td>" +
+        '<td data-k="Position">' + esc(a.degree) + "</td>" +
+        '<td data-k="Thesis" class="muted">' + esc(a.thesis) + "</td>" +
+        '<td data-k="Now">' + esc(a.now) + "</td>" +
+      "</tr>").join("") + "</tbody></table></div></section>";
+
+  P.researchOverview = () =>
+    pageHead("Research / Overview", "Research Overview", DATA.researchIntro) +
+    subtabs(RESEARCH_TABS, "/research") +
+    '<section class="section--tight"><div class="wrap">' +
+      '<div class="grid grid-3" style="margin-bottom:clamp(34px,4vw,54px)">' +
+        DATA.researchThemes.map((t, i) =>
+          '<div class="card"><p class="eyebrow">Theme 0' + (i + 1) + "</p><h3>" + esc(t) + "</h3></div>").join("") +
+      "</div>" +
+      DATA.areas.map(a =>
+        '<article class="split" style="padding:clamp(26px,3vw,40px) 0;border-top:1px solid var(--line)">' +
+          '<div><p class="area-num">Area ' + esc(a.num) + "</p>" +
+            '<h2 style="font-size:clamp(24px,3vw,34px);margin:8px 0 12px">' + esc(a.title) + "</h2>" +
+            '<p class="pill">' + esc(a.kicker) + "</p></div>" +
+          '<div><p class="lead">' + esc(a.lead) + "</p>" +
+            '<p style="margin-top:16px;color:#414B61">' + esc(a.body[0]) + "</p>" +
+            '<p style="margin-top:18px"><a class="btn btn--ghost" href="#/research/' + a.id + '">Open ' + esc(a.title) + " →</a></p></div>" +
+        "</article>").join("") +
+    "</div></section>";
+
+  P.researchArea = id => {
+    const a = DATA.areas.find(x => x.id === id);
+    if (!a) return P.notFound();
+    return pageHead("Research / " + a.title, esc(a.title), a.lead) +
+      subtabs(RESEARCH_TABS, "/research/" + a.id) +
+      '<section class="section--tight"><div class="wrap split">' +
+        '<div class="area-hero"><p class="area-num">Area ' + esc(a.num) + "</p>" +
+          '<h2 style="font-size:clamp(22px,2.6vw,30px);margin:8px 0 14px">' + esc(a.kicker) + "</h2>" +
+          '<div class="figure" style="margin-top:22px">' + esc(a.figure) + "</div>" +
+          '<p class="eyebrow" style="margin:22px 0 6px">Collaborators</p><p style="font-size:15px">' + esc(a.collaborators) + "</p>" +
+          '<p class="eyebrow" style="margin:18px 0 6px">Funding</p><p style="font-size:15px">' + esc(a.funding) + "</p></div>" +
+        "<div>" + a.body.map(b => '<p class="lead" style="font-size:17.5px">' + esc(b) + "</p>").join("") +
+          '<h3 style="font-size:20px;margin:30px 0 16px">What this involves</h3>' +
+          '<ul class="bullets">' + a.bullets.map(b => "<li>" + esc(b) + "</li>").join("") + "</ul>" +
+          '<p style="margin-top:28px"><a class="btn btn--ghost" href="#/publications">Related publications →</a></p></div>' +
+      "</div></section>";
+  };
+
+  P.news = () => {
+    const items = DATA.news.slice().sort((x, y) => y.date.localeCompare(x.date));
+    return pageHead("News", "News", "Papers, people, awards, and lab announcements.") +
+      '<section class="section--tight"><div class="wrap">' +
+        items.map(n =>
+          '<article class="news-item"><div class="date">' + esc(fmtDate(n.date)) + "</div><div>" +
+            '<span class="pill">' + esc(n.tag) + "</span>" +
+            '<h3 style="margin-top:10px">' + esc(n.title) + "</h3>" +
+            "<p>" + esc(n.body) + "</p>" +
+            (n.link ? '<a class="more" href="' + esc(n.link) + '">Read more →</a>' : "") +
+          "</div></article>").join("") +
+      "</div></section>";
+  };
+
+  /* year-grouped list shared by publications + patents */
+  function yearPage(kind) {
+    const isPub = kind === "publications";
+    const rows = isPub ? DATA.publications : DATA.patents;
+    const years = [...new Set(rows.map(r => r.year))].sort((a, b) => b - a);
+    const head = isPub
+      ? pageHead("Publications", "Publications", "Selected papers, newest first. Group authors are shown in bold.")
+      : pageHead("Patents", "Patents", "Granted, published, and filed applications from both sites.");
+
+    const body = years.map(y =>
+      '<section class="year-block" data-year="' + y + '"><h2>' + y + "</h2>" +
+      rows.filter(r => r.year === y).map((r, i) => isPub
+        ? '<article class="pub' + (r.featured ? " is-featured" : "") + '">' +
+            '<div class="n">' + String(i + 1).padStart(2, "0") + "</div><div>" +
+            (r.featured ? '<span class="pill pill--b" style="margin-bottom:10px">Featured</span>' : "") +
+            "<h3>" + esc(r.title) + "</h3>" +
+            '<p class="authors">' + boldAuthors(r.authors) + "</p>" +
+            '<p class="venue"><em>' + esc(r.venue) + "</em> · " + esc(r.detail) + " · " + r.year + "</p>" +
+            (r.links ? '<div class="links">' + Object.keys(r.links).map(k =>
+              '<a href="' + esc(r.links[k]) + '">' + esc(k) + "</a>").join("") + "</div>" : "") +
+          "</div></article>"
+        : '<article class="pub"><div class="n">' + String(i + 1).padStart(2, "0") + "</div><div>" +
+            "<h3>" + esc(r.title) + "</h3>" +
+            '<p class="authors">' + boldAuthors(r.inventors) + "</p>" +
+            '<p class="venue"><em>' + esc(r.number) + "</em> · " + esc(r.office) + " · " + esc(r.status) + "</p>" +
+          "</div></article>").join("") +
+      "</section>").join("");
+
+    const chips = '<div class="chips" id="year-chips">' +
+      '<button class="chip" data-y="all" aria-pressed="true">All years</button>' +
+      years.map(y => '<button class="chip" data-y="' + y + '" aria-pressed="false">' + y + "</button>").join("") + "</div>";
+
+    return head + '<section class="section--tight"><div class="wrap">' + chips + body + "</div></section>";
+  }
+
+  P.publications = () => yearPage("publications");
+  P.patents = () => yearPage("patents");
+
+  P.join = () => {
+    const j = DATA.join;
+    return pageHead("Join", esc(j.title), j.intro) +
+      '<section class="section--tight"><div class="wrap"><div class="prose">' +
+        j.sections.map(s =>
+          "<section><h3>" + esc(s.title) + "</h3><p>" + s.body + "</p></section>").join("") +
+      "</div></div></section>";
+  };
+
+  P.support = () =>
+    pageHead("Support", "Support", DATA.support.intro) +
+    '<section class="section--tight"><div class="wrap"><div class="logos">' +
+      DATA.support.logos.map(l => {
+        const inner = l.logo
+          ? '<img src="' + esc(l.logo) + '" alt="' + esc(l.name) + '">'
+          : '<span class="placeholder">' + esc(l.name) + "</span>";
+        return l.url
+          ? '<a class="logo" href="' + esc(l.url) + '" target="_blank" rel="noopener">' + inner + "</a>"
+          : '<div class="logo">' + inner + "</div>";
+      }).join("") +
+    "</div></div></section>";
+
+  P.notFound = () =>
+    pageHead("Error", "That page does not exist.", "The link may be out of date. Use the menu above, or start again from the homepage.") +
+    '<section class="section--tight"><div class="wrap"><a class="btn" href="#/">Back to home</a></div></section>';
+
+  /* ---------- footer -------------------------------------- */
+  function buildFooter() {
+    const A = DATA.sites.A, B = DATA.sites.B;
+    $("#foot-grid").innerHTML =
+      '<div><p class="foot-name">' + esc(DATA.lab.name) + "</p></div>" +
+      "<div><h4>" + esc(A.short) + '</h4><ul class="foot-list">' +
+        "<li>" + esc(A.dept) + "</li><li>" + esc(A.address) + "</li></ul></div>" +
+      "<div><h4>" + esc(B.short) + '</h4><ul class="foot-list">' +
+        "<li>" + esc(B.dept) + "</li><li>" + esc(B.address) + "</li></ul></div>";
+    $("#foot-bottom").innerHTML =
+      "<span>\u00A9 " + new Date().getFullYear() + " " + esc(DATA.lab.name) + "</span>" +
+      '<span><a href="#/news">News</a> \u00B7 <a href="#/publications">Publications</a> \u00B7 <a href="#/join">Join</a></span>';
+    $("#brand-name").firstChild.nodeValue = DATA.lab.name;
+    $("#brand-sub").textContent = DATA.lab.tagline;
+  }
+
+  /* ---------- router -------------------------------------- */
+  const ROUTES = {
+    "/":                        { title:"Home",              render:P.home },
+    "/people/pi":               { title:"Principal Investigator", render:P.peoplePI },
+    "/people/site-a":           { title:"People · " + DATA.sites.A.short, render:() => P.peopleSite("A") },
+    "/people/site-b":           { title:"People · " + DATA.sites.B.short, render:() => P.peopleSite("B") },
+    "/people/alumni":           { title:"Alumni",            render:P.peopleAlumni },
+    "/research":                { title:"Research",          render:P.researchOverview },
+    "/news":                    { title:"News",              render:P.news },
+    "/publications":            { title:"Publications",      render:P.publications },
+    "/patents":                 { title:"Patents",           render:P.patents },
+    "/join":                    { title:"Join",              render:P.join },
+    "/support":                 { title:"Support",           render:P.support }
+  };
+
+  function route() {
+    const path = (location.hash.replace(/^#/, "") || "/").split("?")[0];
+    let page = ROUTES[path];
+    if (!page && path.indexOf("/research/") === 0) {
+      const id = path.split("/")[2];
+      if (DATA.areas.some(a => a.id === id)) {
+        page = { title:DATA.areas.find(a => a.id === id).title, render:() => P.researchArea(id) };
+      }
+    }
+    if (!page) page = { title:"Not found", render:P.notFound };
+
+    $("#view").innerHTML = page.render();
+    document.title = page.title + " — " + DATA.lab.name;
+    markActive(path);
+    wireYearChips();
+    startChromatin();
+    window.scrollTo(0, 0);
+  }
+
+  /* year filter on publications + patents */
+  function wireYearChips() {
+    const chips = $("#year-chips");
+    if (!chips) return;
+    chips.addEventListener("click", e => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c === btn)));
+      const y = btn.dataset.y;
+      document.querySelectorAll(".year-block").forEach(b => {
+        b.style.display = (y === "all" || b.dataset.year === y) ? "" : "none";
+      });
+    });
+  }
+
+  /* ---------- boot ---------------------------------------- */
+  buildNav();
+  buildFooter();
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
+</body>
+</html>
