@@ -16,6 +16,12 @@
   still needs your real content.
   Routing is hash based (#/people/pi), so it works on GitHub
   Pages, Netlify, or a plain file:// open — no build step.
+
+  The main navigation carries the CRYOSECTION BLADE interaction.
+  Hover a nav item and a glass blade climbs through the word;
+  everything the edge has passed lifts onto the blade face and
+  picks up the interference colour of a floating section. Search
+  for  § CRYOSECTION  in the CSS and in the script.
   ============================================================
 -->
 
@@ -47,6 +53,20 @@
   --pad:clamp(20px,4vw,40px);
   --radius:3px;
   --ease:cubic-bezier(.22,.61,.36,1);
+
+  /* § CRYOSECTION — blade parameters. Every one is safe to tune.
+     --nm, --film and --depth are recomputed at boot from
+     SECTION_NM in the script; edit that number, not these.      */
+  --nm:220;                        /* section thickness, nm       */
+  --film:rgb(75,125,215);          /* interference colour at 220  */
+  --depth:3.17px;                  /* letter extrusion, from --nm */
+  --sep:8px;                       /* blade thickness             */
+  --rake:14deg;                    /* blade rake angle            */
+  --glass-blur:3.2px;              /* refraction through the pane */
+  --glass-sheen:rgba(255,255,255,.52);  /* specular on the edge   */
+  --sweep:1100ms;                  /* one pass of the blade       */
+  --ease-blade:cubic-bezier(.55,.02,.22,1);  /* bite, then glide  */
+  --ease-lift:cubic-bezier(.34,.06,.2,1);    /* section peels up  */
 }
 
 /* ============================================================
@@ -75,7 +95,6 @@ p:last-child{margin-bottom:0}
 .wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--pad)}
 .section{padding:clamp(52px,7vw,96px) 0}
 .section--tight{padding:clamp(36px,4.5vw,60px) 0}
-.section--dark{background:var(--ink);color:var(--paper)}
 .section--white{background:var(--white)}
 
 .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:10px 16px;z-index:200}
@@ -86,18 +105,13 @@ p:last-child{margin-bottom:0}
   font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--muted);margin:0 0 14px;
 }
-.section--dark .eyebrow{color:#8C9AB5}
 .lead{font-size:clamp(18px,2vw,21px);line-height:1.55;color:#39435A;max-width:62ch}
-.section--dark .lead{color:#B9C3D6}
 .muted{color:var(--muted)}
 .mono{font-family:var(--mono)}
 
-/* the seam — recurring motif: a hairline that joins two nodes -- */
-.seam{display:flex;align-items:center;gap:10px;margin:0 0 30px}
-.seam::after{content:"";flex:1;height:1px;background:var(--line)}
-.section--dark .seam::after{background:var(--line-dark)}
-.seam .dot{width:7px;height:7px;border-radius:50%;background:var(--color_a)}
-.seam .dot--b{background:var(--color_b)}
+/* placeholder link — looks like a link slot, does not navigate --- */
+.link-dead{color:var(--muted);cursor:default}
+.fact-list .link-dead{border-bottom:1px dotted var(--line)}
 
 /* ============================================================
    3. HEADER + NAV
@@ -120,18 +134,126 @@ p:last-child{margin-bottom:0}
 
 .nav{display:flex;align-items:center;gap:2px;list-style:none;margin:0;padding:0}
 .nav > li{position:relative}
+
+/* ------------------------------------------------------------
+   § CRYOSECTION — the nav bar is a specimen block.
+
+   Four mechanisms, in order of importance:
+   1. --p is the cutting edge. One registered custom property
+      drives the glass top and the section clip, so the two can
+      never drift apart. It runs past both ends of the link.
+   2. transform-origin sits ON the moving edge, so displacement at
+      the cut is always exactly zero — no seam, ever.
+   3. --k is progress 0→1. Lift, tilt and extrusion all scale by
+      it, so the blade thickens as it climbs instead of arriving
+      fully open.
+   4. The glass sits ABOVE the original grey word, so
+      backdrop-filter frosts it for free. Nothing blurs the
+      original directly.
+   ------------------------------------------------------------ */
+@property --p{syntax:"<percentage>";inherits:true;initial-value:158%}
+@property --k{syntax:"<number>";inherits:true;initial-value:0}
+
 .nav-link{
+  position:relative;
   display:block;padding:10px 13px;border-radius:var(--radius);
+  overflow:hidden;
   font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
-  color:#2A3348;transition:background .15s var(--ease),color .15s var(--ease);
+  color:#2A3348;
   background:none;border:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  /* 158% / -58% put the start and end of the travel just OUTSIDE the
+     link's clip box, so the edge is already moving when it enters view
+     and keeps going after it leaves. Starting at 100% would make the
+     blade appear at the word itself, which reads as a fade, not a cut. */
+  --p:158%;
+  --k:0;
+  /* The cut and the lift are NOT the same motion. --p is the edge and
+     leads; --k is the material peeling up behind it, so it starts a
+     beat later and takes longer to settle. Delay is set on the hover
+     state only, so the section drops straight back on exit.        */
+  transition:--p var(--sweep) var(--ease-blade),
+             --k calc(var(--sweep) * 1.15) var(--ease-lift),
+             color .15s var(--ease);
 }
-.nav-link:hover{background:rgba(43,92,184,.1);color:var(--color_a)}
-.nav-link[aria-current="page"]{color:var(--color_a)}
+.nav-link:hover,
+.nav-link.is-cut{--p:-58%;--k:1;transition-delay:0ms,70ms,0ms}
+
+/* keyboard users get the colour shift without the tilt */
+.nav-link:focus-visible{--p:-58%;--k:1;--rake:0deg;transition-delay:0ms,70ms,0ms}
+
+.nav-link[aria-current="page"] .tab-base{color:var(--color_a)}
 .nav-link[aria-current="page"]::after{
   content:"";display:block;height:2px;background:var(--color_a);margin-top:5px;border-radius:2px
 }
 .nav-link .caret{display:inline-block;margin-left:6px;font-size:9px;transform:translateY(-1px);opacity:.6}
+
+.tab-inner{position:relative;display:inline-block;white-space:nowrap}
+
+/* the frozen block — never clipped, always readable */
+.tab-base{display:block;color:inherit}
+
+/* the glass blade face — a pane, not a grey scrim.
+   Three things make it read as glass rather than a tint:
+   the leading edge catches a specular line, the body carries a
+   little of the section's own interference colour instead of a
+   neutral grey, and the backdrop is saturated and lifted rather
+   than dimmed, so colour behind the pane comes through brighter. */
+.tab-glass{
+  position:absolute;left:-20px;right:-20px;
+  /* Only ONE edge of this pane ever moves: the top, which is the cut.
+     The bottom is pinned well below the block, out past the clip, so
+     the pane reads as glass rising from underneath rather than as a
+     shape growing outward from the middle. */
+  top:var(--p);
+  bottom:calc((var(--sep) + 26px) * -1);
+  background:linear-gradient(180deg,
+      var(--glass-sheen) 0,
+      rgba(255,255,255,.16) 2px,
+      color-mix(in srgb,var(--film) 5%,transparent) 46%,
+      color-mix(in srgb,var(--film) 15%,transparent) 100%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(1.5) brightness(1.05);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.5) brightness(1.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  transform-origin:50% 0;
+  transform:skewX(calc(var(--k) * var(--rake) * -.5));
+  opacity:min(1,var(--k) * 8);
+  pointer-events:none;
+}
+/* the kerf — a soft bright band riding just under the cutting edge */
+.tab-glass::after{
+  content:"";position:absolute;left:0;right:0;top:0;height:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0));
+  pointer-events:none;
+}
+
+/* the section riding on the blade */
+.tab-cut{
+  position:absolute;inset:0;
+  clip-path:inset(max(0%,var(--p)) -80% -80% -80%);
+  transform-origin:0% var(--p);
+  transform:perspective(560px)
+            rotateX(calc(var(--k) * var(--rake)))
+            skewX(calc(var(--k) * var(--rake) * -.4))
+            translateY(calc(var(--k) * var(--sep) * -1));
+  pointer-events:none;
+}
+/* l2 and l1 are the cut side faces of the section, so they are dark
+   versions of the film colour, not neutral ink. l0 is the top face
+   and casts a shadow onto the block as it lifts clear.            */
+.tab-cut span{position:absolute;left:0;top:0;display:block;white-space:nowrap}
+.tab-cut .l2{color:color-mix(in srgb,var(--film) 40%,var(--ink));opacity:.30;
+  transform:translate(calc(var(--k) * var(--depth)),calc(var(--k) * var(--depth)))}
+.tab-cut .l1{color:color-mix(in srgb,var(--film) 65%,var(--ink));opacity:.58;
+  transform:translate(calc(var(--k) * var(--depth) * .5),calc(var(--k) * var(--depth) * .5))}
+.tab-cut .l0{color:var(--film);
+  text-shadow:0 calc(var(--k) * 2px) calc(var(--k) * 3px) rgba(11,16,32,.20)}
+
+@media (prefers-reduced-motion:reduce){
+  .nav-link{transition-duration:1ms}
+  .nav-link:hover,.nav-link.is-cut,.nav-link:focus-visible{--rake:0deg;--sep:0px;transition-delay:0ms}
+}
+/* ---- end § CRYOSECTION ------------------------------------- */
 
 .menu{
   position:absolute;top:100%;left:0;min-width:235px;
@@ -185,7 +307,6 @@ p:last-child{margin-bottom:0}
 .hero h1{
   font-size:clamp(40px,7.6vw,90px);letter-spacing:-.035em;max-width:17ch;margin:0 0 26px;
 }
-.hero h1 em{font-style:normal;color:var(--color_b)}
 .hero .lead{color:#AFBAD0;max-width:58ch}
 
 /* chromatin polymer — the moving signature of the home page */
@@ -224,7 +345,6 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .btn:hover{background:var(--color_a);border-color:var(--color_a);transform:translateY(-2px)}
 .btn--ghost{background:transparent;color:var(--ink)}
 .btn--ghost:hover{color:#fff}
-.section--dark .btn--ghost{color:var(--paper);border-color:#3B4666}
 
 .pill{
   display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:20px;
@@ -266,12 +386,15 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(16px,2.2vw,26px)}
 .person{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .person .avatar{
+  position:relative;overflow:hidden;
   aspect-ratio:1/1;display:grid;place-items:center;font-family:var(--display);font-weight:800;
   font-size:44px;letter-spacing:-.04em;color:var(--white);background:var(--ink-soft);
-  background-size:cover;background-position:center;
 }
 .person .avatar.is-a{background-image:linear-gradient(150deg,#2B5CB8,#0B1020)}
 .person .avatar.is-b{background-image:linear-gradient(150deg,#D98A1F,#0B1020)}
+/* photo sits over the monogram; if the file is missing the <img>
+   removes itself and the monogram shows through instead. */
+.person .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .person .body{padding:16px 17px 19px;border-top:3px solid var(--color_a)}
 .person.is-b .body{border-top-color:var(--color_b)}
 .person h3{font-size:18px;margin:0 0 3px}
@@ -293,13 +416,13 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 @media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
 .fact-list{list-style:none;margin:0;padding:0}
 .fact-list li{position:relative;padding-left:14px;margin-bottom:6px;display:block}
-
+.fact-list li::before{content:"";position:absolute;left:0;top:12px;width:8px;height:1px;background:var(--color_a)}
 .fact-list li:last-child{margin-bottom:0}
 .fact-list--inline{display:flex;flex-wrap:wrap;gap:0}
 .fact-list--inline li{padding-left:0;margin-bottom:0}
 .fact-list--inline li::before{display:none}
 .fact-list--inline li:not(:last-child)::after{content:"·";margin:0 8px;color:var(--muted)}
-  
+
 .alumni-table{width:100%;border-collapse:collapse;font-size:15.5px}
 .alumni-table th{
   text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
@@ -363,9 +486,11 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .pub .venue{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
 .pub .venue em{font-style:normal;color:var(--ink)}
 .pub .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
-.pub .links a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+.pub .links a,.pub .links .link-dead{
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--line);border-radius:20px;padding:4px 11px;color:var(--muted);background:var(--white)}
 .pub .links a:hover{border-color:var(--color_a);color:var(--color_a)}
+.pub .links .link-dead{border-style:dashed;background:var(--paper-2);opacity:.75}
 .pub.is-featured{background:var(--white);border:1px solid var(--line);border-left:3px solid var(--color_b);
   padding:20px 22px;border-radius:var(--radius);margin-bottom:8px}
 
@@ -404,6 +529,8 @@ a.logo:hover{border-color:var(--color_a)}
 .foot-list li{margin-bottom:9px}
 .foot-name{font-family:var(--display);font-weight:800;font-size:24px;color:var(--paper);
   letter-spacing:-.025em;margin:0 0 12px}
+.foot-about{max-width:36ch;margin:0 0 14px;font-size:14.5px;line-height:1.6}
+.foot-mail{font-family:var(--mono);font-size:13px;color:#AFBAD0}
 .foot-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;
   margin-top:clamp(34px,4vw,52px);padding-top:22px;border-top:1px solid var(--line-dark);
   font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:#5D6C8A}
@@ -455,7 +582,10 @@ const DATA = {
     tagline: "Baltimore · Berlin",
     heroTitle: "How the genome folds, and what that folding does.",
     heroLead: "We map the physical organization of chromosomes inside the nucleus and ask how that organization controls gene expression. The group works across two sites, in Baltimore, USA and in Berlin, Germany.",
+    // Shown in the footer, under the lab name.
     about: "Epigenetic regulation and chromatin architecture: measuring where genes sit in three-dimensional space, and what that position does to their activity.",
+    // Single source of truth. Used in the footer and, via the
+    // {{email}} token, in the PI fact list below.
     email: "apombo1@jh.edu",
     // Names bolded automatically in publication and patent author lists.
     highlightAuthors: ["Pombo, A.", "A. Pombo", "Pombo A"]
@@ -476,6 +606,7 @@ const DATA = {
       name: "Max Delbrück Center",
       dept: "Berlin Institute for Medical Systems Biology (BIMSB)",
       address: "Berlin-Buch, Germany"
+    }
   },
 
   /* Former locations, used only by the alumni table.
@@ -489,7 +620,7 @@ const DATA = {
     name: "Ana Pombo",
     role: "Bloomberg Distinguished Professor of Genome Biology",
     initials: "AP",
-    photo: "img/ana1.jpeg",                       // e.g. "img/pombo.jpg" — blank shows the monogram
+    photo: "img/ana1.jpeg",                       // e.g. "img/pombo.jpg" — blank, or a missing file, shows the monogram
     bio: [
       "Ana Pombo studies how chromosomes are organized within the nucleus and how that organization shapes gene regulation, cellular identity, and disease. Her group develops the experimental and computational methods needed to place regulatory sequences in physical space relative to the genes they control.",
       "Her lab developed Genome Architecture Mapping (GAM), a ligation-free method that infers chromatin contacts from the DNA content of thin nuclear slices, and which resolves the multi-way interactions that pairwise methods largely miss. During her doctoral work at Oxford she described transcription factories in the mammalian nucleus.",
@@ -497,14 +628,17 @@ const DATA = {
     ],
     // Each row is [label, value]. The value is rendered as HTML,
     // so <a href="...">links</a> work. Do not paste untrusted content.
-        facts: [
+    // {{email}} is replaced at render time with lab.email above.
+    // Use <span class="link-dead"> for a link you have not filled in
+    // yet — an href="#" would navigate back to the homepage.
+    facts: [
       ["Appointments", "<ul class='fact-list'>" +
         "<li>Bloomberg Distinguished Professor of Genome Biology</li>" +
         "<li>Department of Biology, Krieger School of Arts and Sciences, Johns Hopkins University</li>" +
         "<li>Department of Molecular Biology and Genetics, Johns Hopkins University School of Medicine</li>" +
         "<li>Guest Group Leader, Berlin Institute for Medical Systems Biology, Max Delbrück Center for Molecular Medicine</li>" +
       "</ul>"],
-      ["Email", '<a href="mailto:apombo1@jh.edu">apombo1@jh.edu</a>'],
+      ["Email", "{{email}}"],
       ["Education", "<ul class='fact-list'>" +
         "<li>DPhil in Physiological Sciences, Sir William Dunn School of Pathology, University of Oxford (1998)</li>" +
         "<li>BSc and MSc in Biochemistry, University of Lisbon (1988–1992)</li>" +
@@ -523,16 +657,16 @@ const DATA = {
         "<li>Hayward Junior Research Fellowship, Oriel College, Oxford (1997–2000)</li>" +
       "</ul>"],
       ["Links", "<ul class='fact-list fact-list--inline'>" +
-        "<li><a href='#'>Google Scholar</a></li>" +
-        "<li><a href='#'>ORCID</a></li>" +
-        "<li><a href='#'>PubMed</a></li>" +
-        "<li><a href='#'>CV (PDF)</a></li>" +
+        "<li><span class='link-dead'>Google Scholar</span></li>" +
+        "<li><span class='link-dead'>ORCID</span></li>" +
+        "<li><span class='link-dead'>PubMed</span></li>" +
+        "<li><span class='link-dead'>CV (PDF)</span></li>" +
       "</ul>"]
     ]
   },
 
   // Fields: site ("A" or "B"), name (alphabetical by last name),
-  // role, topic, email, and optional initials / photo.
+  // role, topic, email, and optional initials (2 characters) / photo.
   members: [
     /* ---- Site A — JHU, Baltimore ---- */
     { name:"Julian Du",
@@ -557,7 +691,7 @@ const DATA = {
       email:"mhui3@jh.edu" },
 
     { name:"Alexander D. Park",
-      initials:"ADP",
+      initials:"AP",
       site:"A",
       role:"PhD Student; Human Genetics & Genomics Program, School of Medicine",
       topic:"Alex is interested in understanding causality of 3D genome structure in gene expression, genetic variants, and cellular states.",
@@ -642,9 +776,6 @@ const DATA = {
      Rows are sorted automatically by their most recent year.  */
   alumni: [
     { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
-    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
-    { name:"",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
-    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
     { name:"Julia Markowski",               years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Peter Park lab, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
     { name:"Mattia Conte",                  years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Nicodemi lab, Naples University, Naples, IT" },
     { name:"Federico Billeci",              years:"2022",      site:"B",   degree:"MSc",           now:"Data Scientist, Integra Therapeutics, SP" },
@@ -701,6 +832,8 @@ const DATA = {
 
   /* --- research ------------------------------------------- */
   researchIntro: "The group works on the interplay between gene regulation and genome architecture, from the local action of transcription factors, through long-range contacts that connect regulatory sequences to their target genes, to the positioning of whole chromosomes within the nucleus. Method development and biological questions advance together: we build the measurement when the existing one cannot answer the question.",
+  // Themes are labels for the overview page. They do not have to
+  // map one-to-one onto the areas below.
   researchThemes: [
     "Genome Architecture Mapping",
     "Transcription and chromatin states",
@@ -758,16 +891,18 @@ const DATA = {
 
   /* --- publications ---------------------------------------
      Starting selection only — verify details and extend from
-     Google Scholar or PubMed before publishing the site.       */
+     Google Scholar or PubMed before publishing the site.
+     A link with an empty URL renders as a dashed, inactive
+     badge, so unfinished entries cannot navigate anywhere.    */
   publications: [
-    { year:2025, featured:true, title:"Extensive folding variability between homologous chromosomes revealed by haplotype-resolved Genome Architecture Mapping", authors:"Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., et al., Pombo, A.", venue:"Molecular Systems Biology", detail:"21(7), 735–775", links:{ DOI:"#", PDF:"#", Data:"#" } },
-    { year:2024, title:"Epigenetic regulatory layers in the three-dimensional nucleus", authors:"Willemin, A., Szabó, D., Pombo, A.", venue:"Molecular Cell", detail:"84(3), 415–428", links:{ DOI:"#" } },
-    { year:2024, title:"[Add 2024 research article]", authors:"Carvalho, S., Zea-Redondo, L., et al., Pombo, A.", venue:"Biology Open", detail:"13(4), bio060415", links:{ DOI:"#" } },
-    { year:2023, featured:true, title:"Multiplex-GAM: genome-wide identification of chromatin contacts yields insights overlooked by Hi-C", authors:"Beagrie, R. A., Thieme, C. J., Annunziatella, C., et al., Pombo, A.", venue:"Nature Methods", detail:"20, 1037–1047", links:{ DOI:"#", PDF:"#", Code:"#" } },
-    { year:2021, title:"Cell-type specialization is encoded by specific chromatin topologies", authors:"Winick-Ng, W., Kukalev, A., Harabula, I., et al., Pombo, A.", venue:"Nature", detail:"599, 684–691", links:{ DOI:"#", PDF:"#" } },
-    { year:2020, title:"Methods for mapping 3D chromosome architecture", authors:"Kempfer, R., Pombo, A.", venue:"Nature Reviews Genetics", detail:"21(4), 207–226", links:{ DOI:"#" } },
-    { year:2017, featured:true, title:"Complex multi-enhancer contacts captured by Genome Architecture Mapping", authors:"Beagrie, R. A., Scialdone, A., Schueler, M., et al., Pombo, A.", venue:"Nature", detail:"543, 519–524", links:{ DOI:"#", PDF:"#" } },
-    { year:2015, title:"Three-dimensional genome architecture: players and mechanisms", authors:"Pombo, A., Dillon, N.", venue:"Nature Reviews Molecular Cell Biology", detail:"16, 245–257", links:{ DOI:"#" } }
+    { year:2025, featured:true, title:"Extensive folding variability between homologous chromosomes revealed by haplotype-resolved Genome Architecture Mapping", authors:"Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., et al., Pombo, A.", venue:"Molecular Systems Biology", detail:"21(7), 735–775", links:{ DOI:"", PDF:"", Data:"" } },
+    { year:2024, title:"Epigenetic regulatory layers in the three-dimensional nucleus", authors:"Willemin, A., Szabó, D., Pombo, A.", venue:"Molecular Cell", detail:"84(3), 415–428", links:{ DOI:"" } },
+    { year:2024, title:"[Add 2024 research article]", authors:"Carvalho, S., Zea-Redondo, L., et al., Pombo, A.", venue:"Biology Open", detail:"13(4), bio060415", links:{ DOI:"" } },
+    { year:2023, featured:true, title:"Multiplex-GAM: genome-wide identification of chromatin contacts yields insights overlooked by Hi-C", authors:"Beagrie, R. A., Thieme, C. J., Annunziatella, C., et al., Pombo, A.", venue:"Nature Methods", detail:"20, 1037–1047", links:{ DOI:"", PDF:"", Code:"" } },
+    { year:2021, title:"Cell-type specialization is encoded by specific chromatin topologies", authors:"Winick-Ng, W., Kukalev, A., Harabula, I., et al., Pombo, A.", venue:"Nature", detail:"599, 684–691", links:{ DOI:"", PDF:"" } },
+    { year:2020, title:"Methods for mapping 3D chromosome architecture", authors:"Kempfer, R., Pombo, A.", venue:"Nature Reviews Genetics", detail:"21(4), 207–226", links:{ DOI:"" } },
+    { year:2017, featured:true, title:"Complex multi-enhancer contacts captured by Genome Architecture Mapping", authors:"Beagrie, R. A., Scialdone, A., Schueler, M., et al., Pombo, A.", venue:"Nature", detail:"543, 519–524", links:{ DOI:"", PDF:"" } },
+    { year:2015, title:"Three-dimensional genome architecture: players and mechanisms", authors:"Pombo, A., Dillon, N.", venue:"Nature Reviews Molecular Cell Biology", detail:"16, 245–257", links:{ DOI:"" } }
   ],
 
   /* --- patents -------------------------------------------- */
@@ -840,6 +975,7 @@ const DATA = {
     });
     return out;
   };
+  const mailLink = addr => '<a href="mailto:' + esc(addr) + '">' + esc(addr) + "</a>";
 
   /* Site codes used by the alumni table. "A"/"B" are the current
      sites; anything in DATA.pastSites (e.g. "L") is a former one.
@@ -858,6 +994,57 @@ const DATA = {
   const lastYear = s => {
     const m = String(s || "").match(/\d{4}/g);
     return m ? Number(m[m.length - 1]) : 0;
+  };
+
+  /* ---------- § CRYOSECTION — blade colour ----------------
+     Section thickness in nanometres. In ultramicrotomy the
+     thickness of a section floating on water is read off its
+     interference colour: grey below 60, silver to 90, gold to
+     150, purple to 190, blue beyond. GAM cuts nuclear
+     cryosections in the low hundreds of nm, which puts the nav
+     blade in the blue band — the same blue as the JHU site
+     marker. Change this one number to retune the whole nav.   */
+  const SECTION_NM = 220;
+
+  const FILM_STOPS = [
+    [ 55, [133,131,123]],
+    [ 95, [169,167,159]],
+    [135, [216,147, 31]],
+    [178, [122,107,216]],
+    [240, [ 53,133,214]]
+  ];
+  function film(nm) {
+    if (nm <= FILM_STOPS[0][0]) return FILM_STOPS[0][1];
+    for (let i = 1; i < FILM_STOPS.length; i++) {
+      if (nm <= FILM_STOPS[i][0]) {
+        const a = FILM_STOPS[i - 1], b = FILM_STOPS[i], t = (nm - a[0]) / (b[0] - a[0]);
+        return a[1].map((v, j) => Math.round(v + (b[1][j] - v) * t));
+      }
+    }
+    return FILM_STOPS[FILM_STOPS.length - 1][1];
+  }
+  function applyBlade(nm) {
+    const c = film(nm);
+    const depth = 0.5 + (nm - 60) / 180 * 3.0;   // extrusion scales with thickness
+    const r = document.documentElement;
+    r.style.setProperty("--nm", nm);
+    r.style.setProperty("--film", "rgb(" + c.join(",") + ")");
+    r.style.setProperty("--depth", depth.toFixed(2) + "px");
+  }
+
+  /* one label, four stacked copies: the frozen block, the glass
+     blade face, and three extruded layers riding on the blade */
+  const tabLabel = text => {
+    const t = esc(text);
+    return '<span class="tab-inner">' +
+        '<span class="tab-base">' + t + "</span>" +
+        '<span class="tab-glass" aria-hidden="true"></span>' +
+        '<span class="tab-cut" aria-hidden="true">' +
+          '<span class="l2">' + t + "</span>" +
+          '<span class="l1">' + t + "</span>" +
+          '<span class="l0">' + t + "</span>" +
+        "</span>" +
+      "</span>";
   };
 
   /* ---------- navigation model ---------------------------- */
@@ -889,7 +1076,7 @@ const DATA = {
         (c.tag ? "◆" : "—") + '</span>' + esc(c.label) + "</a></li>").join("") + "</ul>" : "";
       return '<li class="' + (item.children ? "has-menu" : "") + '">' +
         '<a class="nav-link" href="' + item.href + '"' + (item.children ? ' aria-haspopup="true" aria-expanded="false"' : "") + ">" +
-        esc(item.label) + (item.children ? '<span class="caret">▾</span>' : "") + "</a>" + menu + "</li>";
+        tabLabel(item.label) + (item.children ? '<span class="caret" aria-hidden="true">▾</span>' : "") + "</a>" + menu + "</li>";
     }).join("");
 
     const nav = $("#nav");
@@ -915,6 +1102,17 @@ const DATA = {
         if (e.key === "Escape") closeMenu(li);
       });
     });
+
+    /* § CRYOSECTION — touch has no hover, so latch the cut on tap */
+    nav.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("pointerdown", e => {
+        if (e.pointerType === "mouse") return;
+        clearCuts();
+        link.classList.add("is-cut");
+      });
+      link.addEventListener("pointerleave", () => link.classList.remove("is-cut"));
+    });
+
     document.addEventListener("click", e => {
       if (!e.target.closest("li.has-menu")) nav.querySelectorAll("li.open").forEach(closeMenu);
     });
@@ -940,6 +1138,10 @@ const DATA = {
         burger.textContent = "Menu";
       }
     });
+  }
+
+  function clearCuts() {
+    document.querySelectorAll(".nav-link.is-cut").forEach(l => l.classList.remove("is-cut"));
   }
 
   function markActive(route) {
@@ -975,10 +1177,16 @@ const DATA = {
   const PEOPLE_TABS   = NAV[1].children;
   const RESEARCH_TABS = NAV[2].children;
 
-  const avatarFor = (p, cls) => p.photo
-    ? '<div class="avatar ' + cls + '" style="background-image:url(&quot;' + esc(p.photo) + '&quot;)">' +
-      "</div>"
-    : '<div class="avatar ' + cls + '">' + esc(p.initials || initials(p.name)) + "</div>";
+  /* The avatar is decorative: the person's name always sits next to
+     it in text, so it is hidden from assistive tech rather than
+     announcing a monogram letter by letter. A photo that fails to
+     load removes itself and falls back to the monogram beneath.   */
+  const avatarFor = (p, cls) => {
+    const mono = esc(String(p.initials || initials(p.name)).slice(0, 2));
+    return '<div class="avatar ' + cls + '" aria-hidden="true">' + mono +
+      (p.photo ? '<img src="' + esc(p.photo) + '" alt="" onerror="this.remove()">' : "") +
+      "</div>";
+  };
 
   const personCard = p => {
     const cls = p.site === "B" ? "is-b" : "is-a";
@@ -997,7 +1205,7 @@ const DATA = {
     const latest = DATA.news.slice().sort((x, y) => y.date.localeCompare(x.date)).slice(0, 3);
     return (
       '<section class="hero"><div class="wrap">' +
-        "<h1>" + DATA.lab.heroTitle + "</h1>" +
+        "<h1>" + esc(DATA.lab.heroTitle) + "</h1>" +
         '<p class="lead">' + esc(DATA.lab.heroLead) + "</p>" +
         '<canvas class="chromatin" id="chromatin" aria-hidden="true"></canvas>' +
       "</div></section>" +
@@ -1156,7 +1364,8 @@ const DATA = {
         '<p class="eyebrow" style="margin:10px 0 20px">' + esc(pi.role) + "</p>" +
         pi.bio.map(b => '<p class="lead" style="font-size:17px;max-width:none">' + esc(b) + "</p>").join("") +
         '<ul class="pi-facts">' + pi.facts.map(f =>
-          '<li><span class="k">' + esc(f[0]) + "</span><span>" + f[1] + "</span></li>").join("") +
+          '<li><span class="k">' + esc(f[0]) + "</span><span>" +
+          String(f[1]).split("{{email}}").join(mailLink(DATA.lab.email)) + "</span></li>").join("") +
         "</ul></div>" +
       "</div></div></section>";
   };
@@ -1205,9 +1414,8 @@ const DATA = {
     subtabs(RESEARCH_TABS, "/research") +
     '<section class="section--tight"><div class="wrap">' +
       '<div class="grid grid-3" style="margin-bottom:clamp(34px,4vw,54px)">' +
-        DATA.researchThemes.map((t, i) =>
-          '<div class="card"><p class="eyebrow">Theme ' + String(i + 1).padStart(2, "0") +
-          "</p><h3>" + esc(t) + "</h3></div>").join("") +
+        DATA.researchThemes.map(t =>
+          '<div class="card"><p class="eyebrow">Theme</p><h3>' + esc(t) + "</h3></div>").join("") +
       "</div>" +
       DATA.areas.map(a =>
         '<article class="split" style="padding:clamp(26px,3vw,40px) 0;border-top:1px solid var(--line)">' +
@@ -1252,6 +1460,13 @@ const DATA = {
       "</div></section>";
   };
 
+  /* A link with no URL, or a bare "#", would route back to the
+     homepage. Render it as an inactive badge instead.          */
+  const pubLink = (label, url) =>
+    (!url || url === "#")
+      ? '<span class="link-dead" title="Link not added yet">' + esc(label) + "</span>"
+      : '<a href="' + esc(url) + '">' + esc(label) + "</a>";
+
   /* year-grouped list shared by publications + patents */
   function yearPage(kind) {
     const isPub = kind === "publications";
@@ -1271,7 +1486,7 @@ const DATA = {
             '<p class="authors">' + boldAuthors(r.authors) + "</p>" +
             '<p class="venue"><em>' + esc(r.venue) + "</em> · " + esc(r.detail) + " · " + r.year + "</p>" +
             (r.links ? '<div class="links">' + Object.keys(r.links).map(k =>
-              '<a href="' + esc(r.links[k]) + '">' + esc(k) + "</a>").join("") + "</div>" : "") +
+              pubLink(k, r.links[k])).join("") + "</div>" : "") +
           "</div></article>"
         : '<article class="pub"><div class="n">' + String(i + 1).padStart(2, "0") + "</div><div>" +
             "<h3>" + esc(r.title) + "</h3>" +
@@ -1296,6 +1511,7 @@ const DATA = {
       '<section class="section--tight"><div class="wrap"><div class="prose">' +
         j.sections.map(s =>
           "<section><h3>" + esc(s.title) + "</h3><p>" + s.body + "</p></section>").join("") +
+        '<section><h3>Contact</h3><p>' + mailLink(DATA.lab.email) + "</p></section>" +
       "</div></div></section>";
   };
 
@@ -1320,7 +1536,9 @@ const DATA = {
   function buildFooter() {
     const A = DATA.sites.A, B = DATA.sites.B;
     $("#foot-grid").innerHTML =
-      '<div><p class="foot-name">' + esc(DATA.lab.name) + "</p></div>" +
+      '<div><p class="foot-name">' + esc(DATA.lab.name) + "</p>" +
+        '<p class="foot-about">' + esc(DATA.lab.about) + "</p>" +
+        '<p class="foot-mail">' + mailLink(DATA.lab.email) + "</p></div>" +
       "<div><h4>" + esc(A.short) + '</h4><ul class="foot-list">' +
         "<li>" + esc(A.dept) + "</li><li>" + esc(A.address) + "</li></ul></div>" +
       "<div><h4>" + esc(B.short) + '</h4><ul class="foot-list">' +
@@ -1360,6 +1578,7 @@ const DATA = {
     $("#view").innerHTML = page.render();
     document.title = page.title + " — " + DATA.lab.name;
     markActive(path);
+    clearCuts();
     wireYearChips();
     startChromatin();
     window.scrollTo(0, 0);
@@ -1381,6 +1600,7 @@ const DATA = {
   }
 
   /* ---------- boot ---------------------------------------- */
+  applyBlade(SECTION_NM);
   buildNav();
   buildFooter();
   window.addEventListener("hashchange", route);
