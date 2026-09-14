@@ -651,45 +651,71 @@ const DATA = {
     "Transcription and chromatin states",
     "Genome folding in disease"
   ],
-  areas: [
+
+   areas: [
     {
-      id:"area-01", num:"01", title:"Research Area 01",
-      kicker:"Genome Architecture Mapping",
-      lead:"A ligation-free way to measure where every part of the genome sits relative to every other part.",
-      body:[
-        "GAM cryosections nuclei into thin slices, sequences the DNA in each slice, and infers contacts from which regions are found together. Because it does not depend on ligation or on cell dissociation, it reports multi-way contacts and works on tissue sections where other assays struggle.",
-        "Current work extends the method to more cell types and to haplotype-resolved analysis, and develops the statistical models needed to read three-way and higher-order contacts out of slice data."
+      id: "area-01", num: "01", title: "Genome Architecture Mapping",
+      kicker: "Ligation-free 3D genome mapping",
+      lead: "A ligation-free way to measure where every part of the genome sits relative to every other part — and, increasingly, on which allele and in which cell type.",
+      body: [
+        "GAM cryosections fixed nuclei into thin slices, sequences the DNA recovered from each slice, and infers contacts from which regions are repeatedly found together. Because it needs neither ligation nor cell dissociation, it reports multi-way contacts directly and works on tissue sections, on rare populations, and on small numbers of cells where ligation-based assays lose signal.",
+        "Phasing. Reads that cross heterozygous SNPs can be assigned to the maternal or paternal chromosome, so the same slices yield two separate contact maps instead of an allele-averaged one. In SNP-dense hybrid genomes this resolves allele-specific compartments and domains, imprinted loci, the inactive and active X, and enhancer–promoter contacts that only one allele makes. The limit is coverage: each slice carries few informative SNPs, so we develop phasing-aware co-segregation models, phase-block imputation, and power estimates that state honestly how much of the genome is callable at a given SNP density.",
+        "Modality. One GAM dataset carries several measurements at once. Co-segregation gives pairwise and higher-order contact frequencies; how often a locus is detected across slices gives an estimate of chromatin compaction; where a locus falls across apical and equatorial slices gives radial position relative to the nuclear periphery. immunoGAM adds an imaging modality, selecting nuclear profiles by marker expression so that contacts can be assigned to identified cell types in intact tissue. We also integrate these readouts with transcriptomic and chromatin-state data, and with polymer models that must satisfy all of them simultaneously.",
+        "Method development runs alongside the biology: extending GAM to more cell types and tissues, raising throughput through multiplexed profile collection, and building the statistics needed to read three-way and higher-order contacts out of slice data."
       ],
-      bullets:[
-        "Multi-way contacts between active genes, enhancers, and super-enhancers",
-        "Haplotype-specific folding in hybrid genomes with dense SNP coverage",
-        "GAM in tissue sections and rare cell populations",
+      bullets: [
+        "Ligation-free contact maps from cryosectioned nuclear profiles",
+        "Haplotype phasing: allele-resolved domains, compartments, and enhancer–promoter contacts",
+        "Multi-way contacts among active genes, enhancers, and super-enhancers",
+        "One experiment, several readouts: contact frequency, chromatin compaction, radial position",
+        "immunoGAM in tissue sections and rare cell populations",
         "Open protocols, analysis pipelines, and published contact matrices"
       ],
-      figure:"Figure 01 — nuclear cryosections to contact matrix",
-      collaborators:"[Add collaborating groups]",
-      funding:"[Add funding sources]"
+      figure: "Figure 01 — from nuclear cryosections to phased, multi-modal contact maps",
+      collaborators: "[Add collaborating groups]",
+      funding: "[Add funding sources]"
     },
     {
-      id:"area-02", num:"02", title:"Research Area 02",
-      kicker:"Epigenetic regulation and transcription",
-      lead:"How chromatin states and polymerase activity relate to the folding we measure.",
-      body:[
-        "Binding of transcription factors at regulatory sequences recruits chromatin remodellers and the transcription machinery. Polymerases may then stay poised for later activation, during differentiation, stress, or disease, or transcribe immediately. We ask how these states map onto the physical organization of the genome.",
-        "The work combines genomics, imaging, and computational modelling, with a running interest in what changes when regulation fails: in neuronal cell types, in development, and in disease models."
+      id: "area-02", num: "02", title: "Transcriptional regulation",
+      kicker: "Chromatin state, polymerase activity, and genome folding",
+      lead: "How chromatin states and polymerase activity relate to the folding we measure.",
+      body: [
+        "Binding of transcription factors at regulatory sequences recruits chromatin remodellers and the transcription machinery. Polymerases may then transcribe immediately, or stay poised for later activation during differentiation, stress, or disease. We ask how these states map onto the physical organization of the genome: which contacts precede activation, which follow it, and which are maintained independently of output.",
+        "Repression has its own architecture. Polycomb-marked genes form compact domains and contact each other over long distances, and we use phased and multi-way GAM data to ask whether these contacts are simultaneous hubs or pairwise events averaged across cells.",
+        "The work combines genomics, imaging, and computational modelling. Models are judged by whether they reproduce contact frequency, compaction, and radial position together, and by whether they predict what happens to transcription when a contact is perturbed."
       ],
-      bullets:[
-        "RNA polymerase II states and poised versus active transcription",
+      bullets: [
+        "RNA polymerase II states: poised, paused, and elongating",
         "Polycomb domains and repressive chromatin in three dimensions",
-        "Cell-type specific topologies in neurons and during differentiation",
+        "Enhancer–promoter communication and super-enhancer hubs",
         "Modelling that links contact data to regulatory outcome"
       ],
-      figure:"Figure 02 — chromatin state and contact frequency",
-      collaborators:"[Add collaborating groups]",
-      funding:"[Add funding sources]"
+      figure: "Figure 02 — chromatin state and contact frequency",
+      collaborators: "[Add collaborating groups]",
+      funding: "[Add funding sources]"
+    },
+    {
+      id: "area-03", num: "03", title: "Neuroepigenetics",
+      kicker: "Epigenetic regulation in sleep, memory, and addiction",
+      lead: "How neurons record a changing environment in chromatin, and what of that record persists.",
+      body: [
+        "Neurons are post-mitotic and long-lived, so experience cannot be written into the genome by cell division. It is written into chromatin instead. Sleep pressure, learning, and drug exposure each drive an ordered transcriptional response — immediate-early genes first, then slower programmes that depend on enhancer activation and on contacts between those enhancers and their target promoters. We ask which of those changes decay with the stimulus and which outlast it.",
+        "Cell type is the unit of analysis here. Neuronal and glial populations sit side by side in the same tissue with very different genome topologies, and bulk measurements average them away. immunoGAM lets us collect nuclear profiles from identified populations in situ, so contacts, compaction, and radial position can be compared across cell types, across developmental stages, and between control and disease models.",
+        "Across sleep, memory, and addiction the question has the same shape: an experience changes transcription, and something in the chromatin of specific neurons keeps a trace of it. We are after the physical form of that trace."
+      ],
+      bullets: [
+        "Cell-type-specific topologies in neurons and glia, and how they change during differentiation",
+        "Activity-dependent transcription: immediate-early genes, enhancer activation, and induced contacts",
+        "Sleep–wake and circadian control of chromatin state and transcription",
+        "What persists in chromatin after learning, and for how long",
+        "Durable transcriptional change in reward circuitry and addiction models"
+      ],
+      figure: "Figure 03 — experience-driven chromatin change in defined neuronal populations",
+      collaborators: "[Add collaborating groups]",
+      funding: "[Add funding sources]"
     }
   ],
-
+    
   news: [
     { date:"2026-06-02", tag:"Lab",     title:"Ana Pombo joins Johns Hopkins as Bloomberg Distinguished Professor of Genome Biology", body:"The Baltimore laboratory opens with appointments in the Department of Biology and the Department of Molecular Biology and Genetics. The Berlin laboratory continues at the Max Delbrück Center.", link:"" },
     { date:"2025-05-22", tag:"Press",   title:"Named among Berlin's most important minds in science", body:"Tagesspiegel included Ana Pombo in its 2025 list of one hundred figures in Berlin science.", link:"" },
