@@ -1108,13 +1108,26 @@ const DATA = {
     const ctx = cv.getContext("2d");
     const still = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
  
-    const N = 96;          // beads
-    const L0 = 9;          // base bond length
-    const PERIOD = 14400;   // ms per condense → extend cycle
+    const N = 96;              // beads
+    const PERIOD = 3600;       // ms per condense → extend cycle
+    const FOCAL = 1200;        // perspective focal length
+    const GRAB_R = 110;        // screen px: how close the cursor must come
+    const SPAN = 9;            // beads either side of the grabbed one
+ 
+    const BG = [11, 16, 32];   // --ink, for aerial perspective
+    const CA = [91, 134, 232]; // chain start
+    const CB = [229, 164, 74]; // chain end
  
     const beads = [];
-    const ptr = { x: 0, y: 0, amt: 0, want: 0 };
-    let w = 0, h = 0, raf = 0, t0 = 0, cond = 0.18;
+    const ptr = { x: 0, y: 0, near: false };
+    const grab = { i: -1, amt: 0 };
+ 
+    let w = 0, h = 0, rx = 0, ry = 0, rz = 0, L0 = 9;
+    let raf = 0, t0 = 0, cond = 0.18;
+    let yaw = 0.7, tilt = -0.15, cy = 1, sy = 0, ct = 1, st = 0;
+    let cursorOn = false;
+ 
+    const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
  
     function size() {
       const r = cv.getBoundingClientRect();
@@ -1123,47 +1136,100 @@ const DATA = {
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      rx = w * 0.40; ry = h * 0.40; rz = Math.min(w, h) * 0.38;
+      L0 = clamp(w / 120, 4.5, 9.5);
     }
  
+    // world coords are centred on the origin; the projection adds w/2, h/2
     function seed() {
       beads.length = 0;
       for (let i = 0; i < N; i++) {
         const t = i / (N - 1);
         beads.push({
-          x: w * (0.08 + 0.84 * t),
-          y: h * 0.5 + Math.sin(t * 9) * h * 0.16 + Math.sin(t * 23) * h * 0.05,
-          vx: 0, vy: 0
+          x: (t - 0.5) * w * 0.78,
+          y: Math.sin(t * 9) * h * 0.16 + Math.sin(t * 23) * h * 0.05,
+          z: Math.sin(t * 6.5) * rz * 0.45,
+          vx: 0, vy: 0, vz: 0,
+          sx: 0, sy: 0, zv: 0, sc: 1
         });
       }
     }
  
+    function spin() {
+      yaw += 0.0022 * (1 - 0.75 * grab.amt);   // steadies while you drag
+      tilt = -0.15 + Math.sin(yaw * 0.37) * 0.10;
+      cy = Math.cos(yaw); sy = Math.sin(yaw);
+      ct = Math.cos(tilt); st = Math.sin(tilt);
+    }
+ 
+    function project() {
+      for (let i = 0; i < N; i++) {
+        const p = beads[i];
+        const x1 =  p.x * cy + p.z * sy;
+        const z1 = -p.x * sy + p.z * cy;
+        const y2 =  p.y * ct - z1 * st;
+        const z2 =  p.y * st + z1 * ct;
+        const s = FOCAL / (FOCAL + z2);
+        p.zv = z2; p.sc = s;
+        p.sx = w / 2 + x1 * s;
+        p.sy = h / 2 + y2 * s;
+      }
+    }
+ 
+    // screen-space delta at a given depth → world-space delta
+    function unproject(dsx, dsy, s) {
+      const dvx = dsx / s, dvy = dsy / s;
+      const y1 = dvy * ct, z1 = -dvy * st;
+      return { x: dvx * cy - z1 * sy, y: y1, z: dvx * sy + z1 * cy };
+    }
+ 
+    function updateGrab() {
+      if (!ptr.near) { grab.amt += (0 - grab.amt) * 0.10; return; }
+ 
+      // keep hold of the current bead while the cursor stays nearby
+      let best = -1, bestD = GRAB_R * GRAB_R;
+      if (grab.i >= 0) {
+        const p = beads[grab.i];
+        const d = (ptr.x - p.sx) ** 2 + (ptr.y - p.sy) ** 2;
+        if (d < (GRAB_R * 1.6) ** 2) { best = grab.i; bestD = -1; }
+      }
+      if (best < 0) {
+        for (let i = 0; i < N; i++) {
+          const p = beads[i];
+          const d = (ptr.x - p.sx) ** 2 + (ptr.y - p.sy) ** 2;
+          if (d < bestD) { bestD = d; best = i; }
+        }
+      }
+      grab.i = best;
+      grab.amt += ((best >= 0 ? 1 : 0) - grab.amt) * 0.12;
+ 
+      const want = best >= 0 && grab.amt > 0.4;
+      if (want !== cursorOn) { cursorOn = want; cv.style.cursor = want ? "grabbing" : ""; }
+    }
+ 
     function step(now) {
-      // cycle: 0 = extended fibre, 1 = condensed globule
       if (!still) {
         if (!t0) t0 = now;
         const raw = 0.5 - 0.5 * Math.cos((now - t0) / PERIOD * Math.PI * 2);
-        cond = raw * raw * (3 - 2 * raw);   // smoothstep: holds at both ends
+        cond = raw * raw * (3 - 2 * raw);
       }
       const ext = 1 - cond;
+      const L = L0 * (0.60 + 0.64 * ext);
+      const R = L * 1.9;
  
-      const L = L0 * (0.60 + 0.64 * ext);   // bonds shorten as it condenses
-      const R = L * 1.9;                    // excluded volume radius
- 
-      ptr.amt += (ptr.want - ptr.amt) * 0.07;
- 
-      let mx = 0, my = 0;
-      for (let i = 0; i < N; i++) { mx += beads[i].x; my += beads[i].y; }
-      mx /= N; my /= N;
+      let mx = 0, my = 0, mz = 0;
+      for (let i = 0; i < N; i++) { mx += beads[i].x; my += beads[i].y; mz += beads[i].z; }
+      mx /= N; my /= N; mz /= N;
  
       // bonds
       for (let i = 0; i < N - 1; i++) {
         const a = beads[i], b = beads[i + 1];
-        let dx = b.x - a.x, dy = b.y - a.y;
-        const d = Math.hypot(dx, dy) || 1e-6;
+        let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+        const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-6;
         const f = (d - L) * 0.19;
-        dx /= d; dy /= d;
-        a.vx += dx * f; a.vy += dy * f;
-        b.vx -= dx * f; b.vy -= dy * f;
+        dx /= d; dy /= d; dz /= d;
+        a.vx += dx * f; a.vy += dy * f; a.vz += dz * f;
+        b.vx -= dx * f; b.vy -= dy * f; b.vz -= dz * f;
       }
  
       // bending: stiff while extended, floppy while condensed
@@ -1172,127 +1238,163 @@ const DATA = {
         const p = beads[i - 1], c = beads[i], n = beads[i + 1];
         c.vx += ((p.x + n.x) / 2 - c.x) * bend;
         c.vy += ((p.y + n.y) / 2 - c.y) * bend;
+        c.vz += ((p.z + n.z) / 2 - c.z) * bend;
       }
  
       // excluded volume
       for (let i = 0; i < N; i++) {
         for (let j = i + 3; j < N; j++) {
           const a = beads[i], b = beads[j];
-          let dx = b.x - a.x, dy = b.y - a.y;
-          const d2 = dx * dx + dy * dy;
+          let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+          const d2 = dx * dx + dy * dy + dz * dz;
           if (d2 < R * R && d2 > 1e-6) {
             const d = Math.sqrt(d2), f = (R - d) * 0.05;
-            dx /= d; dy /= d;
-            a.vx -= dx * f; a.vy -= dy * f;
-            b.vx += dx * f; b.vy += dy * f;
+            dx /= d; dy /= d; dz /= d;
+            a.vx -= dx * f; a.vy -= dy * f; a.vz -= dz * f;
+            b.vx += dx * f; b.vy += dy * f; b.vz += dz * f;
           }
         }
       }
  
-      const cx = w / 2 + (ptr.x - w / 2) * 0.10 * ptr.amt;  // box drifts to cursor
-      const cy = h / 2 + (ptr.y - h / 2) * 0.10 * ptr.amt;
-      const rx = w * 0.42, ry = h * 0.40;
- 
-      const grip  = 0.030 * cond;   // collapse toward centre of mass
-      const reach = 0.026 * ext;    // stretch back out along the chain
+      const grip  = 0.030 * cond;
+      const reach = 0.026 * ext;
       const heat  = 0.35 + 0.55 * cond;
-      const pullR = Math.max(w, h) * 0.58;
  
       for (let i = 0; i < N; i++) {
         const p = beads[i];
  
         p.vx += (mx - p.x) * grip;
         p.vy += (my - p.y) * grip;
+        p.vz += (mz - p.z) * grip;
  
-        p.vx += (mx + (i / (N - 1) - 0.5) * w * 0.84 - p.x) * reach;
+        p.vx += (mx + (i / (N - 1) - 0.5) * w * 0.78 - p.x) * reach;
         p.vy += (my - p.y) * reach * 0.35;
- 
-        if (ptr.amt > 0.01) {
-          const dx = ptr.x - p.x, dy = ptr.y - p.y;
-          const d = Math.hypot(dx, dy);
-          if (d > 1 && d < pullR) {
-            const f = (1 - d / pullR) * 0.34 * ptr.amt;
-            p.vx += dx / d * f;
-            p.vy += dy / d * f;
-          }
-        }
+        p.vz += (mz - p.z) * reach * 0.35;
  
         p.vx += (Math.random() - 0.5) * heat;
         p.vy += (Math.random() - 0.5) * heat;
+        p.vz += (Math.random() - 0.5) * heat;
+      }
  
-        const nx = (p.x - cx) / rx, ny = (p.y - cy) / ry;
-        const r = Math.hypot(nx, ny);
-        if (r > 1) { p.vx -= nx * (r - 1) * 1.6; p.vy -= ny * (r - 1) * 1.6; }
+      // local drag: the grabbed stretch of chain, not the whole polymer
+      if (grab.i >= 0 && grab.amt > 0.01) {
+        const a = beads[grab.i];
+        let dsx = ptr.x - a.sx, dsy = ptr.y - a.sy;
+        const ds = Math.hypot(dsx, dsy);
+        if (ds > 260) { dsx *= 260 / ds; dsy *= 260 / ds; }
+        const g = unproject(dsx, dsy, a.sc);
+        const pull = 0.055 * grab.amt;
+        for (let k = -SPAN; k <= SPAN; k++) {
+          const j = grab.i + k;
+          if (j < 0 || j >= N) continue;
+          const f = pull * (0.5 + 0.5 * Math.cos(Math.PI * k / (SPAN + 1)));
+          beads[j].vx += g.x * f;
+          beads[j].vy += g.y * f;
+          beads[j].vz += g.z * f;
+        }
+      }
  
-        p.vx *= 0.90; p.vy *= 0.90;
-        p.x += p.vx; p.y += p.vy;
+      // ellipsoidal confinement + damping
+      for (let i = 0; i < N; i++) {
+        const p = beads[i];
+        const nx = p.x / rx, ny = p.y / ry, nz = p.z / rz;
+        const r = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (r > 1) {
+          const f = (r - 1) * 1.6;
+          p.vx -= nx * f; p.vy -= ny * f; p.vz -= nz * f;
+        }
+        p.vx *= 0.90; p.vy *= 0.90; p.vz *= 0.90;
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
       }
     }
  
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      const g = ctx.createLinearGradient(0, 0, w, 0);
-      g.addColorStop(0, "#5B86E8");
-      g.addColorStop(1, "#E5A44A");
  
-      const ext = 1 - cond;
+      const order = [];
+      for (let i = 0; i < N - 1; i++) order.push(i);
+      order.sort((a, b) => (beads[b].zv + beads[b + 1].zv) - (beads[a].zv + beads[a + 1].zv));
+ 
+      const held = grab.amt > 0.05 && grab.i >= 0;
       ctx.lineCap = "round"; ctx.lineJoin = "round";
  
-      const passes = [
-        { lw: 10 + 4 * ext,   a: 0.10 + 0.05 * cond },
-        { lw: 3.2 - 0.9 * cond, a: 0.95 }
-      ];
+      for (const pass of [{ glow: true }, { glow: false }]) {
+        for (const i of order) {
+          const a = beads[i], b = beads[i + 1];
+          const dep = clamp((rz - (a.zv + b.zv) / 2) / (2 * rz), 0, 1);  // 1 near, 0 far
+          const t = i / (N - 2);
  
-      for (const pass of passes) {
-        ctx.beginPath();
-        ctx.moveTo(beads[0].x, beads[0].y);
-        for (let i = 1; i < N - 1; i++) {
-          ctx.quadraticCurveTo(beads[i].x, beads[i].y,
-            (beads[i].x + beads[i + 1].x) / 2, (beads[i].y + beads[i + 1].y) / 2);
+          let hold = 0;
+          if (held) {
+            const k = Math.abs(i - grab.i);
+            if (k <= SPAN) hold = grab.amt * (0.5 + 0.5 * Math.cos(Math.PI * k / (SPAN + 1)));
+          }
+ 
+          const fade = (1 - dep) * 0.55;
+          const col = [0, 1, 2].map(c => {
+            const base = CA[c] + (CB[c] - CA[c]) * t;
+            return Math.round(base + (BG[c] - base) * fade);
+          });
+ 
+          const core = (2.7 - 0.8 * cond) * (0.55 + 0.8 * dep) * (1 + 0.45 * hold);
+          ctx.strokeStyle = "rgb(" + col.join(",") + ")";
+          ctx.lineWidth = pass.glow ? core * 3.6 : core;
+          ctx.globalAlpha = pass.glow ? (0.05 + 0.05 * dep) : (0.40 + 0.60 * dep) * (1 + 0.3 * hold);
+ 
+          ctx.beginPath();
+          ctx.moveTo(a.sx, a.sy);
+          ctx.lineTo(b.sx, b.sy);
+          ctx.stroke();
         }
-        ctx.strokeStyle = g; ctx.globalAlpha = pass.a; ctx.lineWidth = pass.lw;
-        ctx.stroke();
       }
       ctx.globalAlpha = 1;
     }
  
-    function loop(now) { step(now); draw(); raf = requestAnimationFrame(loop); }
- 
-    size(); seed();
+    function frame(now) {
+      spin();
+      project();
+      updateGrab();
+      step(now);
+      project();
+      draw();
+      raf = requestAnimationFrame(frame);
+    }
  
     function onMove(e) {
       const r = cv.getBoundingClientRect();
-      const pad = 160;
+      const pad = 40;
       ptr.x = e.clientX - r.left;
       ptr.y = e.clientY - r.top;
-      ptr.want = (e.clientX > r.left - pad && e.clientX < r.right + pad &&
-                  e.clientY > r.top  - pad && e.clientY < r.bottom + pad) ? 1 : 0;
+      ptr.near = e.clientX > r.left - pad && e.clientX < r.right + pad &&
+                 e.clientY > r.top  - pad && e.clientY < r.bottom + pad;
     }
-    function onOut() { ptr.want = 0; }
+    function onOut() { ptr.near = false; }
+ 
+    size(); seed();
  
     if (still) {
       cond = 0.18;
-      for (let i = 0; i < 280; i++) step(0);
-      draw();
+      for (let i = 0; i < 320; i++) step(0);
+      spin(); project(); draw();
     } else {
       window.addEventListener("pointermove", onMove, { passive: true });
       window.addEventListener("pointerdown", onMove, { passive: true });
       window.addEventListener("blur", onOut);
       document.addEventListener("pointerleave", onOut);
-      raf = requestAnimationFrame(loop);
+      raf = requestAnimationFrame(frame);
     }
  
-    let t;
+    let tid;
     const onResize = () => {
-      clearTimeout(t);
-      t = setTimeout(() => { if (!document.body.contains(cv)) return; size(); seed(); }, 150);
+      clearTimeout(tid);
+      tid = setTimeout(() => { if (!document.body.contains(cv)) return; size(); seed(); }, 150);
     };
     window.addEventListener("resize", onResize);
  
     const stop = () => {
       if (!document.body.contains(cv)) {
         cancelAnimationFrame(raf);
-        clearTimeout(t);
+        clearTimeout(tid);
         window.removeEventListener("resize", onResize);
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerdown", onMove);
