@@ -1109,10 +1109,10 @@ const DATA = {
     const still = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
  
     const N = 96;              // beads
-    const PERIOD = 3600;       // ms per condense → extend cycle
+    const PERIOD = 7200;       // ms per condense → extend cycle
     const FOCAL = 1200;        // perspective focal length
-    const GRAB_R = 110;        // screen px: how close the cursor must come
-    const SPAN = 9;            // beads either side of the grabbed one
+    const GRAB_R = 60;        // screen px: how close the cursor must come
+    const SPAN = 6;            // beads either side of the grabbed one
  
     const BG = [11, 16, 32];   // --ink, for aerial perspective
     const CA = [91, 134, 232]; // chain start
@@ -1283,7 +1283,7 @@ const DATA = {
         const ds = Math.hypot(dsx, dsy);
         if (ds > 260) { dsx *= 260 / ds; dsy *= 260 / ds; }
         const g = unproject(dsx, dsy, a.sc);
-        const pull = 0.055 * grab.amt;
+        const pull = 0.03 * grab.amt;
         for (let k = -SPAN; k <= SPAN; k++) {
           const j = grab.i + k;
           if (j < 0 || j >= N) continue;
