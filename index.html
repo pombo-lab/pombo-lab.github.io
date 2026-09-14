@@ -6,33 +6,11 @@
 <title>Pombo Lab — Baltimore · Berlin</title>
 <meta name="description" content="Genome architecture and epigenetic regulation. A research group at Johns Hopkins University and the Max Delbrück Center." />
 
-<!--
-  ============================================================
-  POMBO LAB — website template
-  ------------------------------------------------------------
-  All editable content lives in ONE place:
-  search this file for  === SITE DATA ===  (near the bottom).
-  Anything written in [square brackets] is a placeholder that
-  still needs your real content.
-  Routing is hash based (#/people/pi), so it works on GitHub
-  Pages, Netlify, or a plain file:// open — no build step.
-
-  The main navigation carries the CRYOSECTION BLADE interaction.
-  Hover a nav item and a glass blade climbs through the word;
-  everything the edge has passed lifts onto the blade face and
-  picks up the interference colour of a floating section. Search
-  for  § CRYOSECTION  in the CSS and in the script.
-  ============================================================
--->
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-/* ============================================================
-   1. TOKENS
-   ============================================================ */
 :root{
   --ink:#0B1020;
   --ink-soft:#151D33;
@@ -42,8 +20,8 @@
   --muted:#5D6A80;
   --line:#D6DBE4;
   --line-dark:#2A3350;
-  --color_a:#2B5CB8;    /* Site A — Johns Hopkins University, Baltimore */
-  --color_b:#D98A1F;    /* Site B — Max Delbrück Center, Berlin */
+  --color-jhu:#2B5CB8;
+  --color-mdc:#D98A1F;
 
   --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
   --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
@@ -54,24 +32,18 @@
   --radius:3px;
   --ease:cubic-bezier(.22,.61,.36,1);
 
-  /* § CRYOSECTION — blade parameters. Every one is safe to tune.
-     --nm, --film and --depth are recomputed at boot from
-     SECTION_NM in the script; edit that number, not these.      */
-  --nm:220;                        /* section thickness, nm       */
-  --film:rgb(75,125,215);          /* interference colour at 220  */
-  --depth:3.17px;                  /* letter extrusion, from --nm */
-  --sep:8px;                       /* blade thickness             */
-  --rake:14deg;                    /* blade rake angle            */
-  --glass-blur:3.2px;              /* refraction through the pane */
-  --glass-sheen:rgba(255,255,255,.52);  /* specular on the edge   */
-  --sweep:1100ms;                  /* one pass of the blade       */
-  --ease-blade:cubic-bezier(.55,.02,.22,1);  /* bite, then glide  */
-  --ease-lift:cubic-bezier(.34,.06,.2,1);    /* section peels up  */
+  --nm:220;
+  --film:rgb(75,125,215);
+  --depth:3.17px;
+  --sep:8px;
+  --rake:14deg;
+  --glass-blur:3.2px;
+  --glass-sheen:rgba(255,255,255,.52);
+  --sweep:1100ms;
+  --ease-blade:cubic-bezier(.55,.02,.22,1);
+  --ease-lift:cubic-bezier(.34,.06,.2,1);
 }
 
-/* ============================================================
-   2. BASE
-   ============================================================ */
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
@@ -90,7 +62,7 @@ h1,h2,h3,h4{font-family:var(--display);font-weight:800;line-height:1.04;letter-s
 p{margin:0 0 1em}
 p:last-child{margin-bottom:0}
 
-:focus-visible{outline:2.5px solid var(--color_a);outline-offset:3px;border-radius:2px}
+:focus-visible{outline:2.5px solid var(--color-jhu);outline-offset:3px;border-radius:2px}
 
 .wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--pad)}
 .section{padding:clamp(52px,7vw,96px) 0}
@@ -100,7 +72,6 @@ p:last-child{margin-bottom:0}
 .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:#fff;padding:10px 16px;z-index:200}
 .skip:focus{left:12px;top:12px}
 
-/* utility type ------------------------------------------------ */
 .eyebrow{
   font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--muted);margin:0 0 14px;
@@ -109,13 +80,9 @@ p:last-child{margin-bottom:0}
 .muted{color:var(--muted)}
 .mono{font-family:var(--mono)}
 
-/* placeholder link — looks like a link slot, does not navigate --- */
 .link-dead{color:var(--muted);cursor:default}
 .fact-list .link-dead{border-bottom:1px dotted var(--line)}
 
-/* ============================================================
-   3. HEADER + NAV
-   ============================================================ */
 .site-head{
   position:sticky;top:0;z-index:100;
   background:color-mix(in srgb,var(--paper) 88%,transparent);
@@ -135,22 +102,6 @@ p:last-child{margin-bottom:0}
 .nav{display:flex;align-items:center;gap:2px;list-style:none;margin:0;padding:0}
 .nav > li{position:relative}
 
-/* ------------------------------------------------------------
-   § CRYOSECTION — the nav bar is a specimen block.
-
-   Four mechanisms, in order of importance:
-   1. --p is the cutting edge. One registered custom property
-      drives the glass top and the section clip, so the two can
-      never drift apart. It runs past both ends of the link.
-   2. transform-origin sits ON the moving edge, so displacement at
-      the cut is always exactly zero — no seam, ever.
-   3. --k is progress 0→1. Lift, tilt and extrusion all scale by
-      it, so the blade thickens as it climbs instead of arriving
-      fully open.
-   4. The glass sits ABOVE the original grey word, so
-      backdrop-filter frosts it for free. Nothing blurs the
-      original directly.
-   ------------------------------------------------------------ */
 @property --p{syntax:"<percentage>";inherits:true;initial-value:158%}
 @property --k{syntax:"<number>";inherits:true;initial-value:0}
 
@@ -162,16 +113,8 @@ p:last-child{margin-bottom:0}
   color:#2A3348;
   background:none;border:0;cursor:pointer;
   -webkit-tap-highlight-color:transparent;
-  /* 158% / -58% put the start and end of the travel just OUTSIDE the
-     link's clip box, so the edge is already moving when it enters view
-     and keeps going after it leaves. Starting at 100% would make the
-     blade appear at the word itself, which reads as a fade, not a cut. */
   --p:158%;
   --k:0;
-  /* The cut and the lift are NOT the same motion. --p is the edge and
-     leads; --k is the material peeling up behind it, so it starts a
-     beat later and takes longer to settle. Delay is set on the hover
-     state only, so the section drops straight back on exit.        */
   transition:--p var(--sweep) var(--ease-blade),
              --k calc(var(--sweep) * 1.15) var(--ease-lift),
              color .15s var(--ease);
@@ -179,32 +122,20 @@ p:last-child{margin-bottom:0}
 .nav-link:hover,
 .nav-link.is-cut{--p:-58%;--k:1;transition-delay:0ms,70ms,0ms}
 
-/* keyboard users get the colour shift without the tilt */
 .nav-link:focus-visible{--p:-58%;--k:1;--rake:0deg;transition-delay:0ms,70ms,0ms}
 
-.nav-link[aria-current="page"] .tab-base{color:var(--color_a)}
+.nav-link[aria-current="page"] .tab-base{color:var(--color-jhu)}
 .nav-link[aria-current="page"]::after{
-  content:"";display:block;height:2px;background:var(--color_a);margin-top:5px;border-radius:2px
+  content:"";display:block;height:2px;background:var(--color-jhu);margin-top:5px;border-radius:2px
 }
 .nav-link .caret{display:inline-block;margin-left:6px;font-size:9px;transform:translateY(-1px);opacity:.6}
 
 .tab-inner{position:relative;display:inline-block;white-space:nowrap}
 
-/* the frozen block — never clipped, always readable */
 .tab-base{display:block;color:inherit}
 
-/* the glass blade face — a pane, not a grey scrim.
-   Three things make it read as glass rather than a tint:
-   the leading edge catches a specular line, the body carries a
-   little of the section's own interference colour instead of a
-   neutral grey, and the backdrop is saturated and lifted rather
-   than dimmed, so colour behind the pane comes through brighter. */
 .tab-glass{
   position:absolute;left:-20px;right:-20px;
-  /* Only ONE edge of this pane ever moves: the top, which is the cut.
-     The bottom is pinned well below the block, out past the clip, so
-     the pane reads as glass rising from underneath rather than as a
-     shape growing outward from the middle. */
   top:var(--p);
   bottom:calc((var(--sep) + 26px) * -1);
   background:linear-gradient(180deg,
@@ -220,14 +151,12 @@ p:last-child{margin-bottom:0}
   opacity:min(1,var(--k) * 8);
   pointer-events:none;
 }
-/* the kerf — a soft bright band riding just under the cutting edge */
 .tab-glass::after{
   content:"";position:absolute;left:0;right:0;top:0;height:12px;
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0));
   pointer-events:none;
 }
 
-/* the section riding on the blade */
 .tab-cut{
   position:absolute;inset:0;
   clip-path:inset(max(0%,var(--p)) -80% -80% -80%);
@@ -238,9 +167,6 @@ p:last-child{margin-bottom:0}
             translateY(calc(var(--k) * var(--sep) * -1));
   pointer-events:none;
 }
-/* l2 and l1 are the cut side faces of the section, so they are dark
-   versions of the film colour, not neutral ink. l0 is the top face
-   and casts a shadow onto the block as it lifts clear.            */
 .tab-cut span{position:absolute;left:0;top:0;display:block;white-space:nowrap}
 .tab-cut .l2{color:color-mix(in srgb,var(--film) 40%,var(--ink));opacity:.30;
   transform:translate(calc(var(--k) * var(--depth)),calc(var(--k) * var(--depth)))}
@@ -253,7 +179,6 @@ p:last-child{margin-bottom:0}
   .nav-link{transition-duration:1ms}
   .nav-link:hover,.nav-link.is-cut,.nav-link:focus-visible{--rake:0deg;--sep:0px;transition-delay:0ms}
 }
-/* ---- end § CRYOSECTION ------------------------------------- */
 
 .menu{
   position:absolute;top:100%;left:0;min-width:235px;
@@ -266,10 +191,10 @@ p:last-child{margin-bottom:0}
   display:flex;align-items:baseline;gap:10px;padding:9px 11px;border-radius:2px;font-size:15px;
 }
 .menu a:hover{background:var(--paper-2)}
-.menu a[aria-current="page"]{color:var(--color_a);font-weight:600}
+.menu a[aria-current="page"]{color:var(--color-jhu);font-weight:600}
 .menu .idx{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
-.menu .tag-a{color:var(--color_a)}
-.menu .tag-b{color:var(--color_b)}
+.menu .tag-jhu{color:var(--color-jhu)}
+.menu .tag-mdc{color:var(--color-mdc)}
 
 .burger{display:none;border:1px solid var(--line);background:var(--white);
   border-radius:var(--radius);padding:9px 12px;font-family:var(--mono);font-size:12px;
@@ -290,15 +215,12 @@ p:last-child{margin-bottom:0}
   .nav li.open > .menu{display:block}
 }
 
-/* ============================================================
-   4. HERO — the signature: two sites joined by one live seam
-   ============================================================ */
 .hero{
   background:var(--ink);color:var(--paper);
   padding:clamp(60px,9vw,120px) 0 clamp(40px,5vw,64px);
   position:relative;overflow:hidden;
 }
-.hero::before{ /* faint ruled grid, like a lab notebook */
+.hero::before{
   content:"";position:absolute;inset:0;
   background-image:linear-gradient(var(--line-dark) 1px,transparent 1px);
   background-size:100% 46px;opacity:.28;pointer-events:none;
@@ -309,15 +231,11 @@ p:last-child{margin-bottom:0}
 }
 .hero .lead{color:#AFBAD0;max-width:58ch}
 
-/* chromatin polymer — the moving signature of the home page */
 .chromatin{
   display:block;width:100%;height:clamp(210px,30vw,380px);
   margin-top:clamp(20px,3.5vw,44px);
 }
 
-/* ============================================================
-   5. GENERIC BLOCKS
-   ============================================================ */
 .grid{display:grid;gap:clamp(18px,2.4vw,28px)}
 .grid-2{grid-template-columns:repeat(2,1fr)}
 .grid-3{grid-template-columns:repeat(3,1fr)}
@@ -342,7 +260,7 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--ink);
   transition:background .18s var(--ease),transform .18s var(--ease);cursor:pointer;
 }
-.btn:hover{background:var(--color_a);border-color:var(--color_a);transform:translateY(-2px)}
+.btn:hover{background:var(--color-jhu);border-color:var(--color-jhu);transform:translateY(-2px)}
 .btn--ghost{background:transparent;color:var(--ink)}
 .btn--ghost:hover{color:#fff}
 
@@ -351,18 +269,17 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   border:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--muted);background:var(--white);
 }
-.pill--a{color:var(--color_a);border-color:rgba(43,92,184,.35);background:rgba(43,92,184,.07)}
-.pill--b{color:#8A5205;border-color:rgba(217,138,31,.4);background:rgba(217,138,31,.1)}
+.pill--jhu{color:var(--color-jhu);border-color:rgba(43,92,184,.35);background:rgba(43,92,184,.07)}
+.pill--mdc{color:#8A5205;border-color:rgba(217,138,31,.4);background:rgba(217,138,31,.1)}
+.pill--accent{color:#8A5205;border-color:rgba(217,138,31,.4);background:rgba(217,138,31,.1)}
 .pill-group{display:inline-flex;flex-wrap:wrap;gap:5px}
 
-/* page header --------------------------------------------------*/
 .page-head{background:var(--ink);color:var(--paper);padding:clamp(44px,6vw,78px) 0 clamp(30px,4vw,46px)}
 .page-head h1{font-size:clamp(34px,6vw,64px);letter-spacing:-.035em;max-width:19ch}
 .page-head .lead{margin-top:18px;color:#AFBAD0}
 .crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
   color:#7C8AA6;margin:0 0 16px}
 
-/* sub tabs -----------------------------------------------------*/
 .subtabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);
   padding:14px 0 0;margin-bottom:clamp(28px,4vw,44px)}
 .subtabs a,.chip{
@@ -374,15 +291,11 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .subtabs a[aria-current="page"]{color:var(--ink);background:var(--white);
   border:1px solid var(--line);border-bottom-color:var(--white);margin-bottom:-1px}
 
-/* filter chips -------------------------------------------------*/
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:clamp(26px,3.5vw,38px)}
 .chip{border:1px solid var(--line);border-radius:20px;background:var(--white);padding:8px 15px}
 .chip:hover{border-color:var(--ink);color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 
-/* ============================================================
-   6. PEOPLE
-   ============================================================ */
 .people-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:clamp(16px,2.2vw,26px)}
 .person{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .person .avatar{
@@ -390,18 +303,16 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   aspect-ratio:1/1;display:grid;place-items:center;font-family:var(--display);font-weight:800;
   font-size:44px;letter-spacing:-.04em;color:var(--white);background:var(--ink-soft);
 }
-.person .avatar.is-a{background-image:linear-gradient(150deg,#2B5CB8,#0B1020)}
-.person .avatar.is-b{background-image:linear-gradient(150deg,#D98A1F,#0B1020)}
-/* photo sits over the monogram; if the file is missing the <img>
-   removes itself and the monogram shows through instead. */
+.person .avatar.is-jhu{background-image:linear-gradient(150deg,#2B5CB8,#0B1020)}
+.person .avatar.is-mdc{background-image:linear-gradient(150deg,#D98A1F,#0B1020)}
 .person .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.person .body{padding:16px 17px 19px;border-top:3px solid var(--color_a)}
-.person.is-b .body{border-top-color:var(--color_b)}
+.person .body{padding:16px 17px 19px;border-top:3px solid var(--color-jhu)}
+.person.is-mdc .body{border-top-color:var(--color-mdc)}
 .person h3{font-size:18px;margin:0 0 3px}
 .person .role{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--muted);margin:0 0 9px}
 .person .topic{font-size:14px;color:#414B61;line-height:1.45;margin:0 0 10px}
-.person .mail{font-family:var(--mono);font-size:12px;color:var(--color_a);word-break:break-all}
+.person .mail{font-family:var(--mono);font-size:12px;color:var(--color-jhu);word-break:break-all}
 .person .mail:hover{text-decoration:underline}
 
 .pi-card{display:grid;grid-template-columns:250px minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:start}
@@ -412,11 +323,11 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   border-bottom:1px solid var(--line);font-size:15.5px}
 .pi-facts .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);padding-top:4px}
-.pi-facts a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
+.pi-facts a{color:var(--color-jhu);text-decoration:underline;text-underline-offset:3px}
 @media (max-width:560px){.pi-facts li{grid-template-columns:1fr;gap:2px}}
 .fact-list{list-style:none;margin:0;padding:0}
 .fact-list li{position:relative;padding-left:14px;margin-bottom:6px;display:block}
-.fact-list li::before{content:"";position:absolute;left:0;top:12px;width:8px;height:1px;background:var(--color_a)}
+.fact-list li::before{content:"";position:absolute;left:0;top:12px;width:8px;height:1px;background:var(--color-jhu)}
 .fact-list li:last-child{margin-bottom:0}
 .fact-list--inline{display:flex;flex-wrap:wrap;gap:0}
 .fact-list--inline li{padding-left:0;margin-bottom:0}
@@ -438,14 +349,11 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
     font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 }
 
-/* ============================================================
-   7. RESEARCH
-   ============================================================ */
-.area-hero{border-left:3px solid var(--color_a);padding-left:clamp(18px,3vw,32px)}
+.area-hero{border-left:3px solid var(--color-jhu);padding-left:clamp(18px,3vw,32px)}
 .area-num{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--muted)}
 .bullets{list-style:none;margin:0;padding:0}
 .bullets li{position:relative;padding:0 0 0 26px;margin-bottom:13px;font-size:16px;color:#37415A}
-.bullets li::before{content:"";position:absolute;left:0;top:11px;width:12px;height:1px;background:var(--color_a)}
+.bullets li::before{content:"";position:absolute;left:0;top:11px;width:12px;height:1px;background:var(--color-jhu)}
 .figure{
   background:var(--ink);border-radius:var(--radius);color:#8C9AB5;min-height:230px;
   display:grid;place-items:center;text-align:center;padding:26px;font-family:var(--mono);
@@ -454,9 +362,6 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   background-size:18px 18px;
 }
 
-/* ============================================================
-   8. NEWS
-   ============================================================ */
 .news-item{
   display:grid;grid-template-columns:118px minmax(0,1fr);gap:clamp(14px,3vw,34px);
   padding:26px 0;border-bottom:1px solid var(--line);
@@ -465,13 +370,10 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .news-item .date{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;padding-top:5px}
 .news-item h3{font-size:21px;margin:0 0 8px;letter-spacing:-.025em}
 .news-item p{font-size:15.5px;color:#414B61;margin:0 0 10px}
-.news-item .more{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color_a)}
+.news-item .more{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-jhu)}
 .news-item .more:hover{text-decoration:underline}
 @media (max-width:620px){.news-item{grid-template-columns:1fr;gap:6px}}
 
-/* ============================================================
-   9. PUBLICATIONS / PATENTS
-   ============================================================ */
 .year-block{margin-bottom:clamp(34px,4.5vw,56px)}
 .year-block h2{
   font-family:var(--mono);font-weight:500;font-size:13px;letter-spacing:.2em;color:var(--muted);
@@ -489,21 +391,18 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
 .pub .links a,.pub .links .link-dead{
   font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid var(--line);border-radius:20px;padding:4px 11px;color:var(--muted);background:var(--white)}
-.pub .links a:hover{border-color:var(--color_a);color:var(--color_a)}
+.pub .links a:hover{border-color:var(--color-jhu);color:var(--color-jhu)}
 .pub .links .link-dead{border-style:dashed;background:var(--paper-2);opacity:.75}
-.pub.is-featured{background:var(--white);border:1px solid var(--line);border-left:3px solid var(--color_b);
+.pub.is-featured{background:var(--white);border:1px solid var(--line);border-left:3px solid #D98A1F;
   padding:20px 22px;border-radius:var(--radius);margin-bottom:8px}
 
-/* ============================================================
-   10. JOIN + SUPPORT
-   ============================================================ */
 .prose{max-width:70ch}
 .prose h2{font-size:clamp(24px,3vw,32px);margin:0 0 14px;letter-spacing:-.03em}
 .prose section{padding:26px 0;border-top:1px solid var(--line)}
 .prose section:first-of-type{border-top:0;padding-top:0}
 .prose h3{font-size:21px;margin:0 0 10px;letter-spacing:-.025em}
 .prose p{font-size:16.5px;color:#37415A}
-.prose a{color:var(--color_a);text-decoration:underline;text-underline-offset:3px}
+.prose a{color:var(--color-jhu);text-decoration:underline;text-underline-offset:3px}
 
 .logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:clamp(14px,2vw,22px)}
 .logo{
@@ -511,13 +410,10 @@ a.card:hover{transform:translateY(-3px);box-shadow:0 18px 34px -26px rgba(11,16,
   height:130px;display:grid;place-items:center;padding:20px;text-align:center;
   transition:border-color .18s var(--ease);
 }
-a.logo:hover{border-color:var(--color_a)}
+a.logo:hover{border-color:var(--color-jhu)}
 .logo img{max-height:72px;max-width:100%;width:auto;object-fit:contain}
 .logo .placeholder{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--muted);line-height:1.4}
 
-/* ============================================================
-   11. FOOTER
-   ============================================================ */
 .site-foot{background:var(--ink);color:#8C9AB5;padding:clamp(44px,6vw,72px) 0 34px;font-size:15px}
 .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:clamp(24px,4vw,50px)}
 @media (max-width:760px){.foot-grid{grid-template-columns:1fr 1fr}}
@@ -535,7 +431,6 @@ a.logo:hover{border-color:var(--color_a)}
   margin-top:clamp(34px,4vw,52px);padding-top:22px;border-top:1px solid var(--line-dark);
   font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:#5D6C8A}
 
-/* view transition */
 #view{animation:rise .38s var(--ease) both}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view{animation:none}}
@@ -569,39 +464,29 @@ a.logo:hover{border-color:var(--color_a)}
   </div>
 </footer>
 
-<!-- ==========================================================
-     === SITE DATA ===  Edit everything below to make it yours.
-     [square brackets] mark placeholders still to be filled.
-     ========================================================== -->
 <script>
 const DATA = {
 
-  /* --- identity ------------------------------------------- */
   lab: {
     name: "Pombo Lab",
     tagline: "Baltimore · Berlin",
     heroTitle: "How the genome folds, and what that folding does.",
     heroLead: "We map the physical organization of chromosomes inside the nucleus and ask how that organization controls gene expression. The group works across two sites, in Baltimore, USA and in Berlin, Germany.",
-    // Shown in the footer, under the lab name.
     about: "Epigenetic regulation and chromatin architecture: measuring where genes sit in three-dimensional space, and what that position does to their activity.",
-    // Single source of truth. Used in the footer and, via the
-    // {{email}} token, in the PI fact list below.
     email: "apombo1@jh.edu",
-    // Names bolded automatically in publication and patent author lists.
     highlightAuthors: ["Pombo, A.", "A. Pombo", "Pombo A"]
   },
 
-  /* --- the two sites -------------------------------------- */
   sites: {
-    A: {
-      key: "A",
+    JHU: {
+      key: "JHU",
       short: "JHU",
       name: "Johns Hopkins University",
       dept: "Department of Biology, Krieger School of Arts and Sciences · Department of Molecular Biology and Genetics, School of Medicine",
       address: "Baltimore, MD, USA"
     },
-    B: {
-      key: "B",
+    MDC: {
+      key: "MDC",
       short: "MDC",
       name: "Max Delbrück Center",
       dept: "Berlin Institute for Medical Systems Biology (BIMSB)",
@@ -609,28 +494,20 @@ const DATA = {
     }
   },
 
-  /* Former locations, used only by the alumni table.
-     Add more codes here if you need them (e.g. O: "Oxford").  */
   pastSites: {
     L: { short: "ICL", name: "MRC London Institute of Medical Sciences / Imperial College London" }
   },
 
-  /* --- people --------------------------------------------- */
   pi: {
     name: "Ana Pombo",
     role: "Bloomberg Distinguished Professor of Genome Biology",
     initials: "AP",
-    photo: "img/ana1.jpeg",                       // e.g. "img/pombo.jpg" — blank, or a missing file, shows the monogram
+    photo: "img/ana1.jpeg",
     bio: [
       "Ana Pombo studies how chromosomes are organized within the nucleus and how that organization shapes gene regulation, cellular identity, and disease. Her group develops the experimental and computational methods needed to place regulatory sequences in physical space relative to the genes they control.",
       "Her lab developed Genome Architecture Mapping (GAM), a ligation-free method that infers chromatin contacts from the DNA content of thin nuclear slices, and which resolves the multi-way interactions that pairwise methods largely miss. During her doctoral work at Oxford she described transcription factories in the mammalian nucleus.",
       "Since 2024, the group has been operating at two sites: the Johns Hopkins University in Baltimore, MD, USA, and the Max Delbrück Center in Berlin, Germany."
     ],
-    // Each row is [label, value]. The value is rendered as HTML,
-    // so <a href="...">links</a> work. Do not paste untrusted content.
-    // {{email}} is replaced at render time with lab.email above.
-    // Use <span class="link-dead"> for a link you have not filled in
-    // yet — an href="#" would navigate back to the homepage.
     facts: [
       ["Appointments", "<ul class='fact-list'>" +
         "<li>Bloomberg Distinguished Professor of Genome Biology</li>" +
@@ -665,161 +542,92 @@ const DATA = {
     ]
   },
 
-  // Fields: site ("A" or "B"), name (alphabetical by last name),
-  // role, topic, email, and optional initials (2 characters) / photo.
   members: [
-    /* ---- Site A — JHU, Baltimore ---- */
-    { name:"Nichloas Alagna",
-      initials:"NA",
-      site:"A",
+    { name:"Nichloas Alagna", initials:"NA", site:"JHU",
       role:"PhD Student; Cell, Molecular, Developmental Biology, and Biophysics, Krieger School of Arts & Sciences",
-      topic:"One line on what this person works on.",
-      email:"nalagna1@jhmi.edu" },
-    
-    { name:"Julian Du",
-      initials:"JD",
-      site:"A",
+      topic:"One line on what this person works on.", email:"nalagna1@jhmi.edu" },
+    { name:"Julian Du", initials:"JD", site:"JHU",
       role:"Master Student; Biomedical Engineering, Krieger School of Arts & Sciences",
-      topic:"One line on what this person works on.",
-      email:"zdu19@jh.edu" },
-
-    { name:"Jing He",
-      initials:"JH",
-      site:"A",
+      topic:"One line on what this person works on.", email:"zdu19@jh.edu" },
+    { name:"Jing He", initials:"JH", site:"JHU",
       role:"Postdoctoral Fellow; Department of Biology, Krieger School of Arts & Sciences",
-      topic:"One line on what this person works on.",
-      email:"jhe109@jh.edu" },
-
-    { name:"Derek Hui",
-      initials:"DH",
-      site:"A",
+      topic:"One line on what this person works on.", email:"jhe109@jh.edu" },
+    { name:"Derek Hui", initials:"DH", site:"JHU",
       role:"PhD Student; Cell, Molecular, Developmental Biology, and Biophysics, Krieger School of Arts & Sciences",
-      topic:"One line on what this person works on.",
-      email:"mhui3@jh.edu" },
-
-    { name:"Alexander D. Park",
-      initials:"AP",
-      site:"A",
+      topic:"One line on what this person works on.", email:"mhui3@jh.edu" },
+    { name:"Alexander D. Park", initials:"AP", site:"JHU",
       role:"PhD Student; Human Genetics & Genomics PhD Program, School of Medicine",
       topic:"Alex is interested in understanding causality of 3D genome structure in gene expression, genetic variants, and cellular states.",
       email:"apark55@jhmi.edu" },
-
-    { name:"Li Wang",
-      initials:"LW",
-      site:"A",
+    { name:"Li Wang", initials:"LW", site:"JHU",
       role:"Senior Scientist; Department of Biology, Krieger School of Arts & Sciences",
-      topic:"One line on what this person works on.",
-      email:"lwang258@jh.edu" },
+      topic:"One line on what this person works on.", email:"lwang258@jh.edu" },
 
-    /* ---- Site B — MDC, Berlin ---- */
-    { name:"Luiz Gustavo dos Anjos Borges",
-      initials:"LB",
-      site:"B",
+    { name:"Luiz Gustavo dos Anjos Borges", initials:"LB", site:"MDC",
       role:"Postdoctoral Fellow; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"luiz.borges@mdc-berlin.de" },
-
-    { name:"Sergej Herzog",
-      initials:"SH",
-      site:"B",
+      topic:"One line on what this person works on.", email:"luiz.borges@mdc-berlin.de" },
+    { name:"Sergej Herzog", initials:"SH", site:"MDC",
       role:"Technical Assistant; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"sergej.herzog@mdc-berlin.de" },
-
-    { name:"Berta Jimenez-Alfaro Hacha",
-      initials:"BJ",
-      site:"B",
+      topic:"One line on what this person works on.", email:"sergej.herzog@mdc-berlin.de" },
+    { name:"Berta Jimenez-Alfaro Hacha", initials:"BJ", site:"MDC",
       role:"PhD Student; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"berta.jimenez-alfarohacha@mdc-berlin.de" },
-
-    { name:"Alexander Kukalev",
-      initials:"AK",
-      site:"B",
+      topic:"One line on what this person works on.", email:"berta.jimenez-alfarohacha@mdc-berlin.de" },
+    { name:"Alexander Kukalev", initials:"AK", site:"MDC",
       role:"Senior Scientist; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"alexander.kukalev@mdc-berlin.de" },
-
-    { name:"Ali Mamivand",
-      initials:"AM",
-      site:"B",
+      topic:"One line on what this person works on.", email:"alexander.kukalev@mdc-berlin.de" },
+    { name:"Ali Mamivand", initials:"AM", site:"MDC",
       role:"PhD Student; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"ali.mamivand@mdc-berlin.de" },
-
-    { name:"Simon O. Middeldorf",
-      initials:"SM",
-      site:"B",
+      topic:"One line on what this person works on.", email:"ali.mamivand@mdc-berlin.de" },
+    { name:"Simon O. Middeldorf", initials:"SM", site:"MDC",
       role:"Master Student; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"simon.middeldorf@mdc-berlin.de" },
-
-    { name:"Dominik Szabó",
-      initials:"DS",
-      site:"B",
+      topic:"One line on what this person works on.", email:"simon.middeldorf@mdc-berlin.de" },
+    { name:"Dominik Szabó", initials:"DS", site:"MDC",
       role:"PhD Student; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"dominik.szabo@mdc-berlin.de" },
-
-    { name:"Christoph Thieme",
-      initials:"CT",
-      site:"B",
+      topic:"One line on what this person works on.", email:"dominik.szabo@mdc-berlin.de" },
+    { name:"Christoph Thieme", initials:"CT", site:"MDC",
       role:"Senior Scientist; Berlin Institute for Medical Systems Biology",
-      topic:"One line on what this person works on.",
-      email:"christoph.thieme@mdc-berlin.de" }
-
-    /* ---- Template for a new entry — copy, uncomment, edit ----
-    ,{ name:"[Full name]",
-       initials:"XX",
-       site:"A",
-       role:"Research Technician; [department]",
-       topic:"One line on what this person works on.",
-       email:"" }
-    ---------------------------------------------------------- */
+      topic:"One line on what this person works on.", email:"christoph.thieme@mdc-berlin.de" }
   ],
 
-  /* --- alumni ---------------------------------------------
-     site: "A" JHU · "B" MDC Berlin · "L" London (pre-2013).
-     Rows are sorted automatically by their most recent year.  */
   alumni: [
-    { name:"Lilith Klaus",                  years:"2022–2023", site:"B",   degree:"BSc",           now:"—" },
-    { name:"Julia Markowski",               years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Peter Park lab, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
-    { name:"Mattia Conte",                  years:"2022",      site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Nicodemi lab, Naples University, Naples, IT" },
-    { name:"Federico Billeci",              years:"2022",      site:"B",   degree:"MSc",           now:"Data Scientist, Integra Therapeutics, SP" },
-    { name:"Jennifer A. Giannini",          years:"2019–2022", site:"B",   degree:"PhD",           now:"Scientific content creator, Labforward, Berlin, DE" },
-    { name:"Simona Bianco",                 years:"2021",      site:"B",   degree:"Postdoc",       now:"Assistant Professor, Naples University, Naples, IT" },
-    { name:"Chloe Tang",                    years:"2021",      site:"B",   degree:"MSc",           now:"PhD Student, Rippe lab, DKFZ, Heidelberg, DE" },
-    { name:"Rita Moldovan",                 years:"2021",      site:"B",   degree:"BSc",           now:"—" },
-    { name:"Lavanya Iyer",                  years:"2020–2021", site:"B",   degree:"Postdoc",       now:"Task Force Lead, Single-cell Omics, Evotec, Göttingen, DE" },
-    { name:"Ehsan Irani",                   years:"2017–2021", site:"B",   degree:"Postdoc",       now:"Senior Data Scientist, IntelliSense.io" },
-    { name:"Gesa Loof",                     years:"2015–2021", site:"B",   degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Inst. Biology Development, Marseille, FR (with Thomas Lecuit)" },
-    { name:"Cleis Battaglia",               years:"2019–2020", site:"B",   degree:"MSc",           now:"PhD Student, Marenduzzo lab, Univ. Edinburgh, UK" },
-    { name:"Ana Miguel Fernandes",          years:"2014–2020", site:"B",   degree:"PhD / Postdoc", now:"Data scientist, OLX Group, Berlin, DE" },
-    { name:"Rieke Kempfer",                 years:"2014–2020", site:"B",   degree:"PhD / Postdoc", now:"NGS specialist, SOPHiA Genetics, Geneva, Switzerland" },
-    { name:"David Pride",                   years:"2018",      site:"B",   degree:"MSc",           now:"Medical Trainee, Texas Tech School of Medicine, El Paso, US" },
-    { name:"Vahid Assimi",                  years:"2018",      site:"B",   degree:"MSc",           now:"PhD Student, Hinsz lab, MPI Molecular Genetics, Berlin, DE" },
-    { name:"Konstantina Skourti-Stathaki",  years:"2015–2018", site:"B",   degree:"Postdoc",       now:"Principal Scientist, RNA Biology, MiNA Therapeutics, London, UK" },
-    { name:"Elena Torlai Triglia",          years:"2012–2018", site:"L/B", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Broad Institute, Boston, US (with Brad Bernstein)" },
-    { name:"Giulia Caglio",                 years:"2014–2018", site:"B",   degree:"PhD",           now:"Full Stack Data Scientist, Consultant, Catenion, Berlin, DE" },
-    { name:"Marta Slimak-Mastrobuoni",      years:"2014–2018", site:"B",   degree:"Postdoc",       now:"Commercial Development Manager Europe, Sterilex, Berlin, DE" },
-    { name:"Dorothee Krämer",               years:"2013–2018", site:"B",   degree:"PhD",           now:"Global Medical Grant Developer, Medscape, Grenoble, FR" },
-    { name:"Franka Rang",                   years:"2017",      site:"B",   degree:"MSc",           now:"PhD Student, Kind lab, Hubrecht Institute, Utrecht, NL" },
-    { name:"Daria Ivanova",                 years:"2017",      site:"B",   degree:"BSc",           now:"—" },
-    { name:"Tiago Rito",                    years:"2013–2017", site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Crick Institute, London, UK (with James Briscoe)" },
-    { name:"Joao Dias",                     years:"2010–2017", site:"L/B", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Montpellier, FR (with Monsef Benkirane)" },
-    { name:"Carmelo Ferrai",                years:"2008–2017", site:"L/B", degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Philipp Stroebel)" },
-    { name:"Leonid Serebreni",              years:"2016",      site:"B",   degree:"MSc",           now:"Postdoctoral Fellow, Junker lab, MDC, Berlin, DE" },
-    { name:"A. Julieta Ramirez Cuellar",    years:"2016",      site:"B",   degree:"MSc",           now:"Business co-founder, Guanajuato, Mexico" },
-    { name:"Markus Schüler",                years:"2013–2016", site:"B",   degree:"Postdoc",       now:"Head of Data Strategy, mobile.de/eBay, Berlin, DE" },
-    { name:"Mariano Barbieri",              years:"2013–2016", site:"B",   degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Argyris Papantonis)" },
-    { name:"Robert A. Beagrie",             years:"2011–2016", site:"L/B", degree:"PhD / Postdoc", now:"Group Leader, Sir Henry Dale fellow, Wellcome Trust Centre, Oxford, UK" },
-    { name:"Marisa Saponaro",               years:"2015",      site:"B",   degree:"MSc",           now:"Clinical Research Associate, Syneos Health Clinical Solutions, Rome, IT" },
-    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/B", degree:"MRes / PhD / Postdoc", now:"—" },
-    { name:"Kedar Natarajan",               years:"2009–2013", site:"L/B", degree:"PhD / Postdoc", now:"Associate Professor, University of Southern Denmark, Odense, Denmark" },
-    { name:"Sheila Q. Xie",                 years:"2000–2013", site:"L/B", degree:"Postdoc",       now:"Senior Postdoctoral Fellow, MRC-LMS, UK (with Michelle Percharde)" },
-    { name:"Liron-Mark Lavitas",            years:"2007–2013", site:"L/B", degree:"MRes / PhD / Postdoc", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
-    { name:"Inês de Castro",                years:"2007–2013", site:"L/B", degree:"PhD / Postdoc", now:"Lecturer, Brunel University London, UK" },
-    { name:"C. Ribeiro de Almeida",         years:"2011–2013", site:"L/B", degree:"Postdoc",       now:"Group Leader, Babraham Institute, Cambridge, UK" },
+    { name:"Lilith Klaus",                  years:"2022–2023", site:"MDC",   degree:"BSc",           now:"—" },
+    { name:"Julia Markowski",               years:"2022",      site:"MDC",   degree:"Postdoc",       now:"Postdoctoral Fellow, Peter Park lab, Blavatnik Institute of Biomedical Informatics, Harvard Medical School, Boston, US (with Peter Park)" },
+    { name:"Mattia Conte",                  years:"2022",      site:"MDC",   degree:"Postdoc",       now:"Postdoctoral Fellow, Nicodemi lab, Naples University, Naples, IT" },
+    { name:"Federico Billeci",              years:"2022",      site:"MDC",   degree:"MSc",           now:"Data Scientist, Integra Therapeutics, SP" },
+    { name:"Jennifer A. Giannini",          years:"2019–2022", site:"MDC",   degree:"PhD",           now:"Scientific content creator, Labforward, Berlin, DE" },
+    { name:"Simona Bianco",                 years:"2021",      site:"MDC",   degree:"Postdoc",       now:"Assistant Professor, Naples University, Naples, IT" },
+    { name:"Chloe Tang",                    years:"2021",      site:"MDC",   degree:"MSc",           now:"PhD Student, Rippe lab, DKFZ, Heidelberg, DE" },
+    { name:"Rita Moldovan",                 years:"2021",      site:"MDC",   degree:"BSc",           now:"—" },
+    { name:"Lavanya Iyer",                  years:"2020–2021", site:"MDC",   degree:"Postdoc",       now:"Task Force Lead, Single-cell Omics, Evotec, Göttingen, DE" },
+    { name:"Ehsan Irani",                   years:"2017–2021", site:"MDC",   degree:"Postdoc",       now:"Senior Data Scientist, IntelliSense.io" },
+    { name:"Gesa Loof",                     years:"2015–2021", site:"MDC",   degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Inst. Biology Development, Marseille, FR (with Thomas Lecuit)" },
+    { name:"Cleis Battaglia",               years:"2019–2020", site:"MDC",   degree:"MSc",           now:"PhD Student, Marenduzzo lab, Univ. Edinburgh, UK" },
+    { name:"Ana Miguel Fernandes",          years:"2014–2020", site:"MDC",   degree:"PhD / Postdoc", now:"Data scientist, OLX Group, Berlin, DE" },
+    { name:"Rieke Kempfer",                 years:"2014–2020", site:"MDC",   degree:"PhD / Postdoc", now:"NGS specialist, SOPHiA Genetics, Geneva, Switzerland" },
+    { name:"David Pride",                   years:"2018",      site:"MDC",   degree:"MSc",           now:"Medical Trainee, Texas Tech School of Medicine, El Paso, US" },
+    { name:"Vahid Assimi",                  years:"2018",      site:"MDC",   degree:"MSc",           now:"PhD Student, Hinsz lab, MPI Molecular Genetics, Berlin, DE" },
+    { name:"Konstantina Skourti-Stathaki",  years:"2015–2018", site:"MDC",   degree:"Postdoc",       now:"Principal Scientist, RNA Biology, MiNA Therapeutics, London, UK" },
+    { name:"Elena Torlai Triglia",          years:"2012–2018", site:"L/MDC", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Broad Institute, Boston, US (with Brad Bernstein)" },
+    { name:"Giulia Caglio",                 years:"2014–2018", site:"MDC",   degree:"PhD",           now:"Full Stack Data Scientist, Consultant, Catenion, Berlin, DE" },
+    { name:"Marta Slimak-Mastrobuoni",      years:"2014–2018", site:"MDC",   degree:"Postdoc",       now:"Commercial Development Manager Europe, Sterilex, Berlin, DE" },
+    { name:"Dorothee Krämer",               years:"2013–2018", site:"MDC",   degree:"PhD",           now:"Global Medical Grant Developer, Medscape, Grenoble, FR" },
+    { name:"Franka Rang",                   years:"2017",      site:"MDC",   degree:"MSc",           now:"PhD Student, Kind lab, Hubrecht Institute, Utrecht, NL" },
+    { name:"Daria Ivanova",                 years:"2017",      site:"MDC",   degree:"BSc",           now:"—" },
+    { name:"Tiago Rito",                    years:"2013–2017", site:"MDC",   degree:"Postdoc",       now:"Postdoctoral Fellow, Crick Institute, London, UK (with James Briscoe)" },
+    { name:"Joao Dias",                     years:"2010–2017", site:"L/MDC", degree:"PhD / Postdoc", now:"Postdoctoral Fellow, Montpellier, FR (with Monsef Benkirane)" },
+    { name:"Carmelo Ferrai",                years:"2008–2017", site:"L/MDC", degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Philipp Stroebel)" },
+    { name:"Leonid Serebreni",              years:"2016",      site:"MDC",   degree:"MSc",           now:"Postdoctoral Fellow, Junker lab, MDC, Berlin, DE" },
+    { name:"A. Julieta Ramirez Cuellar",    years:"2016",      site:"MDC",   degree:"MSc",           now:"Business co-founder, Guanajuato, Mexico" },
+    { name:"Markus Schüler",                years:"2013–2016", site:"MDC",   degree:"Postdoc",       now:"Head of Data Strategy, mobile.de/eBay, Berlin, DE" },
+    { name:"Mariano Barbieri",              years:"2013–2016", site:"MDC",   degree:"Postdoc",       now:"Postdoctoral Fellow, Göttingen, DE (with Argyris Papantonis)" },
+    { name:"Robert A. Beagrie",             years:"2011–2016", site:"L/MDC", degree:"PhD / Postdoc", now:"Group Leader, Sir Henry Dale fellow, Wellcome Trust Centre, Oxford, UK" },
+    { name:"Marisa Saponaro",               years:"2015",      site:"MDC",   degree:"MSc",           now:"Clinical Research Associate, Syneos Health Clinical Solutions, Rome, IT" },
+    { name:"Kelly J. Morris",               years:"2008–2014", site:"L/MDC", degree:"MRes / PhD / Postdoc", now:"—" },
+    { name:"Kedar Natarajan",               years:"2009–2013", site:"L/MDC", degree:"PhD / Postdoc", now:"Associate Professor, University of Southern Denmark, Odense, Denmark" },
+    { name:"Sheila Q. Xie",                 years:"2000–2013", site:"L/MDC", degree:"Postdoc",       now:"Senior Postdoctoral Fellow, MRC-LMS, UK (with Michelle Percharde)" },
+    { name:"Liron-Mark Lavitas",            years:"2007–2013", site:"L/MDC", degree:"MRes / PhD / Postdoc", now:"Clinical Project Assistant, PPD Pharmaceuticals, Munich, DE" },
+    { name:"Inês de Castro",                years:"2007–2013", site:"L/MDC", degree:"PhD / Postdoc", now:"Lecturer, Brunel University London, UK" },
+    { name:"C. Ribeiro de Almeida",         years:"2011–2013", site:"L/MDC", degree:"Postdoc",       now:"Group Leader, Babraham Institute, Cambridge, UK" },
     { name:"Mita Pabari",                   years:"2008–2012", site:"L",   degree:"Postdoc",       now:"Medical Writer, MIMS (Hong Kong) Limited" },
     { name:"Inês de Santiago",              years:"2007–2012", site:"L",   degree:"PhD / Postdoc", now:"Senior Principal Scientist, Computational Biology, e-Therapeutics PLC, Oxford, UK" },
     { name:"Emily Brookes",                 years:"2006–2011", site:"L",   degree:"MRes / PhD / Postdoc", now:"Lecturer in Biomedical Research & Group Leader, University of Southampton, UK" },
@@ -837,10 +645,7 @@ const DATA = {
     { name:"James Dixon",                   years:"2002",      site:"L",   degree:"MRes",          now:"—" }
   ],
 
-  /* --- research ------------------------------------------- */
   researchIntro: "The group works on the interplay between gene regulation and genome architecture, from the local action of transcription factors, through long-range contacts that connect regulatory sequences to their target genes, to the positioning of whole chromosomes within the nucleus. Method development and biological questions advance together: we build the measurement when the existing one cannot answer the question.",
-  // Themes are labels for the overview page. They do not have to
-  // map one-to-one onto the areas below.
   researchThemes: [
     "Genome Architecture Mapping",
     "Transcription and chromatin states",
@@ -885,22 +690,13 @@ const DATA = {
     }
   ],
 
-  /* --- news (newest first; date is YYYY-MM-DD) ------------- */
   news: [
     { date:"2026-06-02", tag:"Lab",     title:"Ana Pombo joins Johns Hopkins as Bloomberg Distinguished Professor of Genome Biology", body:"The Baltimore laboratory opens with appointments in the Department of Biology and the Department of Molecular Biology and Genetics. The Berlin laboratory continues at the Max Delbrück Center.", link:"" },
     { date:"2025-05-22", tag:"Press",   title:"Named among Berlin's most important minds in science", body:"Tagesspiegel included Ana Pombo in its 2025 list of one hundred figures in Berlin science.", link:"" },
     { date:"2024-12-11", tag:"Award",   title:"Gottfried Wilhelm Leibniz Prize awarded by the DFG", body:"The prize, announced by the German Research Foundation, carries 2.5 million euros in research funding.", link:"" },
     { date:"2023-06-19", tag:"Paper",   title:"Multiplex-GAM published in Nature Methods", body:"The scaled-up protocol shows that genome architecture mapping captures complex multi-way contacts that pairwise methods largely miss.", link:"#/publications" }
-    /* Template — copy, uncomment, edit. Newest items appear first.
-    ,{ date:"2026-09-01", tag:"[Tag]", title:"[Headline]", body:"[One or two sentences.]", link:"" }
-    */
   ],
 
-  /* --- publications ---------------------------------------
-     Starting selection only — verify details and extend from
-     Google Scholar or PubMed before publishing the site.
-     A link with an empty URL renders as a dashed, inactive
-     badge, so unfinished entries cannot navigate anywhere.    */
   publications: [
     { year:2025, featured:true, title:"Extensive folding variability between homologous chromosomes revealed by haplotype-resolved Genome Architecture Mapping", authors:"Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., et al., Pombo, A.", venue:"Molecular Systems Biology", detail:"21(7), 735–775", links:{ DOI:"", PDF:"", Data:"" } },
     { year:2024, title:"Epigenetic regulatory layers in the three-dimensional nucleus", authors:"Willemin, A., Szabó, D., Pombo, A.", venue:"Molecular Cell", detail:"84(3), 415–428", links:{ DOI:"" } },
@@ -909,760 +705,117 @@ const DATA = {
     { year:2021, title:"Cell-type specialization is encoded by specific chromatin topologies", authors:"Winick-Ng, W., Kukalev, A., Harabula, I., et al., Pombo, A.", venue:"Nature", detail:"599, 684–691", links:{ DOI:"", PDF:"" } },
     { year:2020, title:"Methods for mapping 3D chromosome architecture", authors:"Kempfer, R., Pombo, A.", venue:"Nature Reviews Genetics", detail:"21(4), 207–226", links:{ DOI:"" } },
     { year:2017, featured:true, title:"Complex multi-enhancer contacts captured by Genome Architecture Mapping", authors:"Beagrie, R. A., Scialdone, A., Schueler, M., et al., Pombo, A.", venue:"Nature", detail:"543, 519–524", links:{ DOI:"", PDF:"" } },
-    { year:2015, title:"Three-dimensional genome architecture: players and mechanisms", authors:"Pombo, A., Dillon, N.", venue:"Nature Reviews Molecular Cell Biology", detail:"16, 245–257", links:{ DOI:"" } },  {
-    year: 2026,
-    title: "An integrated view of the structure and function of the human 4D nucleome",
-    authors: "Dekker, J., Oksuz, B. A., Zhang, Y., Wang, Y., Minsk, M. K., Kuang, S., Yang, L., et al.",
-    venue: "Nature",
-    detail: "649(8097), 759–776",
-    links: { DOI: "" }
-  },
-  {
-    year: 2025,
-    title: "Cryosectioning-enhanced super-resolution microscopy for single-protein imaging across cells and tissues",
-    authors: "Stein, J., Ericsson, M., Nofal, M., Magni, L., Aufmkolk, S., McMillan, R. B., et al.",
-    venue: "Proceedings of the National Academy of Sciences",
-    detail: "122(32), e2504578122",
-    links: { DOI: "" }
-  },
-  {
-    year: 2025,
-    title: "Extensive folding variability between homologous chromosomes in mammalian cells",
-    authors: "Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., Thieme, C. J., Mastrobuoni, G., et al.",
-    venue: "Molecular Systems Biology",
-    detail: "21(7), 735–775",
-    links: { DOI: "" }
-  },
-  {
-    year: 2024,
-    title: "SRRM2 splicing factor modulates cell fate in early development",
-    authors: "Carvalho, S., Zea-Redondo, L., Tang, T. C. C., Stachel-Braum, P., Miller, D., et al.",
-    venue: "Biology Open",
-    detail: "13(4), bio060415",
-    links: { DOI: "" }
-  },
-  {
-    year: 2024,
-    title: "Epigenetic regulatory layers in the three-dimensional nucleus",
-    authors: "Willemin, A., Szabó, D., Pombo, A.",
-    venue: "Molecular Cell",
-    detail: "84(3), 415–428",
-    links: { DOI: "" }
-  },
-  {
-    year: 2023,
-    title: "Research briefing",
-    authors: "Thieme, C. J., Pombo, A.",
-    venue: "Nature Methods",
-    detail: "20, 993–994",
-    links: { DOI: "" }
-  },
-  {
-    year: 2023,
-    title: "Multiplex-GAM: genome-wide identification of chromatin contacts yields insights overlooked by Hi-C",
-    authors: "Beagrie, R. A., Thieme, C. J., Annunziatella, C., Baugher, C., Zhang, Y., et al.",
-    venue: "Nature Methods",
-    detail: "20(7), 1037–1047",
-    links: { DOI: "" }
-  },
-  {
-    year: 2023,
-    title: "Mechanisms of enhancer function in neuronal systems in health and disease",
-    authors: "Zea-Redondo, L., Pombo, A.",
-    venue: "Current Opinion in Systems Biology",
-    detail: "32, 100443",
-    links: { DOI: "" }
-  },
-  {
-    year: 2022,
-    title: "A noncoding single-nucleotide polymorphism at 8q24 drives IDH1-mutant glioma formation",
-    authors: "Yanchus, C., Drucker, K. L., Kollmeyer, T. M., Tsai, R., Winick-Ng, W., Liang, M., et al.",
-    venue: "Science",
-    detail: "378(6615), 68–78",
-    links: { DOI: "" }
-  },
-  {
-    year: 2022,
-    title: "Single-cell-resolved dynamics of chromatin architecture delineate cell and regulatory states in zebrafish embryos",
-    authors: "McGarvey, A. C., Kopp, W., Vučićević, D., Mattonet, K., Kempfer, R., Hirsekorn, A., et al.",
-    venue: "Cell Genomics",
-    detail: "2(1)",
-    links: { DOI: "" }
-  },
-  {
-    year: 2022,
-    title: "Altered nuclear architecture in blood cells from Huntington’s disease patients",
-    authors: "de Castro, I. J., Toner, B., Xie, S. Q., Swingland, J., Hodges, A., Tabrizi, S. J., et al.",
-    venue: "Neurological Sciences",
-    detail: "43(1), 379–385",
-    links: { DOI: "" }
-  },
-  {
-    year: 2021,
-    title: "GAMIBHEAR: whole-genome haplotype reconstruction from Genome Architecture Mapping data",
-    authors: "Markowski, J., Kempfer, R., Kukalev, A., Irastorza-Azcarate, I., Loof, G., Kehr, B., et al.",
-    venue: "Bioinformatics",
-    detail: "37(19), 3128–3135",
-    links: { DOI: "" }
-  },
-  {
-    year: 2021,
-    title: "Cell-type specialization is encoded by specific chromatin topologies",
-    authors: "Winick-Ng, W., Kukalev, A., Harabula, I., Zea-Redondo, L., Szabó, D., Meijer, M., et al.",
-    venue: "Nature",
-    detail: "599(7886), 684–691",
-    links: { DOI: "" }
-  },
-  {
-    year: 2021,
-    title: "Comparison of the Hi-C, GAM and SPRITE methods using polymer models of chromatin",
-    authors: "Fiorillo, L., Musella, F., Conte, M., Kempfer, R., Chiariello, A. M., Bianco, S., et al.",
-    venue: "Nature Methods",
-    detail: "18(5), 482–490",
-    links: { DOI: "" }
-  },
-  {
-    year: 2021,
-    title: "The dynamics of chromatin architecture in brain development and function",
-    authors: "Harabula, I., Pombo, A.",
-    venue: "Current Opinion in Genetics & Development",
-    detail: "67, 84–93",
-    links: { DOI: "" }
-  },
-  {
-    year: 2020,
-    title: "LifeTime and improving European healthcare through cell-based interceptive medicine",
-    authors: "Rajewsky, N., Almouzni, G., Gorski, S. A., Aerts, S., Amit, I., Bertero, M. G., Bock, C., et al.",
-    venue: "Nature",
-    detail: "587(7834), 377–386",
-    links: { DOI: "" }
-  },
-  {
-    year: 2020,
-    title: "Inference of chromosome 3D structures from GAM data by a physics computational approach",
-    authors: "Fiorillo, L., Bianco, S., Chiariello, A. M., Barbieri, M., Esposito, A., et al.",
-    venue: "Methods",
-    detail: "181, 70–79",
-    links: { DOI: "" }
-  },
-  {
-    year: 2020,
-    title: "Evolving methodologies and concepts in 4D nucleome research",
-    authors: "Sparks, T. M., Harabula, I., Pombo, A.",
-    venue: "Current Opinion in Cell Biology",
-    detail: "64, 105–111",
-    links: { DOI: "" }
-  },
-  {
-    year: 2020,
-    title: "Methods for mapping 3D chromosome architecture",
-    authors: "Kempfer, R., Pombo, A.",
-    venue: "Nature Reviews Genetics",
-    detail: "21(4), 207–226",
-    links: { DOI: "" }
-  },
-  {
-    year: 2019,
-    title: "Editorial overview: Genome architecture and expression",
-    authors: "Bickmore, W., Pombo, A.",
-    venue: "Current Opinion in Genetics and Development",
-    detail: "55, iii–iv",
-    links: { DOI: "" }
-  },
-  {
-    year: 2019,
-    title: "R-loops enhance polycomb repression at a subset of developmental regulator genes",
-    authors: "Skourti-Stathaki, K., Triglia, E. T., Warburton, M., Voigt, P., Bird, A., Pombo, A.",
-    venue: "Molecular Cell",
-    detail: "73(5), 930–945.e4",
-    links: { DOI: "" }
-  },
-  {
-    year: 2018,
-    title: "Challenges and guidelines toward 4D nucleome data and model standards",
-    authors: "Marti-Renom, M. A., Almouzni, G., Bickmore, W. A., Bystricky, K., Cavalli, G., et al.",
-    venue: "Nature Genetics",
-    detail: "50(10), 1352–1358",
-    links: { DOI: "" }
-  },
-  {
-    year: 2018,
-    title: "Polymer physics predicts the effects of structural variants on chromatin architecture",
-    authors: "Bianco, S., Lupiáñez, D. G., Chiariello, A. M., Annunziatella, C., Kraft, K., et al.",
-    venue: "Nature Genetics",
-    detail: "50(5), 662–667",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "RNA polymerase II primes Polycomb-repressed developmental genes throughout terminal neuronal differentiation",
-    authors: "Ferrai, C., Triglia, E. T., Risner-Janiczek, J. R., Rito, T., Rackham, O. J. L., et al.",
-    venue: "Molecular Systems Biology",
-    detail: "13(10), MSB177754",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "FANTOM5 CAGE profiles of human and mouse samples",
-    authors: "Noguchi, S., Arakawa, T., Fukuda, S., Furuno, M., Hasegawa, A., Hori, F., et al.",
-    venue: "Scientific Data",
-    detail: "4(1), 170112",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Cell cycle: Continuous chromatin changes",
-    authors: "Beagrie, R. A., Pombo, A.",
-    venue: "Nature",
-    detail: "547(7661), 34",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Flipping between Polycomb repressed and active transcriptional states introduces noise in gene expression",
-    authors: "Kar, G., Kim, J. K., Kolodziejczyk, A. A., Natarajan, K. N., Triglia, E. T., Mifsud, B., et al.",
-    venue: "Nature Communications",
-    detail: "8(1), 36",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Active and poised promoter states drive folding of the extended HoxB locus in mouse embryonic stem cells",
-    authors: "Barbieri, M., Xie, S. Q., Triglia, E. T., Chiariello, A. M., Bianco, S., de Santiago, I., et al.",
-    venue: "Nature Structural & Molecular Biology",
-    detail: "24(6), 515–524",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Keep them close: PRC2 poises enhancer-promoter interactions at anterior neuronal genes",
-    authors: "Caglio, G., Triglia, E. T., Pombo, A.",
-    venue: "Cell Stem Cell",
-    detail: "20(5), 573–575",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Maternal immune activation results in complex microglial transcriptome signature in the adult offspring that is reversed by minocycline treatment",
-    authors: "Mattei, D., Ivanov, A., Ferrai, C., Jordan, P., Guneykaya, D., Buonfiglioli, A., et al.",
-    venue: "Translational Psychiatry",
-    detail: "7(5), e1120",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "Complex multi-enhancer contacts captured by genome architecture mapping",
-    authors: "Beagrie, R. A., Scialdone, A., Schueler, M., Kraemer, D. C. A., Chotalia, M., Xie, S. Q., et al.",
-    venue: "Nature",
-    detail: "543(7646), 519–524",
-    links: { DOI: "" }
-  },
-  {
-    year: 2017,
-    title: "A finer print than TADs: PRC1-mediated domains",
-    authors: "Triglia, E. T., Rito, T., Pombo, A.",
-    venue: "Molecular Cell",
-    detail: "65(3), 373–375",
-    links: { DOI: "" }
-  },
-  {
-    year: 2016,
-    title: "Examining topological domain influence on enhancer function",
-    authors: "Beagrie, R. A., Pombo, A.",
-    venue: "Developmental Cell",
-    detail: "39(5), 523–524",
-    links: { DOI: "" }
-  },
-  {
-    year: 2016,
-    title: "Formation of new chromatin domains determines pathogenicity of genomic duplications",
-    authors: "Franke, M., Ibrahim, D. M., Andrey, G., Schwarzer, W., Heinrich, V., Schöpflin, R., et al.",
-    venue: "Nature",
-    detail: "538(7624), 265–269",
-    links: { DOI: "" }
-  },
-  {
-    year: 2016,
-    title: "Gene activation by metazoan enhancers: diverse mechanisms stimulate distinct steps of transcription",
-    authors: "Beagrie, R. A., Pombo, A.",
-    venue: "BioEssays",
-    detail: "38(9), 881–893",
-    links: { DOI: "" }
-  },
-  {
-    year: 2016,
-    title: "Mechanical regulation of transcription controls Polycomb-mediated gene silencing during lineage commitment",
-    authors: "Le, H. Q., Ghatak, S., Yeung, C. Y. C., Tellkamp, F., Günschmann, C., Dieterich, C., et al.",
-    venue: "Nature Cell Biology",
-    detail: "18(8), 864–875",
-    links: { DOI: "" }
-  },
-  {
-    year: 2015,
-    title: "Methylation of RNA polymerase II non-consensus Lysine residues marks early transcription in mammalian cells",
-    authors: "Dias, J. D., Rito, T., Triglia, E. T., Kukalev, A., Ferrai, C., Chotalia, M., et al.",
-    venue: "eLife",
-    detail: "4, e11215",
-    links: { DOI: "" }
-  },
-  {
-    year: 2015,
-    title: "Hierarchical folding and reorganization of chromosomes are linked to transcriptional changes in cellular differentiation",
-    authors: "Fraser, J., Ferrai, C., Chiariello, A. M., Schueler, M., Rito, T., Laudanno, G., et al.",
-    venue: "Molecular Systems Biology",
-    detail: "11(12), MSB156492",
-    links: { DOI: "" }
-  },
-  {
-    year: 2015,
-    title: "Polymer models of the organization of chromosomes in the nucleus of cells",
-    authors: "Chiariello, A. M., Bianco, S., Piccolo, A., Annunziatella, C., Barbieri, M., Pombo, A., et al.",
-    venue: "Modern Physics Letters B",
-    detail: "29(09), 1530003",
-    links: { DOI: "" }
-  },
-  {
-    year: 2015,
-    title: "Three-dimensional genome architecture: players and mechanisms",
-    authors: "Pombo, A., Dillon, N.",
-    venue: "Nature Reviews Molecular Cell Biology",
-    detail: "16(4), 245–257",
-    links: { DOI: "" }
-  },
-  {
-    year: 2015,
-    title: "Transcribed enhancers lead waves of coordinated transcription in transitioning mammalian cells",
-    authors: "Arner, E., Daub, C. O., Vitting-Seerup, K., Andersson, R., Lilje, B., Drabløs, F., et al.",
-    venue: "Science",
-    detail: "347(6225), 1010–1014",
-    links: { DOI: "" }
-  },
-  {
-    year: 2014,
-    title: "Stem cell epigenetics: looking forward",
-    authors: "Benitah, S. A., Bracken, A., Dou, Y., Huangfu, D., Ivanova, N., Koseki, H., et al.",
-    venue: "Cell Stem Cell",
-    detail: "14(6), 706–709",
-    links: { DOI: "" }
-  },
-  {
-    year: 2014,
-    title: "Models of chromosome structure",
-    authors: "Nicodemi, M., Pombo, A.",
-    venue: "Current Opinion in Cell Biology",
-    detail: "28, 90–95",
-    links: { DOI: "" }
-  },
-  {
-    year: 2014,
-    title: "Physical mechanisms behind the large scale features of chromatin organization",
-    authors: "Pombo, A., Nicodemi, M.",
-    venue: "Transcription",
-    detail: "5(2), e28447",
-    links: { DOI: "" }
-  },
-  {
-    year: 2014,
-    title: "An H3K9/S10 methyl-phospho switch modulates Polycomb and Pol II binding at repressed genes during differentiation",
-    authors: "Sabbattini, P., Sjoberg, M., Nikic, S., Frangini, A., Holmqvist, P. H., Kunowska, N., et al.",
-    venue: "Molecular Biology of the Cell",
-    detail: "25(6), 904–915",
-    links: { DOI: "" }
-  },
-  {
-    year: 2013,
-    title: "Polymer physics, scaling and heterogeneity in the spatial organisation of chromosomes in the cell nucleus",
-    authors: "Barbieri, M., Scialdone, A., Gamba, A., Pombo, A., Nicodemi, M.",
-    venue: "Soft Matter",
-    detail: "9(36), 8631–8635",
-    links: { DOI: "" }
-  },
-  {
-    year: 2013,
-    title: "A polymer model explains the complexity of large-scale chromatin folding",
-    authors: "Barbieri, M., Fraser, J., Lavitas, L. M., Chotalia, M., Dostie, J., Pombo, A., et al.",
-    venue: "Nucleus",
-    detail: "4(4), 267–273",
-    links: { DOI: "" }
-  },
-  {
-    year: 2013,
-    title: "Polymer models of chromatin organization",
-    authors: "Barbieri, M., Scialdone, A., Piccolo, A., Chiariello, A. M., di Lanno, C., Prisco, A., et al.",
-    venue: "Frontiers in Genetics",
-    detail: "4, 113",
-    links: { DOI: "" }
-  },
-  {
-    year: 2013,
-    title: "A model of the large-scale organization of chromatin",
-    authors: "Barbieri, M., Chotalia, M., Fraser, J., Lavitas, L. M., Dostie, J., Pombo, A., et al.",
-    venue: "Biochemical Society Transactions",
-    detail: "41(2), 508–512",
-    links: { DOI: "" }
-  },
-  {
-    year: 2012,
-    title: "Mean expression of the X-chromosome is associated with neuronal density",
-    authors: "Swingland, J. T., Durrenberger, P. F., Reynolds, R., Dexter, D. T., Pombo, A., et al.",
-    venue: "Frontiers in Neuroscience",
-    detail: "6, 161",
-    links: { DOI: "" }
-  },
-  {
-    year: 2012,
-    title: "Complexity of chromatin folding is captured by the strings and binders switch model",
-    authors: "Barbieri, M., Chotalia, M., Fraser, J., Lavitas, L. M., Dostie, J., Pombo, A., et al.",
-    venue: "Proceedings of the National Academy of Sciences",
-    detail: "109(40), 16173–16178",
-    links: { DOI: "" }
-  },
-  {
-    year: 2012,
-    title: "Proteomic analysis of mitotic RNA polymerase II reveals novel interactors and association with proteins dysfunctional in disease",
-    authors: "Möller, A., Xie, S. Q., Hosp, F., Lang, B., Phatnani, H. P., James, S., Ramirez, F., et al.",
-    venue: "Molecular & Cellular Proteomics",
-    detail: "11(6)",
-    links: { DOI: "" }
-  },
-  {
-    year: 2012,
-    title: "Code breaking: the RNAPII modification code in pluripotency",
-    authors: "Brookes, E., Pombo, A.",
-    venue: "Cell Cycle",
-    detail: "11(7), 1267–1268",
-    links: { DOI: "" }
-  },
-  {
-    year: 2012,
-    title: "Polycomb associates genome-wide with a specific RNA polymerase II variant, and regulates metabolic genes in ESCs",
-    authors: "Brookes, E., de Santiago, I., Hebenstreit, D., Morris, K. J., Carroll, T., Xie, S. Q., et al.",
-    venue: "Cell Stem Cell",
-    detail: "10(2), 157–170",
-    links: { DOI: "" }
-  },
-  {
-    year: 2011,
-    title: "Polycomb targets seek closest neighbours",
-    authors: "Chotalia, M., Pombo, A.",
-    venue: "PLoS Genetics",
-    detail: "7(3), e1002031",
-    links: { DOI: "" }
-  },
-  {
-    year: 2011,
-    title: "Nuclear cell biology",
-    authors: "Pombo, A., Starr, D. A.",
-    venue: "Molecular Biology of the Cell",
-    detail: "22(6), 722–722",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Ring1B and Suv39h1 delineate distinct chromatin states at bivalent genes during early mouse lineage commitment",
-    authors: "Alder, O., Lavial, F., Helness, A., Brookes, E., Pinho, S., Chandrashekran, A., et al.",
-    venue: "Development",
-    detail: "137(15), 2483–2492",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Short RNAs are transcribed from repressed polycomb target genes and interact with polycomb repressive complex-2",
-    authors: "Kanhere, A., Viiri, K., Araújo, C. C., Rasaiyaah, J., Bouwman, R. D., Whyte, W. A., et al.",
-    venue: "Molecular Cell",
-    detail: "38(5), 675–688",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Gene positioning",
-    authors: "Ferrai, C., de Castro, I. J., Lavitas, L., Chotalia, M., Pombo, A.",
-    venue: "Cold Spring Harbor Perspectives in Biology",
-    detail: "2(6), a000588",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Jarid2 is a PRC2 component in embryonic stem cells required for multi-lineage differentiation and recruitment of PRC1 and RNA Polymerase II to developmental regulators",
-    authors: "Landeira, D., Sauer, S., Poot, R., Dvorkina, M., Mazzarella, L., Jørgensen, H. F., et al.",
-    venue: "Nature Cell Biology",
-    detail: "12(6), 618–624",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Nucleus and gene expression: the structure and function conundrum",
-    authors: "Pombo, A., Gilbert, D. M.",
-    venue: "Current Opinion in Cell Biology",
-    detail: "22(3), 269–270",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Poised transcription factories prime silent uPA gene prior to activation",
-    authors: "Ferrai, C., Xie, S. Q., Luraghi, P., Munari, D., Ramirez, F., Branco, M. R., Pombo, A., et al.",
-    venue: "PLoS Biology",
-    detail: "8(1), e1000270",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Nuclear architecture in stem cells",
-    authors: "Morris, K. J., Chotalia, M., Pombo, A.",
-    venue: "Advances in Experimental Medicine and Biology",
-    detail: "695, 14–25",
-    links: { DOI: "" }
-  },
-  {
-    year: 2010,
-    title: "Measurement of replication structures at the nanometer scale using super-resolution light microscopy",
-    authors: "Baddeley, D., Chagin, V. O., Schermelleh, L., Martin, S., Pombo, A., Carlton, P. M., et al.",
-    venue: "Nucleic Acids Research",
-    detail: "38(2), e8",
-    links: { DOI: "" }
-  },
-  {
-    year: 2009,
-    title: "The molecular basis for stability of heterochromatin-mediated silencing in mammals",
-    authors: "Hiragami-Hamada, K., Xie, S. Q., Saveliev, A., Uribe-Lewis, S., Pombo, A., et al.",
-    venue: "Epigenetics & Chromatin",
-    detail: "2(1), 14",
-    links: { DOI: "" }
-  },
-  {
-    year: 2009,
-    title: "Modifications of RNA polymerase II are pivotal in regulating gene expression states",
-    authors: "Brookes, E., Pombo, A.",
-    venue: "EMBO Reports",
-    detail: "10(11), 1213",
-    links: { DOI: "" }
-  },
-  {
-    year: 2009,
-    title: "3D chromatin regulation of Sonic hedgehog in the limb buds",
-    authors: "Ferrai, C., Pombo, A.",
-    venue: "Developmental Cell",
-    detail: "16(1), 9–11",
-    links: { DOI: "" }
-  },
-  {
-    year: 2009,
-    title: "Mechanisms regulating S phase progression in mammalian cells",
-    authors: "Maya-Mendoza, A., Tang, C. W., Pombo, A., Jackson, D. A.",
-    venue: "Frontiers in Bioscience",
-    detail: "14(11), 4199–4213",
-    links: { DOI: "" }
-  },
-  {
-    year: 2008,
-    title: "Eukaryotic gene regulation in three dimensions and its impact on genome evolution",
-    authors: "Babu, M. M., Janga, S. C., de Santiago, I., Pombo, A.",
-    venue: "Current Opinion in Genetics & Development",
-    detail: "18(6), 571–582",
-    links: { DOI: "" }
-  },
-  {
-    year: 2008,
-    title: "Changes in chromosome organization during PHA-activation of resting human lymphocytes measured by cryo-FISH",
-    authors: "Branco, M. R., Branco, T., Ramirez, F., Pombo, A.",
-    venue: "Chromosome Research",
-    detail: "16(3), 413–426",
-    links: { DOI: "" }
-  },
-  {
-    year: 2008,
-    title: "Transcription and chromatin organization of a housekeeping gene cluster containing an integrated β-globin locus control region",
-    authors: "Noordermeer, D., Branco, M. R., Splinter, E., Klous, P., van IJcken, W., et al.",
-    venue: "PLoS Genetics",
-    detail: "4(3), e1000016",
-    links: { DOI: "" }
-  },
-  {
-    year: 2007,
-    title: "Ring1-mediated ubiquitination of H2A restrains poised RNA polymerase II at bivalent genes in mouse ES cells",
-    authors: "Stock, J. K., Giadrossi, S., Casanova, M., Brookes, E., Vidal, M., Koseki, H., et al.",
-    venue: "Nature Cell Biology",
-    detail: "9(12), 1428–1435",
-    links: { DOI: "" }
-  },
-  {
-    year: 2007,
-    title: "Functional organisation of the genome during interphase",
-    authors: "Pombo, A., Branco, M. R.",
-    venue: "Current Opinion in Genetics & Development",
-    detail: "17(5), 451–455",
-    links: { DOI: "" }
-  },
-  {
-    year: 2007,
-    title: "Advances in imaging the interphase nucleus using thin cryosections",
-    authors: "Pombo, A.",
-    venue: "Histochemistry and Cell Biology",
-    detail: "128(2), 97–104",
-    links: { DOI: "" }
-  },
-  {
-    year: 2007,
-    title: "Desmin immunolocalisation in autosomal dominant Emery-Dreifuss muscular dystrophy",
-    authors: "Piercy, R. J., Zhou, H., Feng, L., Pombo, A., Muntoni, F., Brown, S. C.",
-    venue: "Neuromuscular Disorders",
-    detail: "17(4), 297–305",
-    links: { DOI: "" }
-  },
-  {
-    year: 2007,
-    title: "Chromosome organization: new facts, new models",
-    authors: "Branco, M. R., Pombo, A.",
-    venue: "Trends in Cell Biology",
-    detail: "17(3), 127–134",
-    links: { DOI: "" }
-  },
-  {
-    year: 2006,
-    title: "Intermingling of chromosome territories in interphase suggests role in translocations and transcription-dependent associations",
-    authors: "Branco, M. R., Pombo, A.",
-    venue: "PLoS Biology",
-    detail: "4(5), e138",
-    links: { DOI: "" }
-  },
-  {
-    year: 2006,
-    title: "Splicing speckles are not reservoirs of RNA polymerase II, but contain an inactive form, phosphorylated on Serine2 residues of the C-terminal domain",
-    authors: "Xie, S. Q., Martin, S., Guillot, P. V., Bentley, D. L., Pombo, A.",
-    venue: "Molecular Biology of the Cell",
-    detail: "17(4), 1723–1733",
-    links: { DOI: "" }
-  },
-  {
-    year: 2006,
-    title: "Distribution of different phosphorylated forms of RNA polymerase II in relation to Cajal and PML bodies in human cells: an ultrastructural study",
-    authors: "Xie, S. Q., Pombo, A.",
-    venue: "Histochemistry and Cell Biology",
-    detail: "125(1), 21–31",
-    links: { DOI: "" }
-  },
-  {
-    year: 2005,
-    title: "Variant histone H3.3 marks promoters of transcriptionally active genes during mammalian cell division",
-    authors: "Chow, C. M., Georgiou, A., Szutorisz, H., Maia e Silva, A., Pombo, A., Barahona, I., et al.",
-    venue: "EMBO Reports",
-    detail: "6(4), 354",
-    links: { DOI: "" }
-  },
-  {
-    year: 2005,
-    title: "Functional analysis of Vif protein shows less restriction of human immunodeficiency virus type 2 by APOBEC3G",
-    authors: "Ribeiro, A. C., Maia e Silva, A., Santa-Marta, M., Pombo, A., Moniz-Pereira, J., et al.",
-    venue: "Journal of Virology",
-    detail: "79(2), 823–833",
-    links: { DOI: "" }
-  },
-  {
-    year: 2004,
-    title: "CD8α is an activation marker for a subset of peripheral CD4 T cells",
-    authors: "Kenny, E., Mason, D., Saoudi, A., Pombo, A., Ramírez, F.",
-    venue: "European Journal of Immunology",
-    detail: "34(5), 1262–1271",
-    links: { DOI: "" }
-  },
-  {
-    year: 2004,
-    title: "Fixation-induced redistribution of hyperphosphorylated RNA polymerase II in the nucleus of human cells",
-    authors: "Guillot, P. V., Xie, S. Q., Hollinshead, M., Pombo, A.",
-    venue: "Experimental Cell Research",
-    detail: "295(2), 460–468",
-    links: { DOI: "" }
-  },
-  {
-    year: 2004,
-    title: "Measuring the size of biological nanostructures with spatially modulated illumination microscopy",
-    authors: "Martin, S., Failla, A. V., Spori, U., Cremer, C., Pombo, A.",
-    venue: "Molecular Biology of the Cell",
-    detail: "15(5), 2449–2455",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "Interaction of proteins with promoter elements of the human U2 snRNA genes in vivo",
-    authors: "Boyd, D. C., Pombo, A., Murphy, S.",
-    venue: "Gene",
-    detail: "315, 103–112",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "Transcription factories: quantitative studies of nanostructures in the mammalian nucleus",
-    authors: "Martin, S., Pombo, A.",
-    venue: "Chromosome Research",
-    detail: "11(5), 461–470",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "Genome function and nuclear architecture: from gene expression to nanoscience",
-    authors: "O'Brien, T. P., Bult, C. J., Cremer, C., Grunze, M., Knowles, B. B., Langowski, J., et al.",
-    venue: "Genome Research",
-    detail: "13(6a), 1029–1041",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "From linear genome sequence to three-dimensional organization of the cell nucleus",
-    authors: "Politz, J., van Driel, R., Sauer, M., Pombo, A.",
-    venue: "Genome Biology",
-    detail: "4(3), 310",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "Cellular genomics: which genes are transcribed, when and where?",
-    authors: "Pombo, A.",
-    venue: "Trends in Biochemical Sciences",
-    detail: "28(1), 6–9",
-    links: { DOI: "" }
-  },
-  {
-    year: 2003,
-    title: "Genomics meets nanoscience: probing genes and the cell nucleus at 10−9 meters",
-    authors: "Politz, J., Pombo, A.",
-    venue: "Genome Biology",
-    detail: "3(3), reports4007.1",
-    links: { DOI: "" }
-  }
+    { year:2015, title:"Three-dimensional genome architecture: players and mechanisms", authors:"Pombo, A., Dillon, N.", venue:"Nature Reviews Molecular Cell Biology", detail:"16, 245–257", links:{ DOI:"" } },
+    { year: 2026, title: "An integrated view of the structure and function of the human 4D nucleome", authors: "Dekker, J., Oksuz, B. A., Zhang, Y., Wang, Y., Minsk, M. K., Kuang, S., Yang, L., et al.", venue: "Nature", detail: "649(8097), 759–776", links: { DOI: "" } },
+    { year: 2025, title: "Cryosectioning-enhanced super-resolution microscopy for single-protein imaging across cells and tissues", authors: "Stein, J., Ericsson, M., Nofal, M., Magni, L., Aufmkolk, S., McMillan, R. B., et al.", venue: "Proceedings of the National Academy of Sciences", detail: "122(32), e2504578122", links: { DOI: "" } },
+    { year: 2025, title: "Extensive folding variability between homologous chromosomes in mammalian cells", authors: "Irastorza-Azcarate, I., Kukalev, A., Kempfer, R., Thieme, C. J., Mastrobuoni, G., et al.", venue: "Molecular Systems Biology", detail: "21(7), 735–775", links: { DOI: "" } },
+    { year: 2024, title: "SRRM2 splicing factor modulates cell fate in early development", authors: "Carvalho, S., Zea-Redondo, L., Tang, T. C. C., Stachel-Braum, P., Miller, D., et al.", venue: "Biology Open", detail: "13(4), bio060415", links: { DOI: "" } },
+    { year: 2024, title: "Epigenetic regulatory layers in the three-dimensional nucleus", authors: "Willemin, A., Szabó, D., Pombo, A.", venue: "Molecular Cell", detail: "84(3), 415–428", links: { DOI: "" } },
+    { year: 2023, title: "Research briefing", authors: "Thieme, C. J., Pombo, A.", venue: "Nature Methods", detail: "20, 993–994", links: { DOI: "" } },
+    { year: 2023, title: "Multiplex-GAM: genome-wide identification of chromatin contacts yields insights overlooked by Hi-C", authors: "Beagrie, R. A., Thieme, C. J., Annunziatella, C., Baugher, C., Zhang, Y., et al.", venue: "Nature Methods", detail: "20(7), 1037–1047", links: { DOI: "" } },
+    { year: 2023, title: "Mechanisms of enhancer function in neuronal systems in health and disease", authors: "Zea-Redondo, L., Pombo, A.", venue: "Current Opinion in Systems Biology", detail: "32, 100443", links: { DOI: "" } },
+    { year: 2022, title: "A noncoding single-nucleotide polymorphism at 8q24 drives IDH1-mutant glioma formation", authors: "Yanchus, C., Drucker, K. L., Kollmeyer, T. M., Tsai, R., Winick-Ng, W., Liang, M., et al.", venue: "Science", detail: "378(6615), 68–78", links: { DOI: "" } },
+    { year: 2022, title: "Single-cell-resolved dynamics of chromatin architecture delineate cell and regulatory states in zebrafish embryos", authors: "McGarvey, A. C., Kopp, W., Vučićević, D., Mattonet, K., Kempfer, R., Hirsekorn, A., et al.", venue: "Cell Genomics", detail: "2(1)", links: { DOI: "" } },
+    { year: 2022, title: "Altered nuclear architecture in blood cells from Huntington’s disease patients", authors: "de Castro, I. J., Toner, B., Xie, S. Q., Swingland, J., Hodges, A., Tabrizi, S. J., et al.", venue: "Neurological Sciences", detail: "43(1), 379–385", links: { DOI: "" } },
+    { year: 2021, title: "GAMIBHEAR: whole-genome haplotype reconstruction from Genome Architecture Mapping data", authors: "Markowski, J., Kempfer, R., Kukalev, A., Irastorza-Azcarate, I., Loof, G., Kehr, B., et al.", venue: "Bioinformatics", detail: "37(19), 3128–3135", links: { DOI: "" } },
+    { year: 2021, title: "Cell-type specialization is encoded by specific chromatin topologies", authors: "Winick-Ng, W., Kukalev, A., Harabula, I., Zea-Redondo, L., Szabó, D., Meijer, M., et al.", venue: "Nature", detail: "599(7886), 684–691", links: { DOI: "" } },
+    { year: 2021, title: "Comparison of the Hi-C, GAM and SPRITE methods using polymer models of chromatin", authors: "Fiorillo, L., Musella, F., Conte, M., Kempfer, R., Chiariello, A. M., Bianco, S., et al.", venue: "Nature Methods", detail: "18(5), 482–490", links: { DOI: "" } },
+    { year: 2021, title: "The dynamics of chromatin architecture in brain development and function", authors: "Harabula, I., Pombo, A.", venue: "Current Opinion in Genetics & Development", detail: "67, 84–93", links: { DOI: "" } },
+    { year: 2020, title: "LifeTime and improving European healthcare through cell-based interceptive medicine", authors: "Rajewsky, N., Almouzni, G., Gorski, S. A., Aerts, S., Amit, I., Bertero, M. G., Bock, C., et al.", venue: "Nature", detail: "587(7834), 377–386", links: { DOI: "" } },
+    { year: 2020, title: "Inference of chromosome 3D structures from GAM data by a physics computational approach", authors: "Fiorillo, L., Bianco, S., Chiariello, A. M., Barbieri, M., Esposito, A., et al.", venue: "Methods", detail: "181, 70–79", links: { DOI: "" } },
+    { year: 2020, title: "Evolving methodologies and concepts in 4D nucleome research", authors: "Sparks, T. M., Harabula, I., Pombo, A.", venue: "Current Opinion in Cell Biology", detail: "64, 105–111", links: { DOI: "" } },
+    { year: 2020, title: "Methods for mapping 3D chromosome architecture", authors: "Kempfer, R., Pombo, A.", venue: "Nature Reviews Genetics", detail: "21(4), 207–226", links: { DOI: "" } },
+    { year: 2019, title: "Editorial overview: Genome architecture and expression", authors: "Bickmore, W., Pombo, A.", venue: "Current Opinion in Genetics and Development", detail: "55, iii–iv", links: { DOI: "" } },
+    { year: 2019, title: "R-loops enhance polycomb repression at a subset of developmental regulator genes", authors: "Skourti-Stathaki, K., Triglia, E. T., Warburton, M., Voigt, P., Bird, A., Pombo, A.", venue: "Molecular Cell", detail: "73(5), 930–945.e4", links: { DOI: "" } },
+    { year: 2018, title: "Challenges and guidelines toward 4D nucleome data and model standards", authors: "Marti-Renom, M. A., Almouzni, G., Bickmore, W. A., Bystricky, K., Cavalli, G., et al.", venue: "Nature Genetics", detail: "50(10), 1352–1358", links: { DOI: "" } },
+    { year: 2018, title: "Polymer physics predicts the effects of structural variants on chromatin architecture", authors: "Bianco, S., Lupiáñez, D. G., Chiariello, A. M., Annunziatella, C., Kraft, K., et al.", venue: "Nature Genetics", detail: "50(5), 662–667", links: { DOI: "" } },
+    { year: 2017, title: "RNA polymerase II primes Polycomb-repressed developmental genes throughout terminal neuronal differentiation", authors: "Ferrai, C., Triglia, E. T., Risner-Janiczek, J. R., Rito, T., Rackham, O. J. L., et al.", venue: "Molecular Systems Biology", detail: "13(10), MSB177754", links: { DOI: "" } },
+    { year: 2017, title: "FANTOM5 CAGE profiles of human and mouse samples", authors: "Noguchi, S., Arakawa, T., Fukuda, S., Furuno, M., Hasegawa, A., Hori, F., et al.", venue: "Scientific Data", detail: "4(1), 170112", links: { DOI: "" } },
+    { year: 2017, title: "Cell cycle: Continuous chromatin changes", authors: "Beagrie, R. A., Pombo, A.", venue: "Nature", detail: "547(7661), 34", links: { DOI: "" } },
+    { year: 2017, title: "Flipping between Polycomb repressed and active transcriptional states introduces noise in gene expression", authors: "Kar, G., Kim, J. K., Kolodziejczyk, A. A., Natarajan, K. N., Triglia, E. T., Mifsud, B., et al.", venue: "Nature Communications", detail: "8(1), 36", links: { DOI: "" } },
+    { year: 2017, title: "Active and poised promoter states drive folding of the extended HoxB locus in mouse embryonic stem cells", authors: "Barbieri, M., Xie, S. Q., Triglia, E. T., Chiariello, A. M., Bianco, S., de Santiago, I., et al.", venue: "Nature Structural & Molecular Biology", detail: "24(6), 515–524", links: { DOI: "" } },
+    { year: 2017, title: "Keep them close: PRC2 poises enhancer-promoter interactions at anterior neuronal genes", authors: "Caglio, G., Triglia, E. T., Pombo, A.", venue: "Cell Stem Cell", detail: "20(5), 573–575", links: { DOI: "" } },
+    { year: 2017, title: "Maternal immune activation results in complex microglial transcriptome signature in the adult offspring that is reversed by minocycline treatment", authors: "Mattei, D., Ivanov, A., Ferrai, C., Jordan, P., Guneykaya, D., Buonfiglioli, A., et al.", venue: "Translational Psychiatry", detail: "7(5), e1120", links: { DOI: "" } },
+    { year: 2017, title: "Complex multi-enhancer contacts captured by genome architecture mapping", authors: "Beagrie, R. A., Scialdone, A., Schueler, M., Kraemer, D. C. A., Chotalia, M., Xie, S. Q., et al.", venue: "Nature", detail: "543(7646), 519–524", links: { DOI: "" } },
+    { year: 2017, title: "A finer print than TADs: PRC1-mediated domains", authors: "Triglia, E. T., Rito, T., Pombo, A.", venue: "Molecular Cell", detail: "65(3), 373–375", links: { DOI: "" } },
+    { year: 2016, title: "Examining topological domain influence on enhancer function", authors: "Beagrie, R. A., Pombo, A.", venue: "Developmental Cell", detail: "39(5), 523–524", links: { DOI: "" } },
+    { year: 2016, title: "Formation of new chromatin domains determines pathogenicity of genomic duplications", authors: "Franke, M., Ibrahim, D. M., Andrey, G., Schwarzer, W., Heinrich, V., Schöpflin, R., et al.", venue: "Nature", detail: "538(7624), 265–269", links: { DOI: "" } },
+    { year: 2016, title: "Gene activation by metazoan enhancers: diverse mechanisms stimulate distinct steps of transcription", authors: "Beagrie, R. A., Pombo, A.", venue: "BioEssays", detail: "38(9), 881–893", links: { DOI: "" } },
+    { year: 2016, title: "Mechanical regulation of transcription controls Polycomb-mediated gene silencing during lineage commitment", authors: "Le, H. Q., Ghatak, S., Yeung, C. Y. C., Tellkamp, F., Günschmann, C., Dieterich, C., et al.", venue: "Nature Cell Biology", detail: "18(8), 864–875", links: { DOI: "" } },
+    { year: 2015, title: "Methylation of RNA polymerase II non-consensus Lysine residues marks early transcription in mammalian cells", authors: "Dias, J. D., Rito, T., Triglia, E. T., Kukalev, A., Ferrai, C., Chotalia, M., et al.", venue: "eLife", detail: "4, e11215", links: { DOI: "" } },
+    { year: 2015, title: "Hierarchical folding and reorganization of chromosomes are linked to transcriptional changes in cellular differentiation", authors: "Fraser, J., Ferrai, C., Chiariello, A. M., Schueler, M., Rito, T., Laudanno, G., et al.", venue: "Molecular Systems Biology", detail: "11(12), MSB156492", links: { DOI: "" } },
+    { year: 2015, title: "Polymer models of the organization of chromosomes in the nucleus of cells", authors: "Chiariello, A. M., Bianco, S., Piccolo, A., Annunziatella, C., Barbieri, M., Pombo, A., et al.", venue: "Modern Physics Letters B", detail: "29(09), 1530003", links: { DOI: "" } },
+    { year: 2015, title: "Three-dimensional genome architecture: players and mechanisms", authors: "Pombo, A., Dillon, N.", venue: "Nature Reviews Molecular Cell Biology", detail: "16(4), 245–257", links: { DOI: "" } },
+    { year: 2015, title: "Transcribed enhancers lead waves of coordinated transcription in transitioning mammalian cells", authors: "Arner, E., Daub, C. O., Vitting-Seerup, K., Andersson, R., Lilje, B., Drabløs, F., et al.", venue: "Science", detail: "347(6225), 1010–1014", links: { DOI: "" } },
+    { year: 2014, title: "Stem cell epigenetics: looking forward", authors: "Benitah, S. A., Bracken, A., Dou, Y., Huangfu, D., Ivanova, N., Koseki, H., et al.", venue: "Cell Stem Cell", detail: "14(6), 706–709", links: { DOI: "" } },
+    { year: 2014, title: "Models of chromosome structure", authors: "Nicodemi, M., Pombo, A.", venue: "Current Opinion in Cell Biology", detail: "28, 90–95", links: { DOI: "" } },
+    { year: 2014, title: "Physical mechanisms behind the large scale features of chromatin organization", authors: "Pombo, A., Nicodemi, M.", venue: "Transcription", detail: "5(2), e28447", links: { DOI: "" } },
+    { year: 2014, title: "An H3K9/S10 methyl-phospho switch modulates Polycomb and Pol II binding at repressed genes during differentiation", authors: "Sabbattini, P., Sjoberg, M., Nikic, S., Frangini, A., Holmqvist, P. H., Kunowska, N., et al.", venue: "Molecular Biology of the Cell", detail: "25(6), 904–915", links: { DOI: "" } },
+    { year: 2013, title: "Polymer physics, scaling and heterogeneity in the spatial organisation of chromosomes in the cell nucleus", authors: "Barbieri, M., Scialdone, A., Gamba, A., Pombo, A., Nicodemi, M.", venue: "Soft Matter", detail: "9(36), 8631–8635", links: { DOI: "" } },
+    { year: 2013, title: "A polymer model explains the complexity of large-scale chromatin folding", authors: "Barbieri, M., Fraser, J., Lavitas, L. M., Chotalia, M., Dostie, J., Pombo, A., et al.", venue: "Nucleus", detail: "4(4), 267–273", links: { DOI: "" } },
+    { year: 2013, title: "Polymer models of chromatin organization", authors: "Barbieri, M., Scialdone, A., Piccolo, A., Chiariello, A. M., di Lanno, C., Prisco, A., et al.", venue: "Frontiers in Genetics", detail: "4, 113", links: { DOI: "" } },
+    { year: 2013, title: "A model of the large-scale organization of chromatin", authors: "Barbieri, M., Chotalia, M., Fraser, J., Lavitas, L. M., Dostie, J., Pombo, A., et al.", venue: "Biochemical Society Transactions", detail: "41(2), 508–512", links: { DOI: "" } },
+    { year: 2012, title: "Mean expression of the X-chromosome is associated with neuronal density", authors: "Swingland, J. T., Durrenberger, P. F., Reynolds, R., Dexter, D. T., Pombo, A., et al.", venue: "Frontiers in Neuroscience", detail: "6, 161", links: { DOI: "" } },
+    { year: 2012, title: "Complexity of chromatin folding is captured by the strings and binders switch model", authors: "Barbieri, M., Chotalia, M., Fraser, J., Lavitas, L. M., Dostie, J., Pombo, A., et al.", venue: "Proceedings of the National Academy of Sciences", detail: "109(40), 16173–16178", links: { DOI: "" } },
+    { year: 2012, title: "Proteomic analysis of mitotic RNA polymerase II reveals novel interactors and association with proteins dysfunctional in disease", authors: "Möller, A., Xie, S. Q., Hosp, F., Lang, B., Phatnani, H. P., James, S., Ramirez, F., et al.", venue: "Molecular & Cellular Proteomics", detail: "11(6)", links: { DOI: "" } },
+    { year: 2012, title: "Code breaking: the RNAPII modification code in pluripotency", authors: "Brookes, E., Pombo, A.", venue: "Cell Cycle", detail: "11(7), 1267–1268", links: { DOI: "" } },
+    { year: 2012, title: "Polycomb associates genome-wide with a specific RNA polymerase II variant, and regulates metabolic genes in ESCs", authors: "Brookes, E., de Santiago, I., Hebenstreit, D., Morris, K. J., Carroll, T., Xie, S. Q., et al.", venue: "Cell Stem Cell", detail: "10(2), 157–170", links: { DOI: "" } },
+    { year: 2011, title: "Polycomb targets seek closest neighbours", authors: "Chotalia, M., Pombo, A.", venue: "PLoS Genetics", detail: "7(3), e1002031", links: { DOI: "" } },
+    { year: 2011, title: "Nuclear cell biology", authors: "Pombo, A., Starr, D. A.", venue: "Molecular Biology of the Cell", detail: "22(6), 722–722", links: { DOI: "" } },
+    { year: 2010, title: "Ring1B and Suv39h1 delineate distinct chromatin states at bivalent genes during early mouse lineage commitment", authors: "Alder, O., Lavial, F., Helness, A., Brookes, E., Pinho, S., Chandrashekran, A., et al.", venue: "Development", detail: "137(15), 2483–2492", links: { DOI: "" } },
+    { year: 2010, title: "Short RNAs are transcribed from repressed polycomb target genes and interact with polycomb repressive complex-2", authors: "Kanhere, A., Viiri, K., Araújo, C. C., Rasaiyaah, J., Bouwman, R. D., Whyte, W. A., et al.", venue: "Molecular Cell", detail: "38(5), 675–688", links: { DOI: "" } },
+    { year: 2010, title: "Gene positioning", authors: "Ferrai, C., de Castro, I. J., Lavitas, L., Chotalia, M., Pombo, A.", venue: "Cold Spring Harbor Perspectives in Biology", detail: "2(6), a000588", links: { DOI: "" } },
+    { year: 2010, title: "Jarid2 is a PRC2 component in embryonic stem cells required for multi-lineage differentiation and recruitment of PRC1 and RNA Polymerase II to developmental regulators", authors: "Landeira, D., Sauer, S., Poot, R., Dvorkina, M., Mazzarella, L., Jørgensen, H. F., et al.", venue: "Nature Cell Biology", detail: "12(6), 618–624", links: { DOI: "" } },
+    { year: 2010, title: "Nucleus and gene expression: the structure and function conundrum", authors: "Pombo, A., Gilbert, D. M.", venue: "Current Opinion in Cell Biology", detail: "22(3), 269–270", links: { DOI: "" } },
+    { year: 2010, title: "Poised transcription factories prime silent uPA gene prior to activation", authors: "Ferrai, C., Xie, S. Q., Luraghi, P., Munari, D., Ramirez, F., Branco, M. R., Pombo, A., et al.", venue: "PLoS Biology", detail: "8(1), e1000270", links: { DOI: "" } },
+    { year: 2010, title: "Nuclear architecture in stem cells", authors: "Morris, K. J., Chotalia, M., Pombo, A.", venue: "Advances in Experimental Medicine and Biology", detail: "695, 14–25", links: { DOI: "" } },
+    { year: 2010, title: "Measurement of replication structures at the nanometer scale using super-resolution light microscopy", authors: "Baddeley, D., Chagin, V. O., Schermelleh, L., Martin, S., Pombo, A., Carlton, P. M., et al.", venue: "Nucleic Acids Research", detail: "38(2), e8", links: { DOI: "" } },
+    { year: 2009, title: "The molecular basis for stability of heterochromatin-mediated silencing in mammals", authors: "Hiragami-Hamada, K., Xie, S. Q., Saveliev, A., Uribe-Lewis, S., Pombo, A., et al.", venue: "Epigenetics & Chromatin", detail: "2(1), 14", links: { DOI: "" } },
+    { year: 2009, title: "Modifications of RNA polymerase II are pivotal in regulating gene expression states", authors: "Brookes, E., Pombo, A.", venue: "EMBO Reports", detail: "10(11), 1213", links: { DOI: "" } },
+    { year: 2009, title: "3D chromatin regulation of Sonic hedgehog in the limb buds", authors: "Ferrai, C., Pombo, A.", venue: "Developmental Cell", detail: "16(1), 9–11", links: { DOI: "" } },
+    { year: 2009, title: "Mechanisms regulating S phase progression in mammalian cells", authors: "Maya-Mendoza, A., Tang, C. W., Pombo, A., Jackson, D. A.", venue: "Frontiers in Bioscience", detail: "14(11), 4199–4213", links: { DOI: "" } },
+    { year: 2008, title: "Eukaryotic gene regulation in three dimensions and its impact on genome evolution", authors: "Babu, M. M., Janga, S. C., de Santiago, I., Pombo, A.", venue: "Current Opinion in Genetics & Development", detail: "18(6), 571–582", links: { DOI: "" } },
+    { year: 2008, title: "Changes in chromosome organization during PHA-activation of resting human lymphocytes measured by cryo-FISH", authors: "Branco, M. R., Branco, T., Ramirez, F., Pombo, A.", venue: "Chromosome Research", detail: "16(3), 413–426", links: { DOI: "" } },
+    { year: 2008, title: "Transcription and chromatin organization of a housekeeping gene cluster containing an integrated β-globin locus control region", authors: "Noordermeer, D., Branco, M. R., Splinter, E., Klous, P., van IJcken, W., et al.", venue: "PLoS Genetics", detail: "4(3), e1000016", links: { DOI: "" } },
+    { year: 2007, title: "Ring1-mediated ubiquitination of H2A restrains poised RNA polymerase II at bivalent genes in mouse ES cells", authors: "Stock, J. K., Giadrossi, S., Casanova, M., Brookes, E., Vidal, M., Koseki, H., et al.", venue: "Nature Cell Biology", detail: "9(12), 1428–1435", links: { DOI: "" } },
+    { year: 2007, title: "Functional organisation of the genome during interphase", authors: "Pombo, A., Branco, M. R.", venue: "Current Opinion in Genetics & Development", detail: "17(5), 451–455", links: { DOI: "" } },
+    { year: 2007, title: "Advances in imaging the interphase nucleus using thin cryosections", authors: "Pombo, A.", venue: "Histochemistry and Cell Biology", detail: "128(2), 97–104", links: { DOI: "" } },
+    { year: 2007, title: "Desmin immunolocalisation in autosomal dominant Emery-Dreifuss muscular dystrophy", authors: "Piercy, R. J., Zhou, H., Feng, L., Pombo, A., Muntoni, F., Brown, S. C.", venue: "Neuromuscular Disorders", detail: "17(4), 297–305", links: { DOI: "" } },
+    { year: 2007, title: "Chromosome organization: new facts, new models", authors: "Branco, M. R., Pombo, A.", venue: "Trends in Cell Biology", detail: "17(3), 127–134", links: { DOI: "" } },
+    { year: 2006, title: "Intermingling of chromosome territories in interphase suggests role in translocations and transcription-dependent associations", authors: "Branco, M. R., Pombo, A.", venue: "PLoS Biology", detail: "4(5), e138", links: { DOI: "" } },
+    { year: 2006, title: "Splicing speckles are not reservoirs of RNA polymerase II, but contain an inactive form, phosphorylated on Serine2 residues of the C-terminal domain", authors: "Xie, S. Q., Martin, S., Guillot, P. V., Bentley, D. L., Pombo, A.", venue: "Molecular Biology of the Cell", detail: "17(4), 1723–1733", links: { DOI: "" } },
+    { year: 2006, title: "Distribution of different phosphorylated forms of RNA polymerase II in relation to Cajal and PML bodies in human cells: an ultrastructural study", authors: "Xie, S. Q., Pombo, A.", venue: "Histochemistry and Cell Biology", detail: "125(1), 21–31", links: { DOI: "" } },
+    { year: 2005, title: "Variant histone H3.3 marks promoters of transcriptionally active genes during mammalian cell division", authors: "Chow, C. M., Georgiou, A., Szutorisz, H., Maia e Silva, A., Pombo, A., Barahona, I., et al.", venue: "EMBO Reports", detail: "6(4), 354", links: { DOI: "" } },
+    { year: 2005, title: "Functional analysis of Vif protein shows less restriction of human immunodeficiency virus type 2 by APOBEC3G", authors: "Ribeiro, A. C., Maia e Silva, A., Santa-Marta, M., Pombo, A., Moniz-Pereira, J., et al.", venue: "Journal of Virology", detail: "79(2), 823–833", links: { DOI: "" } },
+    { year: 2004, title: "CD8α is an activation marker for a subset of peripheral CD4 T cells", authors: "Kenny, E., Mason, D., Saoudi, A., Pombo, A., Ramírez, F.", venue: "European Journal of Immunology", detail: "34(5), 1262–1271", links: { DOI: "" } },
+    { year: 2004, title: "Fixation-induced redistribution of hyperphosphorylated RNA polymerase II in the nucleus of human cells", authors: "Guillot, P. V., Xie, S. Q., Hollinshead, M., Pombo, A.", venue: "Experimental Cell Research", detail: "295(2), 460–468", links: { DOI: "" } },
+    { year: 2004, title: "Measuring the size of biological nanostructures with spatially modulated illumination microscopy", authors: "Martin, S., Failla, A. V., Spori, U., Cremer, C., Pombo, A.", venue: "Molecular Biology of the Cell", detail: "15(5), 2449–2455", links: { DOI: "" } },
+    { year: 2003, title: "Interaction of proteins with promoter elements of the human U2 snRNA genes in vivo", authors: "Boyd, D. C., Pombo, A., Murphy, S.", venue: "Gene", detail: "315, 103–112", links: { DOI: "" } },
+    { year: 2003, title: "Transcription factories: quantitative studies of nanostructures in the mammalian nucleus", authors: "Martin, S., Pombo, A.", venue: "Chromosome Research", detail: "11(5), 461–470", links: { DOI: "" } },
+    { year: 2003, title: "Genome function and nuclear architecture: from gene expression to nanoscience", authors: "O'Brien, T. P., Bult, C. J., Cremer, C., Grunze, M., Knowles, B. B., Langowski, J., et al.", venue: "Genome Research", detail: "13(6a), 1029–1041", links: { DOI: "" } },
+    { year: 2003, title: "From linear genome sequence to three-dimensional organization of the cell nucleus", authors: "Politz, J., van Driel, R., Sauer, M., Pombo, A.", venue: "Genome Biology", detail: "4(3), 310", links: { DOI: "" } },
+    { year: 2003, title: "Cellular genomics: which genes are transcribed, when and where?", authors: "Pombo, A.", venue: "Trends in Biochemical Sciences", detail: "28(1), 6–9", links: { DOI: "" } },
+    { year: 2003, title: "Genomics meets nanoscience: probing genes and the cell nucleus at 10−9 meters", authors: "Politz, J., Pombo, A.", venue: "Genome Biology", detail: "3(3), reports4007.1", links: { DOI: "" } }
   ],
 
-  /* --- patents -------------------------------------------- */
   patents: [
     { year:2026, title:"[Add patent title]", inventors:"Pombo, A., [co-inventors]", number:"[Application or publication number]", status:"Filed", office:"[USPTO / EPO / WIPO]" },
     { year:2025, title:"[Add patent title]", inventors:"Pombo, A., [co-inventors]", number:"[Application or publication number]", status:"Granted", office:"[USPTO / EPO / WIPO]" }
   ],
 
-  /* --- join ------------------------------------------------
-     NOTE: the text below is rendered as raw HTML, so you can use
-     <a href="...">links</a> and <em> inside it. Do not paste
-     untrusted content here.                                    */
   join: {
     title: "Join Us!",
     intro: "We are recruiting at all levels. If you think our research is exciting, please reach out!",
     sections: [
-      {
-        title: "Postdoctoral Fellows",
-        body: "We are looking for highly motivated postdocs with expertise in molecular biology, genomics, cell biology, and/or microscopy. Please contact Ana if interested!"
-      },
-      {
-        title: "Graduate Students",
-        body: 'We are affiliated with the CMDB (KSAS), <a href="https://www.hopkinsmedicine.org/genetic-medicine/education-training/human-genetics-genomics-graduate-program">Human Genetics and Genomics</a>, and BCMB (SOM) graduate programs, but are happy to hear from Students in other graduate programs as well. If you are interested in a rotation, please contact Ana.'
-      },
-      {
-        title: "Undergraduates",
-        body: "Undergraduates interested in a research experience in our lab should be willing to commit at least 10 hours per week to research."
-      }
+      { title: "Postdoctoral Fellows",
+        body: "We are looking for highly motivated postdocs with expertise in molecular biology, genomics, cell biology, and/or microscopy. Please contact Ana if interested!" },
+      { title: "Graduate Students",
+        body: 'We are affiliated with the CMDB (KSAS), <a href="https://www.hopkinsmedicine.org/genetic-medicine/education-training/human-genetics-genomics-graduate-program">Human Genetics and Genomics</a>, and BCMB (SOM) graduate programs, but are happy to hear from Students in other graduate programs as well. If you are interested in a rotation, please contact Ana.' },
+      { title: "Undergraduates",
+        body: "Undergraduates interested in a research experience in our lab should be willing to commit at least 10 hours per week to research." }
     ]
   },
 
-  /* --- support ---------------------------------------------
-     Add a logo file to your img/ folder and give its path below.
-     Leave logo blank and the name shows as a placeholder box.   */
   support: {
     intro: "We gratefully acknowledge the support of the following organizations.",
     logos: [
@@ -1677,14 +830,10 @@ const DATA = {
 };
 </script>
 
-<!-- ==========================================================
-     APP — navigation, router, and page renderers
-     ========================================================== -->
 <script>
 (function () {
   "use strict";
 
-  /* ---------- helpers ------------------------------------- */
   const $ = (s, r) => (r || document).querySelector(s);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
     ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
@@ -1703,33 +852,21 @@ const DATA = {
   };
   const mailLink = addr => '<a href="mailto:' + esc(addr) + '">' + esc(addr) + "</a>";
 
-  /* Site codes used by the alumni table. "A"/"B" are the current
-     sites; anything in DATA.pastSites (e.g. "L") is a former one.
-     A value like "L/B" renders as two pills.                    */
   const siteLabel = k =>
     (DATA.sites[k] && DATA.sites[k].short) ||
     (DATA.pastSites && DATA.pastSites[k] && DATA.pastSites[k].short) || k;
-  const siteClass = k => k === "A" ? "pill--a" : k === "B" ? "pill--b" : "";
+  const siteClass = k => k === "JHU" ? "pill--jhu" : k === "MDC" ? "pill--mdc" : "";
   const sitePill = code => '<span class="pill-group">' +
     String(code || "—").split("/").map(part => {
       const k = part.trim();
       return '<span class="pill ' + siteClass(k) + '">' + esc(siteLabel(k)) + "</span>";
     }).join("") + "</span>";
 
-  /* last four-digit year in a string like "2014–2020" */
   const lastYear = s => {
     const m = String(s || "").match(/\d{4}/g);
     return m ? Number(m[m.length - 1]) : 0;
   };
 
-  /* ---------- § CRYOSECTION — blade colour ----------------
-     Section thickness in nanometres. In ultramicrotomy the
-     thickness of a section floating on water is read off its
-     interference colour: grey below 60, silver to 90, gold to
-     150, purple to 190, blue beyond. GAM cuts nuclear
-     cryosections in the low hundreds of nm, which puts the nav
-     blade in the blue band — the same blue as the JHU site
-     marker. Change this one number to retune the whole nav.   */
   const SECTION_NM = 220;
 
   const FILM_STOPS = [
@@ -1751,15 +888,13 @@ const DATA = {
   }
   function applyBlade(nm) {
     const c = film(nm);
-    const depth = 0.5 + (nm - 60) / 180 * 3.0;   // extrusion scales with thickness
+    const depth = 0.5 + (nm - 60) / 180 * 3.0;
     const r = document.documentElement;
     r.style.setProperty("--nm", nm);
     r.style.setProperty("--film", "rgb(" + c.join(",") + ")");
     r.style.setProperty("--depth", depth.toFixed(2) + "px");
   }
 
-  /* one label, four stacked copies: the frozen block, the glass
-     blade face, and three extruded layers riding on the blade */
   const tabLabel = text => {
     const t = esc(text);
     return '<span class="tab-inner">' +
@@ -1773,17 +908,14 @@ const DATA = {
       "</span>";
   };
 
-  /* ---------- navigation model ---------------------------- */
   const NAV = [
     { label:"Home", href:"#/" },
     { label:"People", href:"#/people/pi", children:[
       { label:"PI",               href:"#/people/pi" },
-      { label:DATA.sites.A.short, href:"#/people/site-a", tag:"a" },
-      { label:DATA.sites.B.short, href:"#/people/site-b", tag:"b" },
+      { label:DATA.sites.JHU.short, href:"#/people/jhu", tag:"jhu" },
+      { label:DATA.sites.MDC.short, href:"#/people/mdc", tag:"mdc" },
       { label:"Alumni",           href:"#/people/alumni" }
     ]},
-    // Research children are generated from DATA.areas, so adding or
-    // removing an area updates the menu automatically.
     { label:"Research", href:"#/research", children:
       [{ label:"Research Overview", href:"#/research" }].concat(
         DATA.areas.map(a => ({ label:a.title, href:"#/research/" + a.id })))
@@ -1818,7 +950,7 @@ const DATA = {
       li.addEventListener("mouseleave", () => {
         if (isTouchLayout()) return;
         clearTimeout(closeTimer);
-        closeTimer = setTimeout(() => closeMenu(li), 260);   // grace period
+        closeTimer = setTimeout(() => closeMenu(li), 260);
       });
       link.addEventListener("click", e => {
         if (isTouchLayout()) { e.preventDefault(); li.classList.contains("open") ? closeMenu(li) : openMenu(li); }
@@ -1829,7 +961,6 @@ const DATA = {
       });
     });
 
-    /* § CRYOSECTION — touch has no hover, so latch the cut on tap */
     nav.querySelectorAll(".nav-link").forEach(link => {
       link.addEventListener("pointerdown", e => {
         if (e.pointerType === "mouse") return;
@@ -1887,7 +1018,6 @@ const DATA = {
     });
   }
 
-  /* ---------- shared partials ----------------------------- */
   const pageHead = (crumb, title, lead) =>
     '<header class="page-head"><div class="wrap">' +
       '<p class="crumb">' + esc(crumb) + "</p>" +
@@ -1903,10 +1033,6 @@ const DATA = {
   const PEOPLE_TABS   = NAV[1].children;
   const RESEARCH_TABS = NAV[2].children;
 
-  /* The avatar is decorative: the person's name always sits next to
-     it in text, so it is hidden from assistive tech rather than
-     announcing a monogram letter by letter. A photo that fails to
-     load removes itself and falls back to the monogram beneath.   */
   const avatarFor = (p, cls) => {
     const mono = esc(String(p.initials || initials(p.name)).slice(0, 2));
     return '<div class="avatar ' + cls + '" aria-hidden="true">' + mono +
@@ -1915,7 +1041,7 @@ const DATA = {
   };
 
   const personCard = p => {
-    const cls = p.site === "B" ? "is-b" : "is-a";
+    const cls = p.site === "MDC" ? "is-mdc" : "is-jhu";
     return '<article class="person ' + cls + '">' + avatarFor(p, cls) + '<div class="body">' +
       "<h3>" + esc(p.name) + "</h3>" +
       '<p class="role">' + esc(p.role) + "</p>" +
@@ -1924,7 +1050,6 @@ const DATA = {
       "</div></article>";
   };
 
-  /* ---------- pages --------------------------------------- */
   const P = {};
 
   P.home = () => {
@@ -1956,15 +1081,14 @@ const DATA = {
     );
   };
 
-  /* ---------- chromatin polymer --------------------------- */
   function startChromatin() {
     const cv = document.getElementById("chromatin");
     if (!cv) return;
     const ctx = cv.getContext("2d");
     const still = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
 
-    const N = 96;          // beads
-    const L = 9;           // rest length between neighbours
+    const N = 96;
+    const L = 9;
     const beads = [];
     let w = 0, h = 0, raf = 0;
 
@@ -1990,7 +1114,6 @@ const DATA = {
     }
 
     function step() {
-      // springs along the chain
       for (let i = 0; i < N - 1; i++) {
         const a = beads[i], b = beads[i + 1];
         let dx = b.x - a.x, dy = b.y - a.y;
@@ -2000,13 +1123,11 @@ const DATA = {
         a.vx += dx * f; a.vy += dy * f;
         b.vx -= dx * f; b.vy -= dy * f;
       }
-      // bending stiffness — keeps the chain smooth rather than kinked
       for (let i = 1; i < N - 1; i++) {
         const p = beads[i - 1], c = beads[i], n = beads[i + 1];
         c.vx += ((p.x + n.x) / 2 - c.x) * 0.035;
         c.vy += ((p.y + n.y) / 2 - c.y) * 0.035;
       }
-      // self-avoidance
       for (let i = 0; i < N; i++) {
         for (let j = i + 3; j < N; j++) {
           const a = beads[i], b = beads[j];
@@ -2020,7 +1141,6 @@ const DATA = {
           }
         }
       }
-      // thermal noise + soft confinement + damping
       const cx = w / 2, cy = h / 2, rx = w * 0.42, ry = h * 0.40;
       for (let i = 0; i < N; i++) {
         const p = beads[i];
@@ -2040,7 +1160,6 @@ const DATA = {
       g.addColorStop(0, "#5B86E8");
       g.addColorStop(1, "#E5A44A");
 
-      // soft halo, then the fibre itself
       ctx.lineCap = "round"; ctx.lineJoin = "round";
       for (const pass of [{ lw: 13, a: 0.10 }, { lw: 3.2, a: 0.95 }]) {
         ctx.beginPath();
@@ -2068,7 +1187,6 @@ const DATA = {
     };
     window.addEventListener("resize", onResize);
 
-    // stop the loop when the home page is replaced
     const stop = () => {
       if (!document.body.contains(cv)) {
         cancelAnimationFrame(raf);
@@ -2085,7 +1203,7 @@ const DATA = {
     return pageHead("People / Principal Investigator", "Principal Investigator") +
       subtabs(PEOPLE_TABS, "/people/pi") +
       '<section class="section--tight"><div class="wrap"><div class="pi-card">' +
-        '<div class="person" style="border:0;background:none">' + avatarFor(pi, "is-a") + "</div>" +
+        '<div class="person" style="border:0;background:none">' + avatarFor(pi, "is-jhu") + "</div>" +
         '<div><h2 style="font-size:clamp(26px,3.4vw,38px)">' + esc(pi.name) + "</h2>" +
         '<p class="eyebrow" style="margin:10px 0 20px">' + esc(pi.role) + "</p>" +
         pi.bio.map(b => '<p class="lead" style="font-size:17px;max-width:none">' + esc(b) + "</p>").join("") +
@@ -2099,23 +1217,21 @@ const DATA = {
   P.peopleSite = key => {
     const s = DATA.sites[key];
     const list = DATA.members.filter(m => m.site === key);
-    const other = key === "A" ? "b" : "a";
+    const other = key === "JHU" ? "mdc" : "jhu";
     return pageHead("People / " + s.short, esc(s.name), s.dept) +
-      subtabs(PEOPLE_TABS, key === "A" ? "/people/site-a" : "/people/site-b") +
+      subtabs(PEOPLE_TABS, key === "JHU" ? "/people/jhu" : "/people/mdc") +
       '<section class="section--tight"><div class="wrap">' +
         '<p class="eyebrow">' + list.length + " at this site · " + esc(s.address) + "</p>" +
         '<div class="people-grid">' + list.map(personCard).join("") + "</div>" +
         '<p style="margin-top:34px" class="muted">Looking for someone at the other site? ' +
-          '<a href="#/people/site-' + other + '" style="color:var(--color_a);text-decoration:underline">See ' +
-          esc(key === "A" ? DATA.sites.B.short : DATA.sites.A.short) + "</a>.</p>" +
+          '<a href="#/people/' + other + '" style="color:var(--color-jhu);text-decoration:underline">See ' +
+          esc(key === "JHU" ? DATA.sites.MDC.short : DATA.sites.JHU.short) + "</a>.</p>" +
       "</div></section>";
   };
 
   P.peopleAlumni = () => {
-    // Sort newest-leaving first, then alphabetically within a year.
     const rows = DATA.alumni.slice().sort((a, b) =>
       lastYear(b.years) - lastYear(a.years) || a.name.localeCompare(b.name));
-    // Only show the Thesis column once at least one title has been added.
     const showThesis = rows.some(a => a.thesis && a.thesis !== "—");
 
     return pageHead("People / Alumni", "Alumni",
@@ -2186,14 +1302,11 @@ const DATA = {
       "</div></section>";
   };
 
-  /* A link with no URL, or a bare "#", would route back to the
-     homepage. Render it as an inactive badge instead.          */
   const pubLink = (label, url) =>
     (!url || url === "#")
       ? '<span class="link-dead" title="Link not added yet">' + esc(label) + "</span>"
       : '<a href="' + esc(url) + '">' + esc(label) + "</a>";
 
-  /* year-grouped list shared by publications + patents */
   function yearPage(kind) {
     const isPub = kind === "publications";
     const rows = isPub ? DATA.publications : DATA.patents;
@@ -2207,7 +1320,7 @@ const DATA = {
       rows.filter(r => r.year === y).map((r, i) => isPub
         ? '<article class="pub' + (r.featured ? " is-featured" : "") + '">' +
             '<div class="n">' + String(i + 1).padStart(2, "0") + "</div><div>" +
-            (r.featured ? '<span class="pill pill--b" style="margin-bottom:10px">Featured</span>' : "") +
+            (r.featured ? '<span class="pill pill--accent" style="margin-bottom:10px">Featured</span>' : "") +
             "<h3>" + esc(r.title) + "</h3>" +
             '<p class="authors">' + boldAuthors(r.authors) + "</p>" +
             '<p class="venue"><em>' + esc(r.venue) + "</em> · " + esc(r.detail) + " · " + r.year + "</p>" +
@@ -2258,17 +1371,16 @@ const DATA = {
     pageHead("Error", "That page does not exist.", "The link may be out of date. Use the menu above, or start again from the homepage.") +
     '<section class="section--tight"><div class="wrap"><a class="btn" href="#/">Back to home</a></div></section>';
 
-  /* ---------- footer -------------------------------------- */
   function buildFooter() {
-    const A = DATA.sites.A, B = DATA.sites.B;
+    const jhu = DATA.sites.JHU, mdc = DATA.sites.MDC;
     $("#foot-grid").innerHTML =
       '<div><p class="foot-name">' + esc(DATA.lab.name) + "</p>" +
         '<p class="foot-about">' + esc(DATA.lab.about) + "</p>" +
         '<p class="foot-mail">' + mailLink(DATA.lab.email) + "</p></div>" +
-      "<div><h4>" + esc(A.short) + '</h4><ul class="foot-list">' +
-        "<li>" + esc(A.dept) + "</li><li>" + esc(A.address) + "</li></ul></div>" +
-      "<div><h4>" + esc(B.short) + '</h4><ul class="foot-list">' +
-        "<li>" + esc(B.dept) + "</li><li>" + esc(B.address) + "</li></ul></div>";
+      "<div><h4>" + esc(jhu.short) + '</h4><ul class="foot-list">' +
+        "<li>" + esc(jhu.dept) + "</li><li>" + esc(jhu.address) + "</li></ul></div>" +
+      "<div><h4>" + esc(mdc.short) + '</h4><ul class="foot-list">' +
+        "<li>" + esc(mdc.dept) + "</li><li>" + esc(mdc.address) + "</li></ul></div>";
     $("#foot-bottom").innerHTML =
       "<span>\u00A9 " + new Date().getFullYear() + " " + esc(DATA.lab.name) + "</span>" +
       '<span><a href="#/news">News</a> \u00B7 <a href="#/publications">Publications</a> \u00B7 <a href="#/join">Join</a></span>';
@@ -2276,12 +1388,11 @@ const DATA = {
     $("#brand-sub").textContent = DATA.lab.tagline;
   }
 
-  /* ---------- router -------------------------------------- */
   const ROUTES = {
     "/":                        { title:"Home",                          render:P.home },
     "/people/pi":               { title:"Principal Investigator",        render:P.peoplePI },
-    "/people/site-a":           { title:"People · " + DATA.sites.A.short, render:() => P.peopleSite("A") },
-    "/people/site-b":           { title:"People · " + DATA.sites.B.short, render:() => P.peopleSite("B") },
+    "/people/jhu":               { title:"People · " + DATA.sites.JHU.short, render:() => P.peopleSite("JHU") },
+    "/people/mdc":               { title:"People · " + DATA.sites.MDC.short, render:() => P.peopleSite("MDC") },
     "/people/alumni":           { title:"Alumni",                        render:P.peopleAlumni },
     "/research":                { title:"Research",                      render:P.researchOverview },
     "/news":                    { title:"News",                          render:P.news },
@@ -2310,7 +1421,6 @@ const DATA = {
     window.scrollTo(0, 0);
   }
 
-  /* year filter on publications + patents */
   function wireYearChips() {
     const chips = $("#year-chips");
     if (!chips) return;
@@ -2325,7 +1435,6 @@ const DATA = {
     });
   }
 
-  /* ---------- boot ---------------------------------------- */
   applyBlade(SECTION_NM);
   buildNav();
   buildFooter();
