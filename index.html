@@ -220,11 +220,6 @@ p:last-child{margin-bottom:0}
   padding:clamp(60px,9vw,120px) 0 clamp(40px,5vw,64px);
   position:relative;overflow:hidden;
 }
-.hero::before{
-  content:"";position:absolute;inset:0;
-  background-image:linear-gradient(var(--line-dark) 1px,transparent 1px);
-  background-size:100% 46px;opacity:.28;pointer-events:none;
-}
 .hero > *{position:relative}
 .hero h1{
   font-size:clamp(40px,7.6vw,90px);letter-spacing:-.035em;max-width:17ch;margin:0 0 26px;
@@ -1112,12 +1107,15 @@ const DATA = {
     if (!cv) return;
     const ctx = cv.getContext("2d");
     const still = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-
-    const N = 96;
-    const L = 9;
+ 
+    const N = 96;          // beads
+    const L0 = 9;          // base bond length
+    const PERIOD = 3600;   // ms per condense → extend cycle
+ 
     const beads = [];
-    let w = 0, h = 0, raf = 0;
-
+    const ptr = { x: 0, y: 0, amt: 0, want: 0 };
+    let w = 0, h = 0, raf = 0, t0 = 0, cond = 0.18;
+ 
     function size() {
       const r = cv.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1126,7 +1124,7 @@ const DATA = {
       cv.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-
+ 
     function seed() {
       beads.length = 0;
       for (let i = 0; i < N; i++) {
@@ -1138,56 +1136,114 @@ const DATA = {
         });
       }
     }
-
-    function step() {
+ 
+    function step(now) {
+      // cycle: 0 = extended fibre, 1 = condensed globule
+      if (!still) {
+        if (!t0) t0 = now;
+        const raw = 0.5 - 0.5 * Math.cos((now - t0) / PERIOD * Math.PI * 2);
+        cond = raw * raw * (3 - 2 * raw);   // smoothstep: holds at both ends
+      }
+      const ext = 1 - cond;
+ 
+      const L = L0 * (0.60 + 0.64 * ext);   // bonds shorten as it condenses
+      const R = L * 1.9;                    // excluded volume radius
+ 
+      ptr.amt += (ptr.want - ptr.amt) * 0.07;
+ 
+      let mx = 0, my = 0;
+      for (let i = 0; i < N; i++) { mx += beads[i].x; my += beads[i].y; }
+      mx /= N; my /= N;
+ 
+      // bonds
       for (let i = 0; i < N - 1; i++) {
         const a = beads[i], b = beads[i + 1];
         let dx = b.x - a.x, dy = b.y - a.y;
         const d = Math.hypot(dx, dy) || 1e-6;
-        const f = (d - L) * 0.16;
+        const f = (d - L) * 0.19;
         dx /= d; dy /= d;
         a.vx += dx * f; a.vy += dy * f;
         b.vx -= dx * f; b.vy -= dy * f;
       }
+ 
+      // bending: stiff while extended, floppy while condensed
+      const bend = 0.018 + 0.055 * ext;
       for (let i = 1; i < N - 1; i++) {
         const p = beads[i - 1], c = beads[i], n = beads[i + 1];
-        c.vx += ((p.x + n.x) / 2 - c.x) * 0.035;
-        c.vy += ((p.y + n.y) / 2 - c.y) * 0.035;
+        c.vx += ((p.x + n.x) / 2 - c.x) * bend;
+        c.vy += ((p.y + n.y) / 2 - c.y) * bend;
       }
+ 
+      // excluded volume
       for (let i = 0; i < N; i++) {
         for (let j = i + 3; j < N; j++) {
           const a = beads[i], b = beads[j];
           let dx = b.x - a.x, dy = b.y - a.y;
-          const d2 = dx * dx + dy * dy, R = L * 1.9;
+          const d2 = dx * dx + dy * dy;
           if (d2 < R * R && d2 > 1e-6) {
-            const d = Math.sqrt(d2), f = (R - d) * 0.045;
+            const d = Math.sqrt(d2), f = (R - d) * 0.05;
             dx /= d; dy /= d;
             a.vx -= dx * f; a.vy -= dy * f;
             b.vx += dx * f; b.vy += dy * f;
           }
         }
       }
-      const cx = w / 2, cy = h / 2, rx = w * 0.42, ry = h * 0.40;
+ 
+      const cx = w / 2 + (ptr.x - w / 2) * 0.10 * ptr.amt;  // box drifts to cursor
+      const cy = h / 2 + (ptr.y - h / 2) * 0.10 * ptr.amt;
+      const rx = w * 0.42, ry = h * 0.40;
+ 
+      const grip  = 0.030 * cond;   // collapse toward centre of mass
+      const reach = 0.026 * ext;    // stretch back out along the chain
+      const heat  = 0.35 + 0.55 * cond;
+      const pullR = Math.max(w, h) * 0.58;
+ 
       for (let i = 0; i < N; i++) {
         const p = beads[i];
-        p.vx += (Math.random() - 0.5) * 0.5;
-        p.vy += (Math.random() - 0.5) * 0.5;
+ 
+        p.vx += (mx - p.x) * grip;
+        p.vy += (my - p.y) * grip;
+ 
+        p.vx += (mx + (i / (N - 1) - 0.5) * w * 0.84 - p.x) * reach;
+        p.vy += (my - p.y) * reach * 0.35;
+ 
+        if (ptr.amt > 0.01) {
+          const dx = ptr.x - p.x, dy = ptr.y - p.y;
+          const d = Math.hypot(dx, dy);
+          if (d > 1 && d < pullR) {
+            const f = (1 - d / pullR) * 0.34 * ptr.amt;
+            p.vx += dx / d * f;
+            p.vy += dy / d * f;
+          }
+        }
+ 
+        p.vx += (Math.random() - 0.5) * heat;
+        p.vy += (Math.random() - 0.5) * heat;
+ 
         const nx = (p.x - cx) / rx, ny = (p.y - cy) / ry;
         const r = Math.hypot(nx, ny);
         if (r > 1) { p.vx -= nx * (r - 1) * 1.6; p.vy -= ny * (r - 1) * 1.6; }
+ 
         p.vx *= 0.90; p.vy *= 0.90;
         p.x += p.vx; p.y += p.vy;
       }
     }
-
+ 
     function draw() {
       ctx.clearRect(0, 0, w, h);
       const g = ctx.createLinearGradient(0, 0, w, 0);
       g.addColorStop(0, "#5B86E8");
       g.addColorStop(1, "#E5A44A");
-
+ 
+      const ext = 1 - cond;
       ctx.lineCap = "round"; ctx.lineJoin = "round";
-      for (const pass of [{ lw: 13, a: 0.10 }, { lw: 3.2, a: 0.95 }]) {
+ 
+      const passes = [
+        { lw: 10 + 4 * ext,   a: 0.10 + 0.05 * cond },
+        { lw: 3.2 - 0.9 * cond, a: 0.95 }
+      ];
+ 
+      for (const pass of passes) {
         ctx.beginPath();
         ctx.moveTo(beads[0].x, beads[0].y);
         for (let i = 1; i < N - 1; i++) {
@@ -1199,25 +1255,49 @@ const DATA = {
       }
       ctx.globalAlpha = 1;
     }
-
-    function loop() { step(); draw(); raf = requestAnimationFrame(loop); }
-
+ 
+    function loop(now) { step(now); draw(); raf = requestAnimationFrame(loop); }
+ 
     size(); seed();
-    if (still) { for (let i = 0; i < 240; i++) step(); draw(); }
-    else loop();
-
+ 
+    function onMove(e) {
+      const r = cv.getBoundingClientRect();
+      const pad = 160;
+      ptr.x = e.clientX - r.left;
+      ptr.y = e.clientY - r.top;
+      ptr.want = (e.clientX > r.left - pad && e.clientX < r.right + pad &&
+                  e.clientY > r.top  - pad && e.clientY < r.bottom + pad) ? 1 : 0;
+    }
+    function onOut() { ptr.want = 0; }
+ 
+    if (still) {
+      cond = 0.18;
+      for (let i = 0; i < 280; i++) step(0);
+      draw();
+    } else {
+      window.addEventListener("pointermove", onMove, { passive: true });
+      window.addEventListener("pointerdown", onMove, { passive: true });
+      window.addEventListener("blur", onOut);
+      document.addEventListener("pointerleave", onOut);
+      raf = requestAnimationFrame(loop);
+    }
+ 
     let t;
     const onResize = () => {
       clearTimeout(t);
       t = setTimeout(() => { if (!document.body.contains(cv)) return; size(); seed(); }, 150);
     };
     window.addEventListener("resize", onResize);
-
+ 
     const stop = () => {
       if (!document.body.contains(cv)) {
         cancelAnimationFrame(raf);
         clearTimeout(t);
         window.removeEventListener("resize", onResize);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerdown", onMove);
+        window.removeEventListener("blur", onOut);
+        document.removeEventListener("pointerleave", onOut);
         window.removeEventListener("hashchange", stop);
       }
     };
