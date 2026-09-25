@@ -32,6 +32,8 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'tagline', label: 'Tagline', help: 'Small line under the lab name in the header, e.g. "Baltimore · Berlin".' },
 			{ key: 'description', label: 'Site description', help: 'One or two sentences used by search engines and link previews.' },
 			{ key: 'heroTitle', label: 'Homepage headline', required: true, help: 'The large sentence at the top of the homepage.' },
+			{ key: 'heroImage', label: 'Homepage image', type: 'url', help: 'Picture beside the headline: a file name in public/images/site (e.g. "oprm1-contact-map.png") or a web address. Leave blank for no picture.' },
+			{ key: 'heroCaption', label: 'Homepage image caption', help: 'Short caption under the homepage picture. Links like [Szabó et al., 2024](https://doi.org/…) work.' },
 			{ key: 'heroText', label: 'Homepage introduction', type: 'multiline', help: 'Paragraph under the homepage headline.' },
 			{ key: 'about', label: 'Footer blurb', type: 'multiline', help: 'Short description in the footer of every page.' },
 			{ key: 'email', label: 'Contact email', required: true, type: 'url', help: 'Main lab contact address.' },
@@ -179,6 +181,7 @@ export const TABLE_SHEETS = [
 
 // Folder in public/ where file names in each image column are looked up.
 export const IMAGE_FOLDERS = {
+	'settings.heroImage': 'images/site',
 	'pi.photo': 'images/people',
 	'members.photo': 'images/people',
 };

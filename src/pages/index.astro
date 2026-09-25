@@ -1,7 +1,6 @@
 ---
-import Chromatin from '../components/Chromatin.astro';
 import Page from '../layouts/Page.astro';
-import { currentSites, formatDate, lab, newsId, settings } from '../lib/data';
+import { asset, currentSites, formatDate, lab, newsId, settings } from '../lib/data';
 import { highlightAuthors, inline, paragraphs } from '../utils/text';
 import { url } from '../utils/paths';
 
@@ -22,9 +21,12 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 				<a href={url('/publications')} class="btn btn-outline">Publications</a>
 			</div>
 		</div>
-		<div class="hero-image">
-			<Chromatin />
-		</div>
+		{settings.heroImage && (
+			<figure class="hero-image">
+				<img src={asset(settings.heroImage)} alt={settings.heroCaption.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, '')} width="567" height="254" fetchpriority="high" />
+				{settings.heroCaption && <figcaption set:html={inline(settings.heroCaption)} />}
+			</figure>
+		)}
 	</section>
 
 	{settings.labDescription && (
@@ -106,6 +108,19 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 	}
 	.hero-image {
 		flex: 2;
+		margin: 0;
+		max-width: 420px;
+	}
+	.hero-image img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.hero-image figcaption {
+		margin-top: 0.6rem;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: var(--color-text-muted);
 		text-align: center;
 	}
 	.hero h1 {
@@ -211,6 +226,9 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		}
 		.hero-buttons {
 			justify-content: center;
+		}
+		.hero-image {
+			margin: 0 auto;
 		}
 		.home-columns {
 			gap: 2rem;
