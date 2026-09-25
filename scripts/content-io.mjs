@@ -421,7 +421,6 @@ export function toSiteData(model) {
 		publications: visible(model.publications).sort((a, b) => b.year - a.year),
 		patents: visible(model.patents).sort((a, b) => b.year - a.year),
 		join: visible(model.join),
-		funders: visible(model.funders),
 	};
 }
 
@@ -481,7 +480,7 @@ function addReadme(wb) {
 	put('New line in a cell', 'Excel on Windows: Alt+Enter. Excel on Mac: Control+Option+Return. Google Sheets: Ctrl+Enter (Cmd+Enter on Mac). Each line becomes its own paragraph or bullet point.');
 	put('Links in text', 'Write [link text](https://example.org). Email addresses and pages on this site (e.g. [our papers](/publications)) work too.');
 	put('Bold text', 'Wrap words in double stars: **like this**.');
-	put('Photos and logos', 'Upload the image to public/images/people (or public/images/funders for logos) on GitHub, then type just its file name, e.g. "jane-doe.jpg".');
+	put('Photos', 'Upload the photo to public/images/people on GitHub, then type just its file name, e.g. "jane-doe.jpg".');
 	put('Column help', 'Hover over a column name (the small red triangle) to see what it is for.');
 	put();
 	put('Tabs', null, { bold: true, size: 13 });

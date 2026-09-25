@@ -21,7 +21,6 @@ export interface Settings {
 	patentsIntro: string;
 	joinTitle: string;
 	joinIntro: string;
-	supportIntro: string;
 }
 
 export interface Site {
@@ -106,7 +105,6 @@ export interface LabData {
 	publications: Publication[];
 	patents: Patent[];
 	join: { heading: string; text: string }[];
-	funders: { name: string; logo: string; website: string }[];
 }
 
 export const lab = raw as unknown as LabData;

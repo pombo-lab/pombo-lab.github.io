@@ -45,7 +45,6 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'patentsIntro', label: 'Patents introduction', type: 'multiline', help: 'Text at the top of the Patents page.' },
 			{ key: 'joinTitle', label: 'Join page title', help: 'Heading of the Join page, e.g. "Join Us!".' },
 			{ key: 'joinIntro', label: 'Join page introduction', type: 'multiline', help: 'Text at the top of the Join page.' },
-			{ key: 'supportIntro', label: 'Support introduction', type: 'multiline', help: 'Text at the top of the Support (funders) page.' },
 		],
 	},
 	{
@@ -176,24 +175,12 @@ export const TABLE_SHEETS = [
 			SHOW,
 		],
 	},
-	{
-		name: 'Funders',
-		key: 'funders',
-		description: 'Organisations shown on the Support page.',
-		columns: [
-			{ key: 'name', label: 'Name', required: true, width: 40 },
-			{ key: 'logo', label: 'Logo', type: 'url', width: 26, help: 'Optional file name of a logo in public/images/funders, or a web address. The name is shown if blank.' },
-			{ key: 'website', label: 'Website', type: 'url', width: 34 },
-			SHOW,
-		],
-	},
 ];
 
 // Folder in public/ where file names in each image column are looked up.
 export const IMAGE_FOLDERS = {
 	'pi.photo': 'images/people',
 	'members.photo': 'images/people',
-	'funders.logo': 'images/funders',
 };
 
 export const ALL_SHEETS = [...KEY_VALUE_SHEETS, ...TABLE_SHEETS];

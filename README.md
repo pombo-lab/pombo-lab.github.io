@@ -38,7 +38,6 @@ You don't need to touch any code to update the site.
 | Post news                   | Add a row to **News**. Dates must be written `2026-06-02` (year-month-day).                  |
 | Hide something temporarily  | Set its `Show` column to `no`.                                                               |
 | Add a photo                 | Upload it to `public/images/people/`, then put its file name (e.g. `jane-doe.jpg`) in `Photo`. |
-| Add a funder logo           | Upload it to `public/images/funders/`, then put its file name in the `Logo` column.         |
 
 ### Formatting inside cells
 

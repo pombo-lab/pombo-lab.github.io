@@ -6,11 +6,6 @@ export interface NavItem {
 	children?: NavItem[];
 }
 
-const more: NavItem[] = [
-	...(lab.patents.length ? [{ label: 'Patents', href: '/patents' }] : []),
-	{ label: 'Support', href: '/support' },
-];
-
 export const NAV: NavItem[] = [
 	{ label: 'Home', href: '/' },
 	{ label: 'Research', href: '/research' },
@@ -26,5 +21,5 @@ export const NAV: NavItem[] = [
 	{ label: 'Publications', href: '/publications' },
 	{ label: 'News', href: '/news' },
 	{ label: 'Join', href: '/join' },
-	more.length === 1 ? more[0] : { label: 'More', href: more[0].href, children: more },
+	...(lab.patents.length ? [{ label: 'Patents', href: '/patents' }] : []),
 ];
