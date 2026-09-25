@@ -14,7 +14,6 @@ export interface Settings {
 	highlightAuthors: string[];
 	labDescription: string;
 	researchIntro: string;
-	researchThemes: string[];
 	teamIntro: string;
 	alumniIntro: string;
 	newsIntro: string;
@@ -65,15 +64,6 @@ export interface Alumnus {
 	thesis: string;
 }
 
-export interface ResearchArea {
-	title: string;
-	slug: string;
-	number: string;
-	kicker: string;
-	summary: string;
-	highlights: string[];
-}
-
 export interface NewsItem {
 	date: string;
 	category: string;
@@ -112,7 +102,6 @@ export interface LabData {
 	pi: PI;
 	members: Member[];
 	alumni: Alumnus[];
-	research: ResearchArea[];
 	news: NewsItem[];
 	publications: Publication[];
 	patents: Patent[];

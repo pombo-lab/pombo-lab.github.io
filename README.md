@@ -5,7 +5,7 @@ The lab website, built with [Astro](https://astro.build) and the
 
 **All of the site's content lives in one spreadsheet:
 [`content/lab-content.xlsx`](content/lab-content.xlsx).** People, alumni,
-publications, news, research areas, and the text on every page come from it.
+publications, news, and the text on every page come from it.
 You don't need to touch any code to update the site.
 
 ---
@@ -99,7 +99,7 @@ generated and git-ignored; the spreadsheet is the only source of truth.
 - `scripts/content-io.mjs` — reads `.xlsx`/`.csv`, validates, writes JSON and workbooks.
 - `src/lib/data.ts` — typed access to the generated data for the pages.
 - `src/utils/text.ts` — the safe `[link](url)` / `**bold**` formatter for spreadsheet text.
-- `src/pages/` — one file per page. Research areas are sections of `research/index.astro`.
+- `src/pages/` — one file per page.
 - `src/components/Chromatin.astro` — the homepage polymer animation.
 
 ### Deployment

@@ -376,14 +376,6 @@ export function buildModel(sheets) {
 		if (site && !site.current) warnings.push(`${where('members', m)}: ${m.name} is at "${m.site}", which is not marked as a current site, so they won't be listed.`);
 	}
 
-	// Research sections need unique anchors.
-	const slugs = new Map();
-	for (const r of model.research) {
-		const slug = slugify(r.title);
-		if (slugs.has(slug)) errors.push(`${where('research', r)}: two research areas have the same title "${r.title}".`);
-		slugs.set(slug, r);
-	}
-
 	// Likely duplicates and leftover placeholders.
 	const titles = new Map();
 	for (const p of model.publications.filter((p) => p.show)) {
@@ -407,12 +399,6 @@ const strip = ({ _row, show, ...rest }) => rest;
 const visible = (rows) => rows.filter((r) => r.show !== false).map(strip);
 
 export function toSiteData(model) {
-	const research = visible(model.research).map((r, i) => ({
-		...r,
-		slug: slugify(r.title),
-		number: String(i + 1).padStart(2, '0'),
-	}));
-
 	const details = [];
 	for (const d of visible(model.piDetails)) {
 		let group = details.find((g) => g.section === d.section);
@@ -431,7 +417,6 @@ export function toSiteData(model) {
 		},
 		members: visible(model.members),
 		alumni: visible(model.alumni),
-		research,
 		news: visible(model.news).sort((a, b) => b.date.localeCompare(a.date)),
 		publications: visible(model.publications).sort((a, b) => b.year - a.year),
 		patents: visible(model.patents).sort((a, b) => b.year - a.year),
