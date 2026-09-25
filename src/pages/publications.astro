@@ -1,0 +1,139 @@
+---
+import PageHeader from '../components/PageHeader.astro';
+import Page from '../layouts/Page.astro';
+import { href, lab, settings } from '../lib/data';
+import { toBibtex } from '../utils/bibtex';
+import { highlightAuthors } from '../utils/text';
+
+const pubs = lab.publications;
+const years = [...new Set(pubs.map((p) => p.year))];
+const hasFeatured = pubs.some((p) => p.featured);
+const LINKS = [
+	['doi', 'DOI'],
+	['pdf', 'PDF'],
+	['code', 'Code'],
+	['data', 'Data'],
+	['link', 'Link'],
+] as const;
+---
+
+<Page title="Publications" description={`Publications from the ${settings.labName}.`}>
+	<PageHeader eyebrow={`${pubs.length} publications`} title="Publications" intro={settings.publicationsIntro} />
+
+	<div class="chips" id="pub-filter" role="toolbar" aria-label="Filter publications">
+		<button class="chip" data-filter="all" aria-pressed="true">All years</button>
+		{hasFeatured && <button class="chip" data-filter="featured" aria-pressed="false">Featured</button>}
+		{years.map((y) => <button class="chip" data-filter={String(y)} aria-pressed="false">{y}</button>)}
+	</div>
+
+	{years.map((y) => (
+		<section class="year-block" data-year={y}>
+			<h2>{y}</h2>
+			{pubs.filter((p) => p.year === y).map((p) => (
+				<article class="publication-item" data-featured={p.featured ? 'true' : undefined}>
+					{p.featured && <span class="pill featured-pill">Featured</span>}
+					<span class="pub-title">{p.title}</span>
+					{p.authors && <div class="pub-authors" set:html={highlightAuthors(p.authors, settings.highlightAuthors)} />}
+					<div class="pub-venue">
+						<em>{p.journal}</em>{p.details && <span> · {p.details}</span>} · {p.year}
+					</div>
+					<div class="pub-links">
+						{LINKS.filter(([k]) => p[k]).map(([k, label]) => (
+							<a href={href(p[k])} target="_blank" rel="noopener noreferrer">{label}</a>
+						))}
+						<details class="cite">
+							<summary>Cite</summary>
+							<div class="bibtex-panel">
+								<button class="copy-bibtex-btn" type="button">Copy BibTeX</button>
+								<pre>{toBibtex(p)}</pre>
+							</div>
+						</details>
+					</div>
+				</article>
+			))}
+		</section>
+	))}
+</Page>
+
+<script>
+	const bar = document.getElementById('pub-filter');
+	bar?.addEventListener('click', (e) => {
+		const btn = (e.target as Element).closest('.chip') as HTMLButtonElement | null;
+		if (!btn) return;
+		const f = btn.dataset.filter!;
+		bar.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === btn)));
+		document.querySelectorAll<HTMLElement>('.year-block').forEach((block) => {
+			let shown = 0;
+			block.querySelectorAll<HTMLElement>('.publication-item').forEach((item) => {
+				const show = f === 'all' || (f === 'featured' ? item.dataset.featured === 'true' : block.dataset.year === f);
+				item.hidden = !show;
+				if (show) shown++;
+			});
+			block.hidden = shown === 0;
+		});
+	});
+
+	// Only one citation open at a time.
+	const cites = document.querySelectorAll('details.cite');
+	cites.forEach((d) =>
+		d.addEventListener('toggle', () => {
+			if ((d as HTMLDetailsElement).open) cites.forEach((o) => o !== d && o.removeAttribute('open'));
+		}),
+	);
+
+	document.querySelectorAll<HTMLButtonElement>('.copy-bibtex-btn').forEach((btn) =>
+		btn.addEventListener('click', async () => {
+			const text = btn.nextElementSibling?.textContent ?? '';
+			try {
+				await navigator.clipboard.writeText(text);
+				btn.textContent = 'Copied!';
+			} catch {
+				btn.textContent = 'Select and copy manually';
+			}
+			setTimeout(() => (btn.textContent = 'Copy BibTeX'), 2000);
+		}),
+	);
+</script>
+
+<style>
+	.year-block h2 {
+		scroll-margin-top: 5.5rem;
+	}
+	.featured-pill {
+		margin-bottom: 0.4rem;
+	}
+	.cite {
+		position: relative;
+	}
+	.bibtex-panel {
+		position: absolute;
+		left: 0;
+		top: calc(100% + 0.4rem);
+		z-index: 10;
+		width: min(440px, 80vw);
+		padding: 0.75rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		box-shadow: var(--shadow-lg);
+	}
+	.bibtex-panel pre {
+		margin: 0.5rem 0 0;
+		max-height: 220px;
+		overflow: auto;
+		font-size: 0.72rem;
+		white-space: pre-wrap;
+		word-break: break-word;
+		color: var(--color-text-main);
+	}
+	.copy-bibtex-btn {
+		font: inherit;
+		font-size: 0.78rem;
+		font-weight: 600;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		color: var(--color-accent);
+	}
+</style>

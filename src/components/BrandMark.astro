@@ -1,0 +1,24 @@
+---
+// Two sites joined by one chromosome: the first two current sites' colours.
+import { currentSites } from '../lib/data';
+
+const [a, b] = currentSites;
+const left = a?.color || 'var(--color-accent)';
+const right = b?.color || a?.color || 'var(--color-accent)';
+---
+
+<svg class="brand-mark" viewBox="0 0 34 12" aria-hidden="true">
+	<line x1="5" y1="6" x2="29" y2="6" stroke="currentColor" stroke-width="1.5"></line>
+	<circle cx="5" cy="6" r="4" fill={left}></circle>
+	<circle cx="29" cy="6" r="4" fill={right}></circle>
+</svg>
+
+<style>
+	.brand-mark {
+		display: block;
+		width: 34px;
+		height: 12px;
+		flex: none;
+		color: var(--color-text-main);
+	}
+</style>

@@ -1,0 +1,27 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# generated from content/lab-content.xlsx by `npm run content`
+src/data/lab.json
+
+# Excel lock files while the workbook is open
+content/~$*
+content/.previous-lab-content.xlsx
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/

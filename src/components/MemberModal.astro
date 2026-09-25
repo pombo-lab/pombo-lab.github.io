@@ -1,0 +1,202 @@
+---
+// The theme's profile pop-up. Any element with class "author-modal-trigger"
+// and a data-member JSON attribute opens it (see MemberCard.astro).
+---
+
+<dialog id="author-modal" class="author-modal" aria-labelledby="modal-name">
+	<button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
+	<div class="modal-flex">
+		<img id="modal-avatar" src="" alt="" class="modal-avatar" width="88" height="88" />
+		<div>
+			<h3 id="modal-name"></h3>
+			<span id="modal-title"></span>
+			<span id="modal-role"></span>
+		</div>
+	</div>
+	<p id="modal-bio"></p>
+	<div id="modal-socials"></div>
+</dialog>
+
+<script>
+	type Member = {
+		name: string;
+		title?: string;
+		role?: string;
+		bio?: string;
+		avatar?: string;
+		fallback: string;
+		website?: string;
+		email?: string;
+	};
+
+	const $ = (id: string) => document.getElementById(id);
+	const modal = $('author-modal') as HTMLDialogElement | null;
+	const avatar = $('modal-avatar') as HTMLImageElement | null;
+
+	const icon = {
+		website:
+			'<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
+		email:
+			'<svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>',
+	};
+
+	function socialLink(href: string, label: string, svg: string, text: string) {
+		const a = document.createElement('a');
+		a.href = href;
+		a.className = 'social-icon-btn';
+		a.innerHTML = svg;
+		a.append(document.createTextNode(text));
+		a.setAttribute('aria-label', label);
+		if (href.startsWith('http')) {
+			a.target = '_blank';
+			a.rel = 'noopener noreferrer';
+		}
+		return a;
+	}
+
+	function open(member: Member) {
+		if (!modal) return;
+		$('modal-name')!.textContent = member.name;
+		$('modal-title')!.textContent = member.title || '';
+		$('modal-role')!.textContent = member.role || '';
+		const bio = $('modal-bio')!;
+		bio.textContent = member.bio || '';
+		bio.hidden = !member.bio;
+		if (avatar) {
+			avatar.onerror = () => {
+				avatar.onerror = null;
+				avatar.src = member.fallback;
+			};
+			avatar.src = member.avatar || member.fallback;
+			avatar.alt = member.name;
+		}
+		const socials = $('modal-socials')!;
+		socials.replaceChildren();
+		if (member.email) socials.append(socialLink(`mailto:${member.email}`, `Email ${member.name}`, icon.email, member.email));
+		if (member.website) socials.append(socialLink(member.website, 'Website', icon.website, 'Website'));
+		document.body.style.overflow = 'hidden';
+		modal.showModal();
+	}
+
+	document.addEventListener('click', (e) => {
+		const trigger = (e.target as Element).closest?.('.author-modal-trigger');
+		if (!trigger) return;
+		const raw = trigger.getAttribute('data-member');
+		if (!raw) return;
+		e.preventDefault();
+		open(JSON.parse(raw));
+	});
+	document.addEventListener('keydown', (e) => {
+		if (e.key !== 'Enter' && e.key !== ' ') return;
+		const trigger = (e.target as Element).closest?.('.author-modal-trigger');
+		if (!trigger || (e.target as Element).tagName === 'A') return;
+		e.preventDefault();
+		(trigger as HTMLElement).click();
+	});
+
+	modal?.addEventListener('close', () => {
+		document.body.style.overflow = '';
+	});
+	$('close-modal')?.addEventListener('click', () => modal?.close());
+	modal?.addEventListener('click', (e) => {
+		const r = modal.getBoundingClientRect();
+		if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) modal.close();
+	});
+</script>
+
+<style>
+	.author-modal {
+		padding: 2.5rem 2rem 2rem;
+		border: 1px solid var(--color-border);
+		border-radius: 16px;
+		background-color: var(--color-bg);
+		color: var(--color-text-main);
+		max-width: 520px;
+		width: 90%;
+		box-shadow: var(--shadow-lg);
+		margin: auto;
+	}
+	.author-modal::backdrop {
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+	}
+	.close-btn {
+		position: absolute;
+		top: 1rem;
+		right: 1.25rem;
+		background: transparent;
+		border: none;
+		font-size: 2rem;
+		cursor: pointer;
+		color: var(--color-text-muted);
+		line-height: 1;
+		padding: 0;
+	}
+	.close-btn:hover {
+		color: var(--color-accent);
+	}
+	.modal-flex {
+		display: flex;
+		gap: 1.5rem;
+		align-items: center;
+		margin-bottom: 1.5rem;
+	}
+	.modal-avatar {
+		width: 88px;
+		height: 88px;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+	#modal-name {
+		margin: 0 0 0.25rem 0;
+		font-size: 1.5rem;
+		color: var(--color-text-main);
+	}
+	#modal-title {
+		color: var(--color-accent);
+		font-size: 1rem;
+		font-weight: 600;
+		display: block;
+	}
+	#modal-role {
+		font-size: 0.85rem;
+		color: var(--color-text-muted);
+		display: block;
+		margin-top: 0.25rem;
+		line-height: 1.4;
+	}
+	#modal-bio {
+		line-height: 1.6;
+		color: var(--color-text-main);
+		margin: 0 0 1.5rem;
+	}
+	#modal-socials {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+	#modal-socials :global(.social-icon-btn) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.9rem;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		color: var(--color-text-muted);
+		font-size: 0.85rem;
+		text-decoration: none;
+		transition: all 0.2s ease;
+		word-break: break-all;
+	}
+	#modal-socials :global(.social-icon-btn:hover) {
+		background-color: var(--color-accent);
+		color: var(--color-bg);
+		border-color: var(--color-accent);
+		opacity: 1;
+	}
+	#modal-socials :global(svg) {
+		flex-shrink: 0;
+	}
+</style>

@@ -1,0 +1,20 @@
+---
+import { siteFor } from '../lib/data';
+
+interface Props {
+	code: string;
+}
+
+const codes = String(Astro.props.code || '').split('/').map((c) => c.trim()).filter(Boolean);
+---
+
+<span class="pill-group">
+	{codes.map((code) => {
+		const s = siteFor(code);
+		return (
+			<span class="pill" style={s?.color ? `--pill: ${s.color}` : undefined} title={s?.name}>
+				{s?.short || code}
+			</span>
+		);
+	})}
+</span>

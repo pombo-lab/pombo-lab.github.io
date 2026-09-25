@@ -1,0 +1,142 @@
+---
+import Page from '../../layouts/Page.astro';
+import { asset, href, isExternal, lab } from '../../lib/data';
+import { generateFallbackAvatar } from '../../utils/avatar';
+import { inline, paragraphs } from '../../utils/text';
+
+const pi = lab.pi;
+const fallback = generateFallbackAvatar(pi.name);
+---
+
+<Page title={pi.name} description={`${pi.name}, ${pi.title}.`}>
+	<div class="pi-profile">
+		<div class="pi-photo">
+			<img
+				src={asset(pi.photo) || fallback}
+				alt={pi.name}
+				width="240"
+				height="240"
+				onerror={`this.onerror=null;this.src='${fallback}'`}
+			/>
+		</div>
+		<div>
+			<p class="eyebrow">Principal Investigator</p>
+			<h1>{pi.name}</h1>
+			{pi.title && <p class="pi-title">{pi.title}</p>}
+			<p class="pi-mail"><a href={`mailto:${pi.email}`}>{pi.email}</a></p>
+		</div>
+	</div>
+
+	<div class="pi-bio">
+		{pi.bio.flatMap(paragraphs).map((p) => <p set:html={inline(p)} />)}
+	</div>
+
+	{pi.details.length > 0 && (
+		<dl class="pi-facts">
+			{pi.details.map((group) => (
+				<div class="fact">
+					<dt>{group.section}</dt>
+					<dd>
+						<ul>
+							{group.items.map((item) => (
+								<li>
+									{item.link ? (
+										<a href={href(item.link)} target={isExternal(item.link) ? '_blank' : undefined} rel="noopener noreferrer">{item.text}</a>
+									) : (
+										<span set:html={inline(item.text)} />
+									)}
+								</li>
+							))}
+						</ul>
+					</dd>
+				</div>
+			))}
+		</dl>
+	)}
+</Page>
+
+<style>
+	.pi-profile {
+		display: flex;
+		align-items: center;
+		gap: 2.5rem;
+		margin-bottom: 2.5rem;
+	}
+	.pi-photo img {
+		width: 220px;
+		height: 220px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 6px solid var(--color-bg);
+		box-shadow: 0 0 0 1px var(--color-border), var(--shadow-lg);
+	}
+	.pi-profile h1 {
+		font-size: 2.8rem;
+		margin-bottom: 0.5rem;
+	}
+	.pi-title {
+		color: var(--color-accent);
+		font-weight: 600;
+		font-size: 1.1rem;
+		margin: 0 0 0.5rem;
+	}
+	.pi-mail {
+		margin: 0;
+	}
+	.pi-bio p {
+		color: var(--color-text-main);
+		font-size: 1.08rem;
+		line-height: 1.75;
+		max-width: 72ch;
+	}
+	.pi-facts {
+		margin: 2.5rem 0 0;
+		border-top: 2px solid var(--color-accent);
+	}
+	.fact {
+		display: grid;
+		grid-template-columns: 180px 1fr;
+		gap: 1.5rem;
+		padding: 1.1rem 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+	dt {
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		padding-top: 0.2rem;
+	}
+	dd {
+		margin: 0;
+	}
+	dd ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	dd li {
+		margin-bottom: 0.35rem;
+		font-size: 0.98rem;
+		color: var(--color-text-main);
+	}
+	@media (max-width: 720px) {
+		.pi-profile {
+			flex-direction: column;
+			text-align: center;
+			gap: 1.5rem;
+		}
+		.pi-photo img {
+			width: 170px;
+			height: 170px;
+		}
+		.pi-profile h1 {
+			font-size: 2.2rem;
+		}
+		.fact {
+			grid-template-columns: 1fr;
+			gap: 0.4rem;
+		}
+	}
+</style>

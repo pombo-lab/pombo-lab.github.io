@@ -1,0 +1,18 @@
+---
+import { inline, paragraphs } from '../utils/text';
+
+interface Props {
+	title: string;
+	eyebrow?: string;
+	intro?: string;
+}
+
+const { title, eyebrow, intro } = Astro.props;
+---
+
+<header class="page-header">
+	{eyebrow && <p class="eyebrow">{eyebrow}</p>}
+	<h1>{title}</h1>
+	{paragraphs(intro).map((p) => <p class="lead" set:html={inline(p)} />)}
+	<slot />
+</header>

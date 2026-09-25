@@ -1,0 +1,48 @@
+---
+import PageHeader from '../../components/PageHeader.astro';
+import SitePills from '../../components/SitePills.astro';
+import Page from '../../layouts/Page.astro';
+import { lab, lastYear, settings } from '../../lib/data';
+import { inline } from '../../utils/text';
+
+const rows = lab.alumni.slice().sort((a, b) => lastYear(b.years) - lastYear(a.years) || a.name.localeCompare(b.name));
+const showThesis = rows.some((a) => a.thesis);
+---
+
+<Page title="Alumni" description={`Former members of the ${settings.labName} and where they are now.`}>
+	<PageHeader eyebrow="People" title="Alumni" intro={settings.alumniIntro} />
+
+	<div class="table-wrap">
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th scope="col">Name</th>
+					<th scope="col">Years</th>
+					<th scope="col">Site</th>
+					<th scope="col">Position</th>
+					{showThesis && <th scope="col">Thesis</th>}
+					<th scope="col">Now</th>
+				</tr>
+			</thead>
+			<tbody>
+				{rows.map((a) => (
+					<tr>
+						<td data-k="Name">{a.name}</td>
+						<td data-k="Years" class="nowrap">{a.years}</td>
+						<td data-k="Site">{a.site && <SitePills code={a.site} />}</td>
+						<td data-k="Position">{a.position}</td>
+						{showThesis && <td data-k="Thesis">{a.thesis}</td>}
+						<td data-k="Now" set:html={a.now ? inline(a.now) : '—'} />
+					</tr>
+				))}
+			</tbody>
+		</table>
+	</div>
+</Page>
+
+<style>
+	.nowrap {
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+</style>

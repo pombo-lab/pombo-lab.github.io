@@ -1,0 +1,82 @@
+---
+import PageHeader from '../../components/PageHeader.astro';
+import Page from '../../layouts/Page.astro';
+import { lab, settings } from '../../lib/data';
+import { inline, paragraphs } from '../../utils/text';
+import { url } from '../../utils/paths';
+---
+
+<Page title="Research" description={paragraphs(settings.researchIntro)[0]}>
+	<PageHeader eyebrow="Research" title="Research Overview" intro={settings.researchIntro} />
+
+	{settings.researchThemes.length > 0 && (
+		<div class="grid-3 themes">
+			{settings.researchThemes.map((t, i) => (
+				<div class="card theme-card">
+					<span class="card-num">Theme {String(i + 1).padStart(2, '0')}</span>
+					<h3>{t}</h3>
+				</div>
+			))}
+		</div>
+	)}
+
+	{lab.research.map((r) => (
+		<article class="area">
+			<div class="area-side">
+				<span class="card-num">Area {r.number}</span>
+				<h2><a href={url(`/research/${r.slug}`)}>{r.title}</a></h2>
+				{r.kicker && <p class="pill">{r.kicker}</p>}
+			</div>
+			<div class="area-main">
+				<p class="lead" set:html={inline(r.summary)} />
+				{paragraphs(r.body).slice(0, 1).map((p) => <p set:html={inline(p)} />)}
+				<a class="btn btn-outline" href={url(`/research/${r.slug}`)}>Read more about {r.title} &rarr;</a>
+			</div>
+		</article>
+	))}
+</Page>
+
+<style>
+	.themes {
+		margin: 0 0 2.5rem;
+	}
+	.theme-card h3 {
+		margin: 0;
+		font-size: 1.2rem;
+	}
+	.area {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+		gap: 2.5rem;
+		padding: 2.5rem 0;
+		border-top: 1px solid var(--color-border);
+	}
+	.area h2 {
+		margin: 0.25rem 0 1rem;
+		font-size: 1.7rem;
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+	.area h2 a {
+		color: var(--color-text-main);
+	}
+	.area .pill {
+		white-space: normal;
+		text-transform: none;
+		letter-spacing: 0;
+		font-size: 0.8rem;
+		font-weight: 600;
+		border-radius: 8px;
+		padding: 0.2rem 0.6rem;
+	}
+	.area-main .lead {
+		color: var(--color-text-main);
+		margin-bottom: 1rem;
+	}
+	@media (max-width: 768px) {
+		.area {
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+		}
+	}
+</style>

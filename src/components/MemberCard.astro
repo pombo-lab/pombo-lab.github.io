@@ -1,0 +1,38 @@
+---
+import { asset, href, siteFor, type Member } from '../lib/data';
+import { generateFallbackAvatar } from '../utils/avatar';
+
+interface Props {
+	member: Member;
+}
+
+const { member } = Astro.props;
+const site = siteFor(member.site);
+const fallback = generateFallbackAvatar(member.name);
+const avatar = asset(member.photo);
+const payload = {
+	name: member.name,
+	title: member.position,
+	role: [member.department, site?.name].filter(Boolean).join(' · '),
+	bio: member.focus,
+	avatar,
+	fallback,
+	email: member.email,
+	website: href(member.website),
+};
+---
+
+<div class="team-card interactive-card author-modal-trigger" data-member={JSON.stringify(payload)} role="button" tabindex="0" aria-haspopup="dialog">
+	<img
+		src={avatar || fallback}
+		alt=""
+		class="team-avatar"
+		width="140"
+		height="140"
+		loading="lazy"
+		onerror={`this.onerror=null;this.src='${fallback}'`}
+	/>
+	<span class="team-name">{member.name}</span>
+	<span class="team-role">{member.position}</span>
+	{member.department && <span class="team-dept">{member.department}</span>}
+</div>

@@ -1,0 +1,160 @@
+---
+import MemberModal from './MemberModal.astro';
+import Search from './Search.astro';
+import { currentSites, settings } from '../lib/data';
+import { NAV } from '../lib/nav';
+import { inline, paragraphs } from '../utils/text';
+import { url } from '../utils/paths';
+
+const quickLinks = NAV.filter((n) => n.href !== '/');
+---
+
+<footer class="site-footer">
+	<div class="footer-content" style={`--site-cols: ${currentSites.length}`}>
+		<div class="footer-col brand-col">
+			<h3>{settings.labName}</h3>
+			{paragraphs(settings.about).map((p) => <p set:html={inline(p)} />)}
+			<p class="footer-mail"><a href={`mailto:${settings.email}`}>{settings.email}</a></p>
+		</div>
+
+		{currentSites.map((s) => (
+			<div class="footer-col">
+				<h4>
+					<span class="site-dot" style={s.color ? `background:${s.color}` : undefined}></span>
+					{s.short || s.code}
+				</h4>
+				<address>
+					<strong>{s.name}</strong><br />
+					{paragraphs(s.department).map((d) => <>{d}<br /></>)}
+					{s.address}
+				</address>
+			</div>
+		))}
+
+		<div class="footer-col">
+			<h4>Explore</h4>
+			<ul>
+				{quickLinks.map((l) => <li><a href={url(l.href)}>{l.label}</a></li>)}
+			</ul>
+		</div>
+	</div>
+	<div class="footer-credit">
+		&copy; {new Date().getFullYear()} {settings.labName} · Built with
+		<a href="https://github.com/shravanngoswamii/astro-scholar" target="_blank" rel="noopener noreferrer">Astro Scholar</a>
+	</div>
+</footer>
+
+<Search />
+<MemberModal />
+
+<style>
+	.site-footer {
+		background-color: var(--color-bg-offset);
+		color: var(--color-text-main);
+		padding: 4rem 1rem 0.5rem;
+		margin-top: auto;
+		position: relative;
+	}
+	.site-footer::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg, transparent 0%, var(--color-border) 20%, var(--color-border) 80%, transparent 100%);
+		opacity: 0.6;
+	}
+	.footer-content {
+		max-width: var(--max-width);
+		margin: 0 auto 2.5rem;
+		display: grid;
+		grid-template-columns: 1.6fr repeat(var(--site-cols), 1.2fr) 0.8fr;
+		gap: 2.5rem;
+	}
+	.footer-col h3 {
+		font-family: var(--font-serif);
+		font-size: 1.5rem;
+		margin: 0 0 1rem;
+		color: var(--color-accent);
+	}
+	.footer-col h4 {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-sans);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin: 0.35rem 0 1.1rem;
+		color: var(--color-text-main);
+	}
+	.site-dot {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: var(--color-accent);
+	}
+	.footer-col ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.footer-col ul li {
+		margin-bottom: 0.5rem;
+		font-size: 0.95rem;
+	}
+	.footer-col a {
+		color: var(--color-text-muted);
+		text-decoration: none;
+	}
+	.footer-col a:hover {
+		color: var(--color-accent);
+	}
+	.brand-col p {
+		font-size: 0.95rem;
+		line-height: 1.6;
+		color: var(--color-text-muted);
+		margin: 0 0 1rem;
+	}
+	.brand-col .footer-mail a {
+		text-decoration: underline;
+	}
+	address {
+		font-style: normal;
+		font-size: 0.88rem;
+		line-height: 1.55;
+		color: var(--color-text-muted);
+	}
+	address strong {
+		color: var(--color-text-main);
+		font-weight: 700;
+	}
+	.footer-credit {
+		max-width: var(--max-width);
+		margin: 0 auto;
+		text-align: center;
+		padding: 0.75rem 0 0.5rem;
+		border-top: 1px solid var(--color-border);
+		font-size: 0.75rem;
+		color: var(--color-text-muted);
+	}
+	.footer-credit a {
+		color: var(--color-accent);
+	}
+
+	@media (max-width: 900px) {
+		.footer-content {
+			grid-template-columns: 1fr 1fr;
+			gap: 2rem;
+		}
+		.brand-col {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 600px) {
+		.footer-content {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

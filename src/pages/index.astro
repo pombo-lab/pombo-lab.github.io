@@ -1,0 +1,220 @@
+---
+import Chromatin from '../components/Chromatin.astro';
+import Page from '../layouts/Page.astro';
+import { currentSites, formatDate, lab, newsId, settings } from '../lib/data';
+import { highlightAuthors, inline, paragraphs } from '../utils/text';
+import { url } from '../utils/paths';
+
+const featured = lab.publications.filter((p) => p.featured);
+const selected = (featured.length ? featured : lab.publications).slice(0, 3);
+const news = lab.news.slice(0, 3);
+const countAt = (code: string) => lab.members.filter((m) => m.site === code).length;
+---
+
+<Page title={settings.labName}>
+	<section class="hero">
+		<div class="hero-content">
+			<p class="eyebrow">{[settings.labName, settings.tagline].filter(Boolean).join(' · ')}</p>
+			<h1>{settings.heroTitle}</h1>
+			{paragraphs(settings.heroText).map((p) => <p class="hero-text" set:html={inline(p)} />)}
+			<div class="hero-buttons">
+				<a href={url('/research')} class="btn">Our research</a>
+				<a href={url('/publications')} class="btn btn-outline">Publications</a>
+			</div>
+		</div>
+		<div class="hero-image">
+			<Chromatin />
+		</div>
+	</section>
+
+	{lab.research.length > 0 && (
+		<section class="home-section">
+			<div class="section-head">
+				<h2>Research</h2>
+				<a class="more-link" href={url('/research')}>Research overview &rarr;</a>
+			</div>
+			{paragraphs(settings.researchIntro).map((p) => <p class="lead" set:html={inline(p)} />)}
+			<div class="grid-3 area-grid">
+				{lab.research.map((r) => (
+					<a class="card" href={url(`/research/${r.slug}`)}>
+						<span class="card-num">Area {r.number}</span>
+						<h3>{r.title}</h3>
+						<p>{r.summary}</p>
+					</a>
+				))}
+			</div>
+		</section>
+	)}
+
+	<div class="grid-2 home-columns">
+		<section>
+			<h2>{featured.length ? 'Selected Publications' : 'Recent Publications'}</h2>
+			{selected.map((pub) => (
+				<div class="pub-mini-item">
+					<span class="pub-title">{pub.title}</span>
+					<div class="pub-meta">
+						<span set:html={highlightAuthors(pub.authors, settings.highlightAuthors)} />
+						<br />
+						<em class="venue">{pub.journal}</em>{pub.year && <span>, {pub.year}</span>}
+					</div>
+				</div>
+			))}
+			<a class="more-link" href={url('/publications')}>All publications &rarr;</a>
+		</section>
+
+		<section>
+			<h2>Lab News</h2>
+			<ul class="news-mini">
+				{news.map((n) => (
+					<li>
+						<small>{formatDate(n.date)}{n.category && <> · {n.category}</>}</small>
+						<a href={url(`/news#${newsId(n)}`)}>{n.title}</a>
+					</li>
+				))}
+			</ul>
+			<a class="more-link" href={url('/news')}>All news &rarr;</a>
+		</section>
+	</div>
+
+	{currentSites.length > 0 && (
+		<section class="home-section">
+			<div class="section-head">
+				<h2>{currentSites.length > 1 ? 'Our sites' : 'Where we are'}</h2>
+				<a class="more-link" href={url('/team')}>Meet the team &rarr;</a>
+			</div>
+			<div class="grid-2">
+				{currentSites.map((s) => (
+					<a class="card site-card" href={url(`/team#${s.code.toLowerCase()}`)} style={s.color ? `--site: ${s.color}` : undefined}>
+						<span class="card-num">{s.address}</span>
+						<h3>{s.name}</h3>
+						<p>{paragraphs(s.department).join(' · ')}</p>
+						<p class="site-count">{countAt(s.code)} {countAt(s.code) === 1 ? 'member' : 'members'} &rarr;</p>
+					</a>
+				))}
+			</div>
+		</section>
+	)}
+</Page>
+
+<style>
+	.hero {
+		display: flex;
+		align-items: center;
+		gap: 4rem;
+		padding: 2rem 0 3rem;
+	}
+	.hero-content {
+		flex: 3;
+	}
+	.hero-image {
+		flex: 2;
+		text-align: center;
+	}
+	.hero h1 {
+		font-size: 3rem;
+		line-height: 1.12;
+		letter-spacing: -0.02em;
+		margin-bottom: 1.25rem;
+	}
+	.hero-text {
+		font-size: 1.1rem;
+		line-height: 1.7;
+	}
+	.hero-buttons {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+		margin-top: 2rem;
+	}
+	.home-section {
+		margin-top: 3.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
+	}
+	.area-grid .card h3 {
+		font-size: 1.2rem;
+	}
+	.home-columns {
+		margin-top: 3.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--color-border);
+		gap: 4rem;
+	}
+	.home-columns h2 {
+		margin-top: 1rem;
+		margin-bottom: 1.5rem;
+	}
+	.pub-mini-item {
+		margin-bottom: 1.25rem;
+		padding-bottom: 1.25rem;
+		border-bottom: 1px solid var(--color-border);
+	}
+	.pub-mini-item .pub-title {
+		font-family: var(--font-serif);
+		font-size: 1.05rem;
+		margin-bottom: 0.25rem;
+	}
+	.pub-meta {
+		font-size: 0.88rem;
+		color: var(--color-text-muted);
+		line-height: 1.5;
+	}
+	.pub-meta :global(strong) {
+		color: var(--color-text-main);
+	}
+	.venue {
+		color: var(--color-accent);
+	}
+	.news-mini {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.25rem;
+	}
+	.news-mini li {
+		margin-bottom: 1.25rem;
+		padding-bottom: 1.25rem;
+		border-bottom: 1px dashed var(--color-border);
+	}
+	.news-mini small {
+		display: block;
+		color: var(--color-text-muted);
+		text-transform: uppercase;
+		font-size: 0.75rem;
+		letter-spacing: 0.05em;
+		margin-bottom: 0.25rem;
+	}
+	.news-mini a {
+		font-family: var(--font-serif);
+		font-size: 1.05rem;
+		font-weight: 600;
+		color: var(--color-text-main);
+	}
+	.site-card {
+		border-top: 4px solid var(--site, var(--color-accent));
+	}
+	.site-card p {
+		margin-bottom: 0.75rem;
+	}
+	.site-count {
+		font-weight: 700;
+		color: var(--site, var(--color-accent)) !important;
+		margin-bottom: 0 !important;
+	}
+	@media (max-width: 768px) {
+		.hero {
+			flex-direction: column-reverse;
+			text-align: center;
+			padding: 0.5rem 0 2rem;
+			gap: 2rem;
+		}
+		.hero h1 {
+			font-size: 2.2rem;
+		}
+		.hero-buttons {
+			justify-content: center;
+		}
+		.home-columns {
+			gap: 2rem;
+		}
+	}
+</style>

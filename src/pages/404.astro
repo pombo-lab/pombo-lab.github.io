@@ -1,0 +1,34 @@
+---
+import Page from '../layouts/Page.astro';
+import { url } from '../utils/paths';
+---
+
+<Page title="Page not found" description="The page you requested could not be found.">
+	<section class="not-found">
+		<p class="eyebrow">Error 404</p>
+		<h1>That page does not exist.</h1>
+		<p class="lead">The link may be out of date. Use the menu above, or start again from the homepage.</p>
+		<div class="actions">
+			<a class="btn" href={url('/')}>Back to home</a>
+			<a class="btn btn-outline" href={url('/publications')}>Publications</a>
+		</div>
+	</section>
+</Page>
+
+<style>
+	.not-found {
+		border: 1px solid var(--color-border);
+		border-radius: 20px;
+		padding: 3.5rem 2rem;
+		background:
+			radial-gradient(1200px 500px at -10% -20%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 55%),
+			radial-gradient(1000px 450px at 110% 110%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 52%),
+			var(--color-bg);
+		box-shadow: var(--shadow-md);
+	}
+	.actions {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+</style>

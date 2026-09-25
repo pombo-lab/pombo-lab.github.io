@@ -1,0 +1,40 @@
+---
+import PageHeader from '../components/PageHeader.astro';
+import Page from '../layouts/Page.astro';
+import { href, lab, settings } from '../lib/data';
+import { highlightAuthors } from '../utils/text';
+
+const patents = lab.patents;
+const years = [...new Set(patents.map((p) => p.year))];
+---
+
+<Page title="Patents" description={`Patents from the ${settings.labName}.`}>
+	<PageHeader eyebrow="Translation" title="Patents" intro={settings.patentsIntro} />
+
+	{patents.length === 0 && <p class="empty-note">No patents are listed yet.</p>}
+
+	{years.map((y) => (
+		<section class="year-block">
+			<h2>{y}</h2>
+			{patents.filter((p) => p.year === y).map((p) => (
+				<article class="publication-item">
+					{p.status && <span class="pill">{p.status}</span>}
+					<span class="pub-title">{p.title}</span>
+					{p.inventors && <div class="pub-authors" set:html={highlightAuthors(p.inventors, settings.highlightAuthors)} />}
+					<div class="pub-venue">{[p.number, p.office].filter(Boolean).join(' · ')}</div>
+					{p.link && (
+						<div class="pub-links">
+							<a href={href(p.link)} target="_blank" rel="noopener noreferrer">View</a>
+						</div>
+					)}
+				</article>
+			))}
+		</section>
+	))}
+</Page>
+
+<style>
+	.pill {
+		margin-bottom: 0.4rem;
+	}
+</style>

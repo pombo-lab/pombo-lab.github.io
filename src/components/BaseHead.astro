@@ -1,0 +1,132 @@
+---
+import '../styles/global.css';
+import { asset, lab, settings } from '../lib/data';
+import { url } from '../utils/paths';
+
+interface Props {
+	title: string;
+	description?: string;
+	image?: string;
+}
+
+const { title, description = settings.description, image = lab.pi.photo } = Astro.props;
+const fullTitle = title === settings.labName ? title : `${title} | ${settings.labName}`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageUrl = image ? new URL(asset(image), Astro.site) : null;
+const atkinsonRegular = url('/fonts/atkinson-regular.woff');
+const atkinsonBold = url('/fonts/atkinson-bold.woff');
+---
+
+<meta charset="utf-8" />
+<script is:inline data-cfasync="false">
+	(() => {
+		const root = document.documentElement;
+		const paintTheme = (theme) => {
+			const dark = theme === 'dark';
+			root.setAttribute('data-theme', dark ? 'dark' : 'light');
+			root.style.setProperty('background-color', 'var(--color-bg)');
+			root.style.colorScheme = dark ? 'dark' : 'light';
+		};
+		let theme = 'light';
+		try {
+			const s = localStorage.getItem('theme');
+			if (s === 'dark' || s === 'light') theme = s;
+			else if (matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+		} catch {
+			if (matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+		}
+		paintTheme(theme);
+		window.addEventListener('load', () => root.setAttribute('data-theme-ready', 'true'), { once: true });
+		window.__setPreferredTheme = paintTheme;
+	})();
+</script>
+<style is:inline>
+	/* CSS variables inline — available immediately, before any external CSS */
+	:root {
+		--color-bg: #ffffff;
+		--color-bg-offset: #ffffff;
+		--color-bg-header: rgba(255, 255, 255, 0.85);
+		--color-text-main: #1a1a1a;
+		--color-text-muted: #555555;
+		--color-accent: #003366;
+		--color-border: #eaeaea;
+	}
+	[data-theme='dark'] {
+		--color-bg: #0f172a;
+		--color-bg-offset: #0f172a;
+		--color-bg-header: rgba(15, 23, 42, 0.8);
+		--color-text-main: #e2e8f0;
+		--color-text-muted: #94a3b8;
+		--color-accent: #60a5fa;
+		--color-border: #334155;
+	}
+	html, body { min-height: 100%; background-color: var(--color-bg); }
+	@media (prefers-color-scheme: dark) {
+		html:not([data-theme='light']), html:not([data-theme='light']) body { background-color: var(--color-bg); }
+	}
+	html[data-theme='dark'], html[data-theme='dark'] body { background-color: var(--color-bg); color-scheme: dark; }
+	html[data-theme='light'], html[data-theme='light'] body { background-color: var(--color-bg); color-scheme: light; }
+	header.site-header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		padding: 0 1em;
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		background-color: var(--color-bg-header);
+	}
+	body {
+		background-color: var(--color-bg);
+		color: var(--color-text-main);
+		margin: 0;
+	}
+	/* Suppress all transitions until page is fully styled */
+	html:not([data-theme-ready]) *, html:not([data-theme-ready]) *::before, html:not([data-theme-ready]) *::after {
+		transition: none !important;
+		animation: none !important;
+	}
+</style>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+<link rel="sitemap" href={url('/sitemap-index.xml')} />
+<link rel="alternate" type="application/rss+xml" title={`${settings.labName} news`} href={url('/rss.xml')} />
+<meta name="generator" content={Astro.generator} />
+<meta name="color-scheme" content="light dark" />
+
+<style
+	is:inline
+	set:html={`
+		@font-face {
+			font-family: "Atkinson";
+			src: url("${atkinsonRegular}") format("woff");
+			font-weight: 400;
+			font-style: normal;
+			font-display: swap;
+		}
+		@font-face {
+			font-family: "Atkinson";
+			src: url("${atkinsonBold}") format("woff");
+			font-weight: 700;
+			font-style: normal;
+			font-display: swap;
+		}
+	`}
+/>
+
+<link rel="canonical" href={canonicalURL} />
+
+<title>{fullTitle}</title>
+<meta name="title" content={fullTitle} />
+<meta name="description" content={description} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={settings.labName} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+{imageUrl && <meta property="og:image" content={imageUrl} />}
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+{imageUrl && <meta name="twitter:image" content={imageUrl} />}

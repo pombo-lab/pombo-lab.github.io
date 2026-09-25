@@ -1,0 +1,68 @@
+---
+import PageHeader from '../components/PageHeader.astro';
+import Page from '../layouts/Page.astro';
+import { formatDate, href, isExternal, lab, newsId, settings } from '../lib/data';
+import { inline, paragraphs } from '../utils/text';
+---
+
+<Page title="News" description={`News from the ${settings.labName}.`}>
+	<PageHeader eyebrow="Updates" title="News" intro={settings.newsIntro} />
+
+	{lab.news.length === 0 && <p class="empty-note">No news yet.</p>}
+
+	<div class="news-list">
+		{lab.news.map((n) => (
+			<article class="news-item" id={newsId(n)}>
+				<time datetime={n.date}>{formatDate(n.date, 'long')}</time>
+				<div>
+					{n.category && <span class="pill">{n.category}</span>}
+					<h2>{n.title}</h2>
+					{paragraphs(n.text).map((p) => <p set:html={inline(p)} />)}
+					{n.link && (
+						<a class="more-link" href={href(n.link)} target={isExternal(n.link) ? '_blank' : undefined} rel="noopener noreferrer">
+							Read more &rarr;
+						</a>
+					)}
+				</div>
+			</article>
+		))}
+	</div>
+</Page>
+
+<style>
+	.news-item {
+		display: grid;
+		grid-template-columns: 150px 1fr;
+		gap: 2rem;
+		padding: 2rem 0;
+		border-top: 1px solid var(--color-border);
+		scroll-margin-top: 5.5rem;
+	}
+	.news-item:target {
+		background: linear-gradient(90deg, var(--color-accent-light), transparent 60%);
+	}
+	time {
+		font-size: 0.85rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--color-text-muted);
+		padding-top: 0.3rem;
+	}
+	.news-item h2 {
+		font-size: 1.45rem;
+		display: block;
+		border: none;
+		padding: 0;
+		margin: 0.6rem 0 0.75rem;
+	}
+	.news-item p {
+		margin-bottom: 0.75rem;
+	}
+	@media (max-width: 640px) {
+		.news-item {
+			grid-template-columns: 1fr;
+			gap: 0.5rem;
+		}
+	}
+</style>
