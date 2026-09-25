@@ -13,14 +13,7 @@ const more: NavItem[] = [
 
 export const NAV: NavItem[] = [
 	{ label: 'Home', href: '/' },
-	{
-		label: 'Research',
-		href: '/research',
-		children: [
-			{ label: 'Overview', href: '/research' },
-			...lab.research.map((r) => ({ label: r.title, href: `/research/${r.slug}` })),
-		],
-	},
+	{ label: 'Research', href: '/research' },
 	{
 		label: 'Team',
 		href: '/team',

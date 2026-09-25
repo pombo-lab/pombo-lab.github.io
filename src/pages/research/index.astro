@@ -3,10 +3,11 @@ import PageHeader from '../../components/PageHeader.astro';
 import Page from '../../layouts/Page.astro';
 import { lab, settings } from '../../lib/data';
 import { inline, paragraphs } from '../../utils/text';
-import { url } from '../../utils/paths';
+
+const lead = paragraphs(settings.researchIntro)[0];
 ---
 
-<Page title="Research" description={paragraphs(settings.researchIntro)[0]}>
+<Page title="Research" description={lead}>
 	<PageHeader eyebrow="Research" title="Research Overview" intro={settings.researchIntro} />
 
 	{settings.researchThemes.length > 0 && (
@@ -21,18 +22,21 @@ import { url } from '../../utils/paths';
 	)}
 
 	{lab.research.map((r) => (
-		<article class="area">
+		<section class="area" id={r.slug}>
 			<div class="area-side">
 				<span class="card-num">Area {r.number}</span>
-				<h2><a href={url(`/research/${r.slug}`)}>{r.title}</a></h2>
+				<h2>{r.title}</h2>
 				{r.kicker && <p class="pill">{r.kicker}</p>}
 			</div>
 			<div class="area-main">
-				<p class="lead" set:html={inline(r.summary)} />
-				{paragraphs(r.body).slice(0, 1).map((p) => <p set:html={inline(p)} />)}
-				<a class="btn btn-outline" href={url(`/research/${r.slug}`)}>Read more about {r.title} &rarr;</a>
+				{paragraphs(r.summary).map((p) => <p class="lead" set:html={inline(p)} />)}
+				{r.highlights.length > 0 && (
+					<ul class="bullets">
+						{r.highlights.map((h) => <li set:html={inline(h)} />)}
+					</ul>
+				)}
 			</div>
-		</article>
+		</section>
 	))}
 </Page>
 
@@ -50,15 +54,13 @@ import { url } from '../../utils/paths';
 		gap: 2.5rem;
 		padding: 2.5rem 0;
 		border-top: 1px solid var(--color-border);
+		scroll-margin-top: 5.5rem;
 	}
 	.area h2 {
 		margin: 0.25rem 0 1rem;
 		font-size: 1.7rem;
 		border-bottom: none;
 		padding-bottom: 0;
-	}
-	.area h2 a {
-		color: var(--color-text-main);
 	}
 	.area .pill {
 		white-space: normal;

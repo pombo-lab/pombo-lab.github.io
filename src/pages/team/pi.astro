@@ -23,7 +23,9 @@ const fallback = generateFallbackAvatar(pi.name);
 			<p class="eyebrow">Principal Investigator</p>
 			<h1>{pi.name}</h1>
 			{pi.title && <p class="pi-title">{pi.title}</p>}
-			<p class="pi-mail"><a href={`mailto:${pi.email}`}>{pi.email}</a></p>
+			<p class="pi-mail">
+				{pi.emails.map((e, i) => <>{i > 0 && <span class="sep"> · </span>}<a href={`mailto:${e}`}>{e}</a></>)}
+			</p>
 		</div>
 	</div>
 
@@ -82,6 +84,9 @@ const fallback = generateFallbackAvatar(pi.name);
 	}
 	.pi-mail {
 		margin: 0;
+	}
+	.pi-mail .sep {
+		color: var(--color-text-muted);
 	}
 	.pi-bio p {
 		color: var(--color-text-main);

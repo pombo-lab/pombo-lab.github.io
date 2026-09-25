@@ -27,16 +27,23 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		</div>
 	</section>
 
+	{settings.labDescription && (
+		<section class="home-section about">
+			<h2>About the lab</h2>
+			{paragraphs(settings.labDescription).map((p) => <p set:html={inline(p)} />)}
+		</section>
+	)}
+
 	{lab.research.length > 0 && (
 		<section class="home-section">
 			<div class="section-head">
 				<h2>Research</h2>
 				<a class="more-link" href={url('/research')}>Research overview &rarr;</a>
 			</div>
-			{paragraphs(settings.researchIntro).map((p) => <p class="lead" set:html={inline(p)} />)}
+			{paragraphs(settings.researchIntro).slice(0, 1).map((p) => <p class="lead" set:html={inline(p)} />)}
 			<div class="grid-3 area-grid">
 				{lab.research.map((r) => (
-					<a class="card" href={url(`/research/${r.slug}`)}>
+					<a class="card" href={url(`/research#${r.slug}`)}>
 						<span class="card-num">Area {r.number}</span>
 						<h3>{r.title}</h3>
 						<p>{r.summary}</p>
@@ -130,6 +137,10 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		margin-top: 3.5rem;
 		padding-top: 1rem;
 		border-top: 1px solid var(--color-border);
+	}
+	.about p {
+		max-width: 72ch;
+		line-height: 1.75;
 	}
 	.area-grid .card h3 {
 		font-size: 1.2rem;

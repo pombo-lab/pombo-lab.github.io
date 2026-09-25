@@ -230,8 +230,16 @@ function convert(def, raw, imageFolder) {
 			if (!hit) return { error: `"${def.label}" should be one of ${def.choices.join(', ')} (found "${text}").` };
 			return { value: hit };
 		}
-		case 'url':
-			return convertUrl(def, text, imageFolder);
+		case 'url': {
+			if (!def.list) return convertUrl(def, text, imageFolder);
+			const out = [];
+			for (const line of lines(text)) {
+				const r = convertUrl(def, line, imageFolder);
+				if (r.error) return r;
+				out.push(r.value);
+			}
+			return { value: out };
+		}
 		default:
 			return { value: def.list ? lines(text) : text };
 	}
@@ -368,12 +376,11 @@ export function buildModel(sheets) {
 		if (site && !site.current) warnings.push(`${where('members', m)}: ${m.name} is at "${m.site}", which is not marked as a current site, so they won't be listed.`);
 	}
 
-	// Research pages need unique addresses.
+	// Research sections need unique anchors.
 	const slugs = new Map();
 	for (const r of model.research) {
-		const slug = slugify(r.slug || r.title);
-		if (r.slug && r.slug !== slug) warnings.push(`${where('research', r)}: page address "${r.slug}" was changed to "${slug}".`);
-		if (slugs.has(slug)) errors.push(`${where('research', r)}: two research areas would share the address "${slug}". Fill in "Page address" to tell them apart.`);
+		const slug = slugify(r.title);
+		if (slugs.has(slug)) errors.push(`${where('research', r)}: two research areas have the same title "${r.title}".`);
 		slugs.set(slug, r);
 	}
 
@@ -402,7 +409,7 @@ const visible = (rows) => rows.filter((r) => r.show !== false).map(strip);
 export function toSiteData(model) {
 	const research = visible(model.research).map((r, i) => ({
 		...r,
-		slug: slugify(r.slug || r.title),
+		slug: slugify(r.title),
 		number: String(i + 1).padStart(2, '0'),
 	}));
 
@@ -418,7 +425,8 @@ export function toSiteData(model) {
 		sites: model.sites.map(strip),
 		pi: {
 			...model.pi,
-			email: model.pi.email || model.settings.email,
+			email: model.pi.email[0] || model.settings.email,
+			emails: model.pi.email.length ? model.pi.email : [model.settings.email],
 			details,
 		},
 		members: visible(model.members),
@@ -488,7 +496,7 @@ function addReadme(wb) {
 	put('New line in a cell', 'Excel on Windows: Alt+Enter. Excel on Mac: Control+Option+Return. Google Sheets: Ctrl+Enter (Cmd+Enter on Mac). Each line becomes its own paragraph or bullet point.');
 	put('Links in text', 'Write [link text](https://example.org). Email addresses and pages on this site (e.g. [our papers](/publications)) work too.');
 	put('Bold text', 'Wrap words in double stars: **like this**.');
-	put('Photos and logos', 'Upload the image to public/images/people (or research, funders) on GitHub, then type just its file name, e.g. "jane-doe.jpg".');
+	put('Photos and logos', 'Upload the image to public/images/people (or public/images/funders for logos) on GitHub, then type just its file name, e.g. "jane-doe.jpg".');
 	put('Column help', 'Hover over a column name (the small red triangle) to see what it is for.');
 	put();
 	put('Tabs', null, { bold: true, size: 13 });

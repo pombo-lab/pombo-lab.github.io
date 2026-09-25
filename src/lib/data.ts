@@ -12,6 +12,7 @@ export interface Settings {
 	about: string;
 	email: string;
 	highlightAuthors: string[];
+	labDescription: string;
 	researchIntro: string;
 	researchThemes: string[];
 	teamIntro: string;
@@ -39,6 +40,7 @@ export interface PI {
 	title: string;
 	photo: string;
 	email: string;
+	emails: string[];
 	bio: string[];
 	details: { section: string; items: { text: string; link: string }[] }[];
 }
@@ -69,12 +71,7 @@ export interface ResearchArea {
 	number: string;
 	kicker: string;
 	summary: string;
-	body: string;
 	highlights: string[];
-	image: string;
-	figure: string;
-	collaborators: string;
-	funding: string;
 }
 
 export interface NewsItem {

@@ -99,7 +99,7 @@ generated and git-ignored; the spreadsheet is the only source of truth.
 - `scripts/content-io.mjs` — reads `.xlsx`/`.csv`, validates, writes JSON and workbooks.
 - `src/lib/data.ts` — typed access to the generated data for the pages.
 - `src/utils/text.ts` — the safe `[link](url)` / `**bold**` formatter for spreadsheet text.
-- `src/pages/` — one file per page. Research areas get pages from `research/[slug].astro`.
+- `src/pages/` — one file per page. Research areas are sections of `research/index.astro`.
 - `src/components/Chromatin.astro` — the homepage polymer animation.
 
 ### Deployment
