@@ -20,6 +20,5 @@ export const NAV: NavItem[] = [
 	},
 	{ label: 'Publications', href: '/publications' },
 	{ label: 'News', href: '/news' },
-	{ label: 'Join', href: '/join' },
 	...(lab.patents.length ? [{ label: 'Patents', href: '/patents' }] : []),
 ];

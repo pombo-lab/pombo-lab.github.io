@@ -420,7 +420,6 @@ export function toSiteData(model) {
 		news: visible(model.news).sort((a, b) => b.date.localeCompare(a.date)),
 		publications: visible(model.publications).sort((a, b) => b.year - a.year),
 		patents: visible(model.patents).sort((a, b) => b.year - a.year),
-		join: visible(model.join),
 	};
 }
 

@@ -43,8 +43,6 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'newsIntro', label: 'News introduction', type: 'multiline', help: 'Text at the top of the News page.' },
 			{ key: 'publicationsIntro', label: 'Publications introduction', type: 'multiline', help: 'Text at the top of the Publications page.' },
 			{ key: 'patentsIntro', label: 'Patents introduction', type: 'multiline', help: 'Text at the top of the Patents page.' },
-			{ key: 'joinTitle', label: 'Join page title', help: 'Heading of the Join page, e.g. "Join Us!".' },
-			{ key: 'joinIntro', label: 'Join page introduction', type: 'multiline', help: 'Text at the top of the Join page.' },
 		],
 	},
 	{
@@ -162,16 +160,6 @@ export const TABLE_SHEETS = [
 			{ key: 'status', label: 'Status', type: 'choice', choices: ['Filed', 'Published', 'Granted'], width: 12 },
 			{ key: 'office', label: 'Office', width: 18, help: 'e.g. USPTO, EPO, WIPO.' },
 			{ key: 'link', label: 'Link', type: 'url', width: 30 },
-			SHOW,
-		],
-	},
-	{
-		name: 'Join',
-		key: 'join',
-		description: 'Sections of the Join page. The contact email is added at the end automatically.',
-		columns: [
-			{ key: 'heading', label: 'Heading', required: true, width: 26 },
-			{ key: 'text', label: 'Text', type: 'multiline', width: 100 },
 			SHOW,
 		],
 	},
