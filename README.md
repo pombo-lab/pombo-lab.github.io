@@ -99,7 +99,7 @@ generated and git-ignored; the spreadsheet is the only source of truth.
 - `src/lib/data.ts` — typed access to the generated data for the pages.
 - `src/utils/text.ts` — the safe `[link](url)` / `**bold**` formatter for spreadsheet text.
 - `src/pages/` — one file per page.
-- `src/components/MeltingField.astro` — the interactive chromatin background behind the homepage headline.
+- `src/components/GamSlicing.astro` — the interactive GAM slicing background behind the homepage headline.
 - `src/components/Chromatin.astro` — the homepage polymer animation.
 
 ### Deployment
