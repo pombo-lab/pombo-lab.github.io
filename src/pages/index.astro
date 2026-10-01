@@ -1,6 +1,7 @@
 ---
+import HeroBackground from '../components/MeltingField.astro';
 import Page from '../layouts/Page.astro';
-import { asset, currentSites, formatDate, lab, newsId, settings } from '../lib/data';
+import { currentSites, formatDate, lab, newsId, settings } from '../lib/data';
 import { highlightAuthors, inline, paragraphs } from '../utils/text';
 import { url } from '../utils/paths';
 
@@ -12,6 +13,7 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 
 <Page title={settings.labName}>
 	<section class="hero">
+		<HeroBackground />
 		<div class="hero-content">
 			<p class="eyebrow">{[settings.labName, settings.tagline].filter(Boolean).join(' · ')}</p>
 			<h1>{settings.heroTitle}</h1>
@@ -21,12 +23,6 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 				<a href={url('/publications')} class="btn btn-outline">Publications</a>
 			</div>
 		</div>
-		{settings.heroImage && (
-			<figure class="hero-image">
-				<img src={asset(settings.heroImage)} alt={settings.heroCaption.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, '')} width="567" height="254" fetchpriority="high" />
-				{settings.heroCaption && <figcaption set:html={inline(settings.heroCaption)} />}
-			</figure>
-		)}
 	</section>
 
 	{settings.labDescription && (
@@ -97,31 +93,31 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 </Page>
 
 <style>
+	/* full-width band; the interactive background fills it, the text sits on the left */
 	.hero {
+		position: relative;
+		width: 100vw;
+		margin-left: calc(50% - 50vw);
+		margin-top: -3rem;
+		min-height: 580px;
+		overflow: hidden;
 		display: flex;
 		align-items: center;
-		gap: 4rem;
-		padding: 2rem 0 3rem;
 	}
 	.hero-content {
-		flex: 3;
-	}
-	.hero-image {
-		flex: 2;
-		margin: 0;
-		max-width: 420px;
-	}
-	.hero-image img {
-		display: block;
+		position: relative;
+		z-index: 1;
 		width: 100%;
-		height: auto;
+		max-width: var(--max-width);
+		margin: 0 auto;
+		padding: 4rem 1rem;
+		pointer-events: none; /* let the background see the cursor */
 	}
-	.hero-image figcaption {
-		margin-top: 0.6rem;
-		font-size: 0.75rem;
-		line-height: 1.4;
-		color: var(--color-text-muted);
-		text-align: center;
+	.hero-content > * {
+		max-width: 520px;
+	}
+	.hero-content a {
+		pointer-events: auto;
 	}
 	.hero h1 {
 		font-size: 3rem;
@@ -138,6 +134,9 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		gap: 1rem;
 		flex-wrap: wrap;
 		margin-top: 2rem;
+	}
+	.hero + .home-section {
+		border-top: 0;
 	}
 	.home-section {
 		margin-top: 3.5rem;
@@ -216,19 +215,14 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 	}
 	@media (max-width: 768px) {
 		.hero {
-			flex-direction: column-reverse;
+			min-height: 0;
 			text-align: center;
-			padding: 0.5rem 0 2rem;
-			gap: 2rem;
 		}
 		.hero h1 {
 			font-size: 2.2rem;
 		}
 		.hero-buttons {
 			justify-content: center;
-		}
-		.hero-image {
-			margin: 0 auto;
 		}
 		.home-columns {
 			gap: 2rem;

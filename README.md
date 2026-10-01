@@ -37,7 +37,6 @@ You don't need to touch any code to update the site.
 | Add a paper                 | Add a row to **Publications**. Set `Featured` to `yes` to show it on the homepage.            |
 | Post news                   | Add a row to **News**. Dates must be written `2026-06-02` (year-month-day).                  |
 | Hide something temporarily  | Set its `Show` column to `no`.                                                               |
-| Change the homepage picture | Upload it to `public/images/site/`, then put its file name in **Settings › Homepage image**. |
 | Add a photo                 | Upload it to `public/images/people/`, then put its file name (e.g. `jane-doe.jpg`) in `Photo`. |
 
 ### Formatting inside cells
@@ -100,6 +99,7 @@ generated and git-ignored; the spreadsheet is the only source of truth.
 - `src/lib/data.ts` — typed access to the generated data for the pages.
 - `src/utils/text.ts` — the safe `[link](url)` / `**bold**` formatter for spreadsheet text.
 - `src/pages/` — one file per page.
+- `src/components/MeltingField.astro` — the interactive chromatin background behind the homepage headline.
 - `src/components/Chromatin.astro` — the homepage polymer animation.
 
 ### Deployment

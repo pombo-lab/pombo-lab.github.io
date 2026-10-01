@@ -387,6 +387,7 @@ body {
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	overflow-x: clip; /* full-width bands use 100vw, which includes the scrollbar */
 }
 
 img {

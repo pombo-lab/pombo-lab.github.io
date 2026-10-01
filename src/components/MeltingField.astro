@@ -1,0 +1,186 @@
+---
+// Homepage background: chromatin "melting".
+// Short, tightly folded chromatin fibres drift slowly behind the hero. The
+// cursor acts like heat: fibres near it unfold ("melt"), stretching out and
+// warming in colour, then slowly condense again once it moves on — echoing the
+// melting and condensing the lab measures after cocaine exposure.
+// With no cursor around, a gentle heat spot wanders on its own.
+import { currentSites } from '../lib/data';
+
+const hex = (c: string | undefined, fallback: number[]) => {
+	const m = c?.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+	return m ? m.slice(1).map((h) => parseInt(h, 16)) : fallback;
+};
+const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?.color, [217, 138, 31])];
+---
+
+<canvas class="melt-bg" data-colors={JSON.stringify(colors)} aria-hidden="true"></canvas>
+
+<style>
+	.melt-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+</style>
+
+<script>
+	const cv = document.querySelector<HTMLCanvasElement>('.melt-bg');
+	if (cv) start(cv);
+
+	function start(cv: HTMLCanvasElement) {
+		const ctx = cv.getContext('2d')!;
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const [COOL, WARM] = JSON.parse(cv.dataset.colors!) as number[][];
+
+		const N = 150; // beads per fibre
+				const HEAT_R = 150; // px: reach of the cursor's "heat"
+
+		type Fibre = {
+			x: number; y: number; angle: number; vx: number; vy: number; spin: number;
+			lc: number; lm: number; rc: number; wobble: number; phase: number;
+			melt: Float32Array;
+		};
+		let fibres: Fibre[] = [];
+		let W = 0, H = 0;
+		let seed = 5;
+		const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+		const ptr = { x: -9999, y: -9999, last: -1e9 };
+
+		// the hero's text block (left column), in canvas coordinates
+		let textBox = { x0: 0, x1: 0, y0: 0, y1: 0 };
+		const behindText = (x: number, y: number) => x > textBox.x0 - 30 && x < textBox.x1 + 30 && y > textBox.y0 - 20 && y < textBox.y1 + 20;
+
+		function size() {
+			const r = cv.getBoundingClientRect();
+			const dpr = Math.min(devicePixelRatio || 1, 2);
+			W = r.width;
+			H = r.height;
+			cv.width = Math.round(W * dpr);
+			cv.height = Math.round(H * dpr);
+			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			const col = Math.min(960, W - 32);
+			textBox = { x0: (W - col) / 2, x1: (W - col) / 2 + 520, y0: 60, y1: H - 20 };
+			const n = Math.round((W * H) / 26000);
+			seed = 5;
+			fibres = Array.from({ length: n }, () => {
+				const lc = 22 + rnd() * 26;
+				return {
+					x: rnd() * W, y: rnd() * H, angle: rnd() * Math.PI,
+					vx: (rnd() - 0.5) * 0.12, vy: (rnd() - 0.5) * 0.08, spin: (rnd() - 0.5) * 0.0006,
+					lc, lm: 170 + rnd() * 90, rc: 9 + rnd() * 6, wobble: 8 + rnd() * 10, phase: rnd() * 10,
+					melt: new Float32Array(N),
+				};
+			});
+		}
+
+		// Local (unrotated) position of bead i, given how melted it is (0…1).
+		// Condensed: a tangled globule (several incommensurate loops, so no two
+		// fibres look alike). Melted: the same fibre stretched into a loose thread.
+		function local(f: Fibre, i: number, m: number, time: number) {
+			const u = i / (N - 1) - 0.5;
+			const e = m * m * (3 - 2 * m);
+			const p = f.phase;
+			const r = f.rc;
+			const k = i * 0.42; // loop frequency: ~15 beads per loop keeps the curves smooth
+			const cx = u * f.lc + r * (0.9 * Math.cos(k + p) + 0.45 * Math.cos(k * 2.3 + 2 * p));
+			const cy = r * (Math.sin(k + p) + 0.55 * Math.sin(k * 1.71 + 1.3 * p) + 0.35 * Math.sin(k * 2.9 + 0.7 * p));
+			const mx = u * f.lm;
+			const my = Math.sin(u * 6 + p + time * 0.0005) * f.wobble + Math.sin(i * 0.35 + p) * 2.5;
+			return { s: cx + (mx - cx) * e, y: cy + (my - cy) * e, z: Math.cos(k * 1.3 + p) };
+		}
+
+		// Where the heat is: the cursor, or a slow wandering spot when idle.
+		function heatAt(now: number) {
+			if (now - ptr.last < 2500) return { x: ptr.x, y: ptr.y, k: 1 };
+			const t = now * 0.00012;
+			return { x: W * (0.62 + 0.28 * Math.sin(t * 2.1)), y: H * (0.5 + 0.35 * Math.sin(t * 3.3 + 1)), k: 0.8 };
+		}
+
+		const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+		let heat = { x: 0, y: 0, k: 0 };
+
+		function step(now: number) {
+			heat = heatAt(now);
+			for (const f of fibres) {
+				f.x += f.vx;
+				f.y += f.vy;
+				f.angle += f.spin;
+				const pad = f.lm / 2;
+				if (f.x < -pad) f.x = W + pad; else if (f.x > W + pad) f.x = -pad;
+				if (f.y < -pad) f.y = H + pad; else if (f.y > H + pad) f.y = -pad;
+				const ca = Math.cos(f.angle), sa = Math.sin(f.angle);
+				for (let i = 0; i < N; i++) {
+					// distance from the heat to where this bead sits when condensed
+					const s = (i / (N - 1) - 0.5) * f.lc;
+					const d = Math.hypot(f.x + ca * s - heat.x, f.y + sa * s - heat.y);
+					const target = Math.max(0, 1 - d / HEAT_R) ** 0.7 * heat.k;
+					f.melt[i] += (target - f.melt[i]) * (target > f.melt[i] ? 0.09 : 0.012); // melt fast, condense slowly
+				}
+			}
+		}
+
+		function draw(now: number) {
+			ctx.clearRect(0, 0, W, H);
+			// faint warmth around the heat source
+			const g = ctx.createRadialGradient(heat.x, heat.y, 0, heat.x, heat.y, HEAT_R);
+			g.addColorStop(0, `rgba(${WARM.join(',')},${0.08 * heat.k})`);
+			g.addColorStop(1, `rgba(${WARM.join(',')},0)`);
+			ctx.fillStyle = g;
+			ctx.fillRect(0, 0, W, H);
+
+			ctx.lineCap = 'round';
+			ctx.lineJoin = 'round';
+			for (const f of fibres) {
+				const ca = Math.cos(f.angle), sa = Math.sin(f.angle);
+				const pts = Array.from({ length: N }, (_, i) => {
+					const p = local(f, i, f.melt[i], now);
+					return { x: f.x + ca * p.s - sa * p.y, y: f.y + sa * p.s + ca * p.y, z: p.z, m: f.melt[i] };
+				});
+				// keep the text column calm: fibres behind the headline are very faint
+				const fade = behindText(f.x, f.y) ? 0.12 : 1;
+				for (let i = 0; i < N - 1; i++) {
+					const a = pts[i], b = pts[i + 1];
+					const m = (a.m + b.m) / 2;
+					const front = ((a.z + b.z) / 2 + 1) / 2; // 0 back … 1 front
+					ctx.strokeStyle = `rgb(${mix(COOL, WARM, Math.min(1, m * 1.3)).join(',')})`;
+					ctx.globalAlpha = (0.25 + 0.45 * front + 0.25 * m) * fade;
+					ctx.lineWidth = 1 + 1.3 * front * (1 - m) + 0.5 * m;
+					ctx.beginPath();
+					ctx.moveTo(a.x, a.y);
+					ctx.lineTo(b.x, b.y);
+					ctx.stroke();
+				}
+			}
+			ctx.globalAlpha = 1;
+		}
+
+		let raf = 0;
+		function frame(now: number) {
+			step(now);
+			draw(now);
+			raf = requestAnimationFrame(frame);
+		}
+
+		cv.parentElement!.addEventListener('pointermove', (e) => {
+			const r = cv.getBoundingClientRect();
+			ptr.x = e.clientX - r.left;
+			ptr.y = e.clientY - r.top;
+			ptr.last = performance.now();
+		});
+		cv.parentElement!.addEventListener('pointerleave', () => (ptr.last = -1e9));
+
+		size();
+		addEventListener('resize', size);
+		if (still) {
+			draw(0);
+		} else {
+			new IntersectionObserver(([e]) => {
+				cancelAnimationFrame(raf);
+				if (e.isIntersecting) raf = requestAnimationFrame(frame);
+			}).observe(cv);
+		}
+	}
+</script>
