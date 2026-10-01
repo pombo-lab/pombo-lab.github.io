@@ -19,8 +19,6 @@ export interface Settings {
 	newsIntro: string;
 	publicationsIntro: string;
 	patentsIntro: string;
-	joinTitle: string;
-	joinIntro: string;
 }
 
 export interface Site {
@@ -104,7 +102,6 @@ export interface LabData {
 	news: NewsItem[];
 	publications: Publication[];
 	patents: Patent[];
-	join: { heading: string; text: string }[];
 }
 
 export const lab = raw as unknown as LabData;
