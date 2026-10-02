@@ -4,6 +4,8 @@
 // orientation, a thin cryosection slice passes through it, and the loci that
 // fall inside the slice light up. Every slice adds to a contact map: loci that
 // are often cut together are close in 3D, so the domains appear on the map.
+// The map starts empty, fills in over a couple of minutes, then fades and the
+// experiment starts again.
 // Hover over the nucleus to aim the slice yourself; click to take a section.
 import { currentSites } from '../lib/data';
 
@@ -109,11 +111,20 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		const randomAngles = () => [rnd() * Math.PI * 2, rnd() * Math.PI * 2, rnd() * Math.PI * 2];
 		const randomY = () => (rnd() * 2 - 1) * 0.8;
 		// Behind every slice you watch, a few more are taken off-screen, the way
-		// a real experiment collects hundreds of nuclear profiles.
+		// a real experiment collects hundreds of nuclear profiles. Few at first,
+		// so the empty map visibly paints in; more later, so it sharpens. Once the
+		// map is well formed (~2.5 minutes) it fades out and the experiment starts
+		// again, so every visitor sees the domains emerge.
+		const LOOP_AT = 600;
+		const hiddenPerSlice = (n: number) => (n < 40 ? 2 : n < 150 ? 6 : 14);
 		const background = (k: number) => {
 			for (let n = 0; n < k; n++) record(inSlice(randomAngles(), randomY()));
 		};
-		background(400);
+		function resetMap() {
+			for (const row of count) row.fill(0);
+			slices = 0;
+		}
+		if (still) background(LOOP_AT); // no animation: show the finished map
 
 		function npmi(i: number, j: number) {
 			const cij = count[i][j];
@@ -156,6 +167,9 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		let lit = new Set<number>();
 		let flash: number[] = [];
 		let flashT = 0;
+		let mapFade = 1; // 1 = map fully shown; fades to 0 before a restart
+		let fading = false;
+		let fadeT = 0;
 		const ptr = { x: 0, y: 0, over: false };
 		let manual = false;
 
@@ -165,7 +179,7 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		function takeSlice() {
 			const hit = inSlice(angles, bladeY);
 			record(hit);
-			background(14);
+			background(hiddenPerSlice(slices));
 			flash = hit;
 			flashT = 1;
 		}
@@ -187,12 +201,23 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 					if (t >= 1) { phase = 'show'; phaseT = 0; takeSlice(); }
 				} else if (phaseT > 1300) {
 					phase = 'turn'; phaseT = 0; fromA = angles; toA = randomAngles().map((v, i) => angles[i] + ((v - Math.PI) * 0.6));
+					if (slices >= LOOP_AT && !fading) { fading = true; fadeT = 0; }
 				}
 			}
 			// Which loci are in the slice right now, from the current geometry (the
 			// nucleus keeps turning between slices, so this must be live).
 			lit = new Set(inSlice(angles, bladeY));
 			flashT = Math.max(0, flashT - dt / 1400);
+			if (fading) {
+				fadeT += dt;
+				mapFade = Math.max(0, 1 - fadeT / 900);
+				if (fadeT >= 900) {
+					resetMap();
+					flash = [];
+					fading = false;
+					mapFade = 1;
+				}
+			}
 		}
 
 		/* ------------------------------------------------ drawing */
@@ -291,15 +316,13 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 					const cx = MX + ((i + j + 1) / 2) * cell;
 					const cy = MY - ((j - i) / 2) * cell - cell / 2;
 					const r = cell / 2 + 0.3;
-					const v = i === j ? 0.95 : Math.min(1, Math.pow(Math.max(0, npmi(i, j) - 0.05) / 0.5, 1.4));
+					const v = i === j ? (count[i][i] ? 0.95 : 0) : Math.min(1, Math.pow(Math.max(0, npmi(i, j) - 0.05) / 0.5, 1.4));
 					const flashed = flashT > 0 && flashSet.has(i) && flashSet.has(j);
 					const previewed = !!preview && preview.has(i) && preview.has(j);
 					ctx.fillStyle = flashed || previewed ? `rgb(${CB.join(',')})` : theme.accent;
-					ctx.globalAlpha = flashed
-						? 0.35 + 0.6 * flashT * Math.max(v, 0.3)
-						: previewed
-							? 0.45 + 0.4 * Math.max(v, 0.2)
-							: 0.03 + 0.92 * v;
+					ctx.globalAlpha = previewed
+						? 0.45 + 0.4 * Math.max(v, 0.2)
+						: mapFade * (flashed ? 0.35 + 0.6 * flashT * Math.max(v, 0.3) : 0.03 + 0.92 * v);
 					ctx.beginPath();
 					ctx.moveTo(cx, cy - r);
 					ctx.lineTo(cx + r, cy);
@@ -319,7 +342,13 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 			ctx.fillStyle = theme.muted;
 			ctx.font = '11px Atkinson, system-ui, sans-serif';
 			ctx.textAlign = 'center';
-			ctx.fillText(`Contact map from ${slices.toLocaleString()} nuclear slices`, MX + MW / 2, MY + 26);
+			ctx.globalAlpha = mapFade;
+			ctx.fillText(
+				slices ? `Contact map from ${slices.toLocaleString()} nuclear profile${slices === 1 ? '' : 's'}` : 'Slicing nuclei to build a contact map…',
+				MX + MW / 2,
+				MY + 26,
+			);
+			ctx.globalAlpha = 1;
 			ctx.textAlign = 'left';
 			void domainOf;
 		}
