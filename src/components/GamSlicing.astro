@@ -166,7 +166,6 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 			const hit = inSlice(angles, bladeY);
 			record(hit);
 			background(14);
-			lit = new Set(hit);
 			flash = hit;
 			flashT = 1;
 		}
@@ -178,7 +177,6 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 				bladeY += ((ptr.y - NY) / R - bladeY) * 0.25;
 				const yaw = angles[0] + ((ptr.x - NX) / R) * 0.02;
 				angles = [yaw, angles[1], angles[2]];
-				lit = new Set(inSlice(angles, bladeY));
 			} else {
 				phaseT += dt;
 				if (phase === 'turn') {
@@ -188,17 +186,18 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 				} else if (phase === 'cut') {
 					const t = Math.min(1, phaseT / 450);
 					bladeY = fromY + (toY - fromY) * ease(t);
-					lit = new Set(inSlice(angles, bladeY));
 					if (t >= 1) { phase = 'show'; phaseT = 0; takeSlice(); }
 				} else if (phaseT > 1300) {
 					phase = 'turn'; phaseT = 0; fromA = angles; toA = randomAngles().map((v, i) => angles[i] + ((v - Math.PI) * 0.6));
 				}
 			}
+			// Which loci are in the slice right now, from the current geometry (the
+			// nucleus keeps turning between slices, so this must be live).
+			lit = new Set(inSlice(angles, bladeY));
 			flashT = Math.max(0, flashT - dt / 1400);
 		}
 
 		/* ------------------------------------------------ drawing */
-		const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 
 		function drawNucleus() {
 			// nuclear envelope
@@ -215,29 +214,41 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 			ctx.stroke();
 			ctx.globalAlpha = 1;
 
-			// chromatin fibre, back to front
+			// chromatin fibre, back to front, in blue. Then the part inside the
+			// slice is drawn again in orange, clipped exactly to the slice, so
+			// orange always means "in the current slice".
 			const pts = fibre.map((f) => ({ ...f, v: rot(angles, f.p) }));
 			const order = pts.slice(0, -1).map((_, i) => i).sort((a, b) => pts[a].v[2] - pts[b].v[2]);
-			for (const i of order) {
+			const y0 = NY + (bladeY - THICK / 2) * R, y1 = NY + (bladeY + THICK / 2) * R;
+			const segment = (i: number) => {
 				const a = pts[i], b = pts[i + 1];
-				const inside = Math.abs(((a.v[1] + b.v[1]) / 2) * SCALE - bladeY) < THICK / 2;
-				const depth = ((a.v[2] + b.v[2]) / 2 + 1) / 2; // 0 back … 1 front
-				const c = mix(CA, CB, a.t);
-				ctx.strokeStyle = `rgb(${c.join(',')})`;
-				ctx.globalAlpha = inside ? 1 : 0.28 + 0.35 * depth;
-				ctx.lineWidth = inside ? 3.6 : 1.8 + 1.4 * depth;
-				ctx.lineCap = 'round';
 				ctx.beginPath();
 				ctx.moveTo(NX + a.v[0] * R * SCALE, NY + a.v[1] * R * SCALE);
 				ctx.lineTo(NX + b.v[0] * R * SCALE, NY + b.v[1] * R * SCALE);
 				ctx.stroke();
+			};
+			ctx.lineCap = 'round';
+			ctx.strokeStyle = `rgb(${CA.join(',')})`;
+			for (const i of order) {
+				const depth = ((pts[i].v[2] + pts[i + 1].v[2]) / 2 + 1) / 2; // 0 back … 1 front
+				ctx.globalAlpha = 0.25 + 0.45 * depth;
+				ctx.lineWidth = 1.8 + 1.4 * depth;
+				segment(i);
 			}
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(NX - R * 1.2, y0, R * 2.4, y1 - y0);
+			ctx.clip();
+			ctx.strokeStyle = `rgb(${CB.join(',')})`;
+			ctx.globalAlpha = 1;
+			ctx.lineWidth = 3.4;
+			for (const i of order) segment(i);
+			ctx.restore();
 			// loci caught in the slice
 			for (const i of lit) {
 				const v = rot(angles, loci[i]);
-				const c = mix(CA, CB, i / (M - 1));
 				ctx.globalAlpha = 1;
-				ctx.fillStyle = `rgb(${c.join(',')})`;
+				ctx.fillStyle = `rgb(${CB.join(',')})`;
 				ctx.beginPath();
 				ctx.arc(NX + v[0] * R * SCALE, NY + v[1] * R * SCALE, 4.2, 0, Math.PI * 2);
 				ctx.fill();
@@ -248,7 +259,6 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 			ctx.globalAlpha = 1;
 
 			// the cryosection: a translucent slab across the nucleus
-			const y0 = NY + (bladeY - THICK / 2) * R, y1 = NY + (bladeY + THICK / 2) * R;
 			ctx.save();
 			ctx.beginPath();
 			ctx.arc(NX, NY, R * 1.04, 0, Math.PI * 2);
@@ -301,11 +311,10 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 				}
 			}
 			ctx.globalAlpha = 1;
-			// genome axis with domain ticks, coloured along the fibre
+			// genome axis: regions in the current slice in orange
 			for (let i = 0; i < M; i++) {
-				const c = mix(CA, CB, i / (M - 1));
-				ctx.fillStyle = `rgb(${c.join(',')})`;
-				ctx.globalAlpha = lit.has(i) ? 1 : 0.35;
+				ctx.fillStyle = `rgb(${(lit.has(i) ? CB : CA).join(',')})`;
+				ctx.globalAlpha = lit.has(i) ? 1 : 0.3;
 				ctx.fillRect(MX + i * cell + 0.5, MY + 5, cell - 1, 5);
 			}
 			ctx.globalAlpha = 1;
