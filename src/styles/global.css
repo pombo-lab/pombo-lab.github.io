@@ -569,9 +569,6 @@ a.card:hover {
 .publication-item {
 	position: relative;
 }
-.pub-authors strong {
-	color: var(--color-text-main);
-}
 .pub-venue em {
 	font-style: italic;
 }

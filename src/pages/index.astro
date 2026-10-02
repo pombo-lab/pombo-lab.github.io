@@ -2,7 +2,7 @@
 import HeroBackground from '../components/GamSlicing.astro';
 import Page from '../layouts/Page.astro';
 import { currentSites, formatDate, lab, newsId, settings } from '../lib/data';
-import { highlightAuthors, inline, paragraphs } from '../utils/text';
+import { inline, paragraphs } from '../utils/text';
 import { url } from '../utils/paths';
 
 const featured = lab.publications.filter((p) => p.featured);
@@ -49,7 +49,7 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 				<div class="pub-mini-item">
 					<span class="pub-title">{pub.title}</span>
 					<div class="pub-meta">
-						<span set:html={highlightAuthors(pub.authors, settings.highlightAuthors)} />
+						<span>{pub.authors}</span>
 						<br />
 						<em class="venue">{pub.journal}</em>{pub.year && <span>, {pub.year}</span>}
 					</div>
@@ -171,9 +171,6 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		font-size: 0.88rem;
 		color: var(--color-text-muted);
 		line-height: 1.5;
-	}
-	.pub-meta :global(strong) {
-		color: var(--color-text-main);
 	}
 	.venue {
 		color: var(--color-accent);
