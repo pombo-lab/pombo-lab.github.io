@@ -17,6 +17,7 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		<div class="hero-content">
 			<p class="eyebrow">{[settings.labName, settings.tagline].filter(Boolean).join(' · ')}</p>
 			<h1>{settings.heroTitle}</h1>
+			{settings.heroSubtitle && <p class="hero-subtitle">{settings.heroSubtitle}</p>}
 			{paragraphs(settings.heroText).map((p) => <p class="hero-text" set:html={inline(p)} />)}
 			<div class="hero-buttons">
 				<a href={url('/research')} class="btn">Our research</a>
@@ -125,6 +126,16 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		letter-spacing: -0.02em;
 		margin-bottom: 1.25rem;
 	}
+	.hero:has(.hero-subtitle) h1 {
+		margin-bottom: 0.5rem;
+	}
+	.hero-subtitle {
+		font-family: var(--font-serif);
+		font-size: 1.6rem;
+		line-height: 1.25;
+		color: var(--color-text-main);
+		margin: 0 0 1.25rem;
+	}
 	.hero-text {
 		font-size: 1.1rem;
 		line-height: 1.7;
@@ -217,6 +228,9 @@ const countAt = (code: string) => lab.members.filter((m) => m.site === code).len
 		}
 		.hero h1 {
 			font-size: 2.2rem;
+		}
+		.hero-subtitle {
+			font-size: 1.3rem;
 		}
 		.hero-buttons {
 			justify-content: center;

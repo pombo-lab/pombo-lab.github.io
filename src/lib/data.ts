@@ -8,6 +8,7 @@ export interface Settings {
 	tagline: string;
 	description: string;
 	heroTitle: string;
+	heroSubtitle: string;
 	heroText: string;
 	about: string;
 	email: string;

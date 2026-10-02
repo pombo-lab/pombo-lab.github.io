@@ -32,6 +32,7 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'tagline', label: 'Tagline', help: 'Small line under the lab name in the header, e.g. "Baltimore · Berlin".' },
 			{ key: 'description', label: 'Site description', help: 'One or two sentences used by search engines and link previews.' },
 			{ key: 'heroTitle', label: 'Homepage headline', required: true, help: 'The large sentence at the top of the homepage.' },
+			{ key: 'heroSubtitle', label: 'Homepage subheading', help: 'Smaller line directly under the homepage headline. Leave blank for none.' },
 			{ key: 'heroText', label: 'Homepage introduction', type: 'multiline', help: 'Paragraph under the homepage headline.' },
 			{ key: 'about', label: 'Footer blurb', type: 'multiline', help: 'Short description in the footer of every page.' },
 			{ key: 'email', label: 'Contact email', required: true, type: 'url', help: 'Main lab contact address.' },
