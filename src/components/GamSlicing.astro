@@ -1,0 +1,350 @@
+---
+// Homepage background: Genome Architecture Mapping, explained by doing it.
+// A nucleus with chromatin (organised into domains) tumbles to a random
+// orientation, a thin cryosection slice passes through it, and the loci that
+// fall inside the slice light up. Beside it is the finished contact map of
+// the same chromatin, built from 1,000 such slices: loci often cut together are
+// close in 3D, so the domains appear as triangles. Whatever is in the current
+// slice is highlighted on the map.
+// Hover over the nucleus to aim the slice yourself.
+import { currentSites } from '../lib/data';
+
+const hex = (c: string | undefined, fallback: number[]) => {
+	const m = c?.match(/^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+	return m ? m.slice(1).map((h) => parseInt(h, 16)) : fallback;
+};
+const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?.color, [217, 138, 31])];
+---
+
+<canvas class="gam-bg" data-colors={JSON.stringify(colors)} aria-hidden="true"></canvas>
+
+<style>
+	.gam-bg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+</style>
+
+<script>
+	const cv = document.querySelector<HTMLCanvasElement>('.gam-bg');
+	if (cv) start(cv);
+
+	function start(cv: HTMLCanvasElement) {
+		const ctx = cv.getContext('2d')!;
+		const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const [CA, CB] = JSON.parse(cv.dataset.colors!) as number[][];
+
+		/* ------------------------------------------------ the genome model */
+		// 42 loci in 6 domains; each domain is a compact blob somewhere in the nucleus.
+		const DOMAINS = [7, 6, 8, 6, 7, 8];
+		const M = DOMAINS.reduce((a, b) => a + b, 0);
+		let seed = 11;
+		const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+		const ball = (r: number) => {
+			for (;;) {
+				const p = [rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1];
+				if (p[0] ** 2 + p[1] ** 2 + p[2] ** 2 <= 1) return p.map((v) => v * r);
+			}
+		};
+		const centers: number[][] = [];
+		while (centers.length < DOMAINS.length) {
+			const c = ball(0.6);
+			const prev = centers[centers.length - 1];
+			const farFromAll = centers.every((o) => Math.hypot(c[0] - o[0], c[1] - o[1], c[2] - o[2]) > 0.5);
+			const nearPrev = !prev || Math.hypot(c[0] - prev[0], c[1] - prev[1], c[2] - prev[2]) < 0.85;
+			if (farFromAll && nearPrev) centers.push(c);
+		}
+		const loci: number[][] = [];
+		DOMAINS.forEach((n, d) => {
+			let p = loci.length ? loci[loci.length - 1] : centers[0];
+			for (let k = 0; k < n; k++) {
+				const q = ball(0.22).map((v, a) => v + centers[d][a]);
+				p = p.map((v, a) => v * 0.35 + q[a] * 0.65);
+				loci.push(p);
+			}
+		});
+		const domainOf = (i: number) => {
+			let s = 0;
+			for (let d = 0; d < DOMAINS.length; d++) if (i < (s += DOMAINS[d])) return d;
+			return DOMAINS.length - 1;
+		};
+
+		// Smooth fibre through the loci (Catmull-Rom), for drawing.
+		const SUB = 12;
+		const fibre: { p: number[]; t: number; locus: number }[] = [];
+		for (let i = 0; i < M - 1; i++) {
+			const p0 = loci[Math.max(0, i - 1)], p1 = loci[i], p2 = loci[i + 1], p3 = loci[Math.min(M - 1, i + 2)];
+			for (let s = 0; s < SUB; s++) {
+				const t = s / SUB, t2 = t * t, t3 = t2 * t;
+				const p = [0, 1, 2].map(
+					(a) => 0.5 * (2 * p1[a] + (-p0[a] + p2[a]) * t + (2 * p0[a] - 5 * p1[a] + 4 * p2[a] - p3[a]) * t2 + (-p0[a] + 3 * p1[a] - 3 * p2[a] + p3[a]) * t3),
+				);
+				// fine-scale crumpling between loci, so each domain reads as a tangle
+				const k = (i + t) * 3.1, amp = 0.075 * Math.sin(Math.PI * t);
+				const q = [p[0] + amp * Math.sin(k * 1.7 + i), p[1] + amp * Math.sin(k * 2.3 + 2 * i), p[2] + amp * Math.cos(k * 1.3 + i)];
+				fibre.push({ p: q, t: (i + t) / (M - 1), locus: t < 0.5 ? i : i + 1 });
+			}
+		}
+		fibre.push({ p: loci[M - 1], t: 1, locus: M - 1 });
+
+		/* ------------------------------------------------ GAM bookkeeping */
+		const THICK = 0.22; // slice thickness, in nuclear radii
+		const SCALE = 1.15; // draw the genome a little larger than its model coordinates
+		const count = Array.from({ length: M }, () => new Float32Array(M));
+		let slices = 0;
+		const rot = (a: number[], v: number[]) => {
+			const [x, y, z] = v;
+			const [ca, sa, cb, sb, cc, sc] = [Math.cos(a[0]), Math.sin(a[0]), Math.cos(a[1]), Math.sin(a[1]), Math.cos(a[2]), Math.sin(a[2])];
+			const x1 = x * ca + z * sa, z1 = -x * sa + z * ca; // yaw
+			const y2 = y * cb - z1 * sb, z2 = y * sb + z1 * cb; // pitch
+			const x3 = x1 * cc - y2 * sc, y3 = x1 * sc + y2 * cc; // roll
+			return [x3, y3, z2];
+		};
+		const inSlice = (angles: number[], y: number) => loci.map((l, i) => (Math.abs(rot(angles, l)[1] * SCALE - y) < THICK / 2 ? i : -1)).filter((i) => i >= 0);
+		function record(hit: number[]) {
+			slices++;
+			for (const i of hit) for (const j of hit) count[i][j]++;
+		}
+		const randomAngles = () => [rnd() * Math.PI * 2, rnd() * Math.PI * 2, rnd() * Math.PI * 2];
+		const randomY = () => (rnd() * 2 - 1) * 0.8;
+		// The contact map is a finished experiment: 1,000 random nuclear profiles,
+		// collected once at load. Slicing on screen only highlights it.
+		const PROFILES = 1000;
+		for (let n = 0; n < PROFILES; n++) record(inSlice(randomAngles(), randomY()));
+
+		function npmi(i: number, j: number) {
+			const cij = count[i][j];
+			if (!cij || !slices) return 0;
+			const pij = cij / slices, pi = count[i][i] / slices, pj = count[j][j] / slices;
+			if (pij >= 1) return 1;
+			return Math.max(0, Math.min(1, Math.log(pij / (pi * pj)) / -Math.log(pij)));
+		}
+
+		/* ------------------------------------------------ layout & colours */
+		let W = 0, H = 0, R = 120, NX = 0, NY = 0, MX = 0, MY = 0, MW = 0;
+		let theme = { accent: '#003366', muted: '#555', text: '#1a1a1a', bg: '#fff' };
+		function readTheme() {
+			const cs = getComputedStyle(document.documentElement);
+			const v = (n: string, d: string) => cs.getPropertyValue(n).trim() || d;
+			theme = { accent: v('--color-accent', theme.accent), muted: v('--color-text-muted', theme.muted), text: v('--color-text-main', theme.text), bg: v('--color-bg', theme.bg) };
+		}
+		function size() {
+			const r = cv.getBoundingClientRect();
+			const dpr = Math.min(devicePixelRatio || 1, 2);
+			W = r.width;
+			H = r.height;
+			cv.width = Math.round(W * dpr);
+			cv.height = Math.round(H * dpr);
+			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			const col = Math.min(960, W - 32);
+			const left = (W - col) / 2;
+			R = Math.min(135, H * 0.24);
+			NX = left + col * 0.79;
+			NY = H * 0.33;
+			MW = Math.min(300, col * 0.34);
+			MX = NX - MW / 2;
+			MY = H * 0.9;
+		}
+
+		/* ------------------------------------------------ animation state */
+		let angles = randomAngles(), fromA = angles, toA = angles;
+		let bladeY = 0, fromY = 0, toY = 0;
+		let phase = 'turn', phaseT = 0;
+		let lit = new Set<number>();
+		const ptr = { x: 0, y: 0, over: false };
+		let manual = false;
+
+		const ease = (t: number) => t * t * (3 - 2 * t);
+		const lerpA = (a: number[], b: number[], t: number) => a.map((v, i) => v + (b[i] - v) * t);
+
+		function update(dt: number, now: number) {
+			manual = ptr.over; // stay in hover mode while the cursor rests on the nucleus
+			if (manual) {
+				// aim the slice with the cursor; the nucleus holds still while hovered
+				bladeY += ((ptr.y - NY) / R - bladeY) * 0.25;
+			} else {
+				phaseT += dt;
+				if (phase === 'turn') {
+					const t = Math.min(1, phaseT / 900);
+					angles = lerpA(fromA, toA, ease(t));
+					if (t >= 1) { phase = 'cut'; phaseT = 0; fromY = bladeY; toY = randomY(); }
+				} else if (phase === 'cut') {
+					const t = Math.min(1, phaseT / 450);
+					bladeY = fromY + (toY - fromY) * ease(t);
+					if (t >= 1) { phase = 'show'; phaseT = 0; }
+				} else if (phaseT > 1300) {
+					phase = 'turn'; phaseT = 0; fromA = angles; toA = randomAngles().map((v, i) => angles[i] + ((v - Math.PI) * 0.6));
+				}
+			}
+			// Which loci are in the slice right now, from the current geometry (the
+			// nucleus keeps turning between slices, so this must be live).
+			lit = new Set(inSlice(angles, bladeY));
+		}
+
+		/* ------------------------------------------------ drawing */
+
+		function drawNucleus() {
+			// nuclear envelope
+			const g = ctx.createRadialGradient(NX - R * 0.35, NY - R * 0.4, R * 0.1, NX, NY, R * 1.05);
+			g.addColorStop(0, 'rgba(255,255,255,0.0)');
+			g.addColorStop(1, 'rgba(127,140,170,0.10)');
+			ctx.fillStyle = g;
+			ctx.beginPath();
+			ctx.arc(NX, NY, R * 1.04, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.strokeStyle = theme.muted;
+			ctx.globalAlpha = 0.35;
+			ctx.lineWidth = 1.2;
+			ctx.stroke();
+			ctx.globalAlpha = 1;
+
+			// chromatin fibre, back to front, in blue. Then the part inside the
+			// slice is drawn again in orange, clipped exactly to the slice, so
+			// orange always means "in the current slice".
+			const pts = fibre.map((f) => ({ ...f, v: rot(angles, f.p) }));
+			const order = pts.slice(0, -1).map((_, i) => i).sort((a, b) => pts[a].v[2] - pts[b].v[2]);
+			const y0 = NY + (bladeY - THICK / 2) * R, y1 = NY + (bladeY + THICK / 2) * R;
+			const segment = (i: number) => {
+				const a = pts[i], b = pts[i + 1];
+				ctx.beginPath();
+				ctx.moveTo(NX + a.v[0] * R * SCALE, NY + a.v[1] * R * SCALE);
+				ctx.lineTo(NX + b.v[0] * R * SCALE, NY + b.v[1] * R * SCALE);
+				ctx.stroke();
+			};
+			ctx.lineCap = 'round';
+			ctx.strokeStyle = `rgb(${CA.join(',')})`;
+			for (const i of order) {
+				const depth = ((pts[i].v[2] + pts[i + 1].v[2]) / 2 + 1) / 2; // 0 back … 1 front
+				ctx.globalAlpha = 0.25 + 0.45 * depth;
+				ctx.lineWidth = 1.8 + 1.4 * depth;
+				segment(i);
+			}
+			ctx.save();
+			ctx.beginPath();
+			ctx.rect(NX - R * 1.2, y0, R * 2.4, y1 - y0);
+			ctx.clip();
+			ctx.strokeStyle = `rgb(${CB.join(',')})`;
+			ctx.globalAlpha = 1;
+			ctx.lineWidth = 3.4;
+			for (const i of order) segment(i);
+			ctx.restore();
+			// loci caught in the slice
+			for (const i of lit) {
+				const v = rot(angles, loci[i]);
+				ctx.globalAlpha = 1;
+				ctx.fillStyle = `rgb(${CB.join(',')})`;
+				ctx.beginPath();
+				ctx.arc(NX + v[0] * R * SCALE, NY + v[1] * R * SCALE, 4.2, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.strokeStyle = theme.bg;
+				ctx.lineWidth = 1.5;
+				ctx.stroke();
+			}
+			ctx.globalAlpha = 1;
+
+			// the cryosection: a translucent slab across the nucleus
+			ctx.save();
+			ctx.beginPath();
+			ctx.arc(NX, NY, R * 1.04, 0, Math.PI * 2);
+			ctx.clip();
+			ctx.fillStyle = `rgba(${CB.join(',')},0.10)`;
+			ctx.fillRect(NX - R * 1.1, y0, R * 2.2, y1 - y0);
+			ctx.restore();
+			ctx.strokeStyle = `rgba(${CB.join(',')},0.8)`;
+			ctx.lineWidth = 1;
+			ctx.setLineDash([5, 4]);
+			for (const y of [y0, y1]) {
+				ctx.beginPath();
+				ctx.moveTo(NX - R * 1.35, y);
+				ctx.lineTo(NX + R * 1.35, y);
+				ctx.stroke();
+			}
+			ctx.setLineDash([]);
+			ctx.fillStyle = theme.muted;
+			ctx.font = '600 11px Atkinson, system-ui, sans-serif';
+			ctx.textAlign = 'left';
+			ctx.fillText('cryosection', NX + R * 1.38, (y0 + y1) / 2 + 4);
+		}
+
+		function drawMap() {
+			const cell = MW / M;
+			// Every pair of loci in the current slice is highlighted on the map.
+			for (let i = 0; i < M; i++) {
+				for (let j = i; j < M; j++) {
+					const cx = MX + ((i + j + 1) / 2) * cell;
+					const cy = MY - ((j - i) / 2) * cell - cell / 2;
+					const r = cell / 2 + 0.3;
+					const v = i === j ? (count[i][i] ? 0.95 : 0) : Math.min(1, Math.pow(Math.max(0, npmi(i, j) - 0.05) / 0.5, 1.4));
+					const highlighted = lit.has(i) && lit.has(j);
+					ctx.fillStyle = highlighted ? `rgb(${CB.join(',')})` : theme.accent;
+					ctx.globalAlpha = highlighted ? 0.45 + 0.4 * Math.max(v, 0.2) : 0.03 + 0.92 * v;
+					ctx.beginPath();
+					ctx.moveTo(cx, cy - r);
+					ctx.lineTo(cx + r, cy);
+					ctx.lineTo(cx, cy + r);
+					ctx.lineTo(cx - r, cy);
+					ctx.fill();
+				}
+			}
+			ctx.globalAlpha = 1;
+			// genome axis: regions in the current slice in orange
+			for (let i = 0; i < M; i++) {
+				ctx.fillStyle = `rgb(${(lit.has(i) ? CB : CA).join(',')})`;
+				ctx.globalAlpha = lit.has(i) ? 1 : 0.3;
+				ctx.fillRect(MX + i * cell + 0.5, MY + 5, cell - 1, 5);
+			}
+			ctx.globalAlpha = 1;
+			ctx.fillStyle = theme.muted;
+			ctx.font = '11px Atkinson, system-ui, sans-serif';
+			ctx.textAlign = 'center';
+			ctx.fillText(`Contact map from ${PROFILES.toLocaleString()} nuclear profiles`, MX + MW / 2, MY + 26);
+			ctx.textAlign = 'left';
+			void domainOf;
+		}
+
+		function draw() {
+			ctx.clearRect(0, 0, W, H);
+			drawNucleus();
+			drawMap();
+		}
+
+		/* ------------------------------------------------ loop & input */
+		let last = 0, raf = 0;
+		function frame(now: number) {
+			const dt = Math.min(50, now - (last || now));
+			last = now;
+			update(dt, now);
+			draw();
+			raf = requestAnimationFrame(frame);
+		}
+
+		const overNucleus = (x: number, y: number) => Math.hypot(x - NX, y - NY) < R * 1.25;
+		cv.parentElement!.addEventListener('pointermove', (e) => {
+			const r = cv.getBoundingClientRect();
+			ptr.x = e.clientX - r.left;
+			ptr.y = e.clientY - r.top;
+			ptr.over = overNucleus(ptr.x, ptr.y);
+			cv.parentElement!.style.cursor = ptr.over ? 'crosshair' : '';
+		});
+		cv.parentElement!.addEventListener('pointerleave', () => (ptr.over = false));
+
+		readTheme();
+		size();
+		new MutationObserver(() => { readTheme(); if (still) draw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+		addEventListener('resize', () => { size(); if (still) draw(); });
+		if (still) {
+			bladeY = 0.1;
+			lit = new Set(inSlice(angles, bladeY));
+			draw();
+		} else {
+			new IntersectionObserver(([e]) => {
+				cancelAnimationFrame(raf);
+				last = 0;
+				if (e.isIntersecting) raf = requestAnimationFrame(frame);
+			}).observe(cv);
+		}
+	}
+</script>
