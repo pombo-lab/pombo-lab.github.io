@@ -41,6 +41,7 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'teamIntro', label: 'Team introduction', type: 'multiline', help: 'Text at the top of the Team page.' },
 			{ key: 'alumniIntro', label: 'Alumni introduction', type: 'multiline', help: 'Text at the top of the Alumni page.' },
 			{ key: 'newsIntro', label: 'News introduction', type: 'multiline', help: 'Text at the top of the News page.' },
+			{ key: 'galleryIntro', label: 'Gallery introduction', type: 'multiline', help: 'Text at the top of the Gallery page.' },
 			{ key: 'publicationsIntro', label: 'Publications introduction', type: 'multiline', help: 'Text at the top of the Publications page.' },
 			{ key: 'patentsIntro', label: 'Patents introduction', type: 'multiline', help: 'Text at the top of the Patents page.' },
 		],
@@ -130,6 +131,19 @@ export const TABLE_SHEETS = [
 		],
 	},
 	{
+		name: 'Gallery',
+		key: 'gallery',
+		description: 'Photos on the Gallery page, shown in this order. Upload each photo to public/images/gallery on GitHub first, then add a row with its file name.',
+		columns: [
+			{ key: 'image', label: 'Image', type: 'url', required: true, width: 28, help: 'File name of a photo in public/images/gallery (e.g. "retreat-2026.jpg"), or a full web address. Photos about 2000 pixels wide load quickly.' },
+			{ key: 'caption', label: 'Caption', type: 'multiline', width: 60, help: 'Shown under the photo when it is opened, and used as its description for screen readers.' },
+			{ key: 'date', label: 'Date', type: 'date', width: 13, help: 'Optional, e.g. 2026-06-02.' },
+			{ key: 'album', label: 'Album', width: 20, help: 'Optional group name, e.g. "Lab retreat 2026". If any photo has one, the page shows buttons to filter by album.' },
+			{ key: 'credit', label: 'Credit', width: 24, help: 'Optional photographer or source.' },
+			SHOW,
+		],
+	},
+	{
 		name: 'Publications',
 		key: 'publications',
 		description: 'Publications. The website groups them by year, newest first. Only fill in the links you have; empty ones are not shown.',
@@ -169,6 +183,7 @@ export const TABLE_SHEETS = [
 export const IMAGE_FOLDERS = {
 	'pi.photo': 'images/people',
 	'members.photo': 'images/people',
+	'gallery.image': 'images/gallery',
 };
 
 export const ALL_SHEETS = [...KEY_VALUE_SHEETS, ...TABLE_SHEETS];

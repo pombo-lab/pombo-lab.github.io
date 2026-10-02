@@ -87,7 +87,7 @@ log(`✓ Website content updated from ${sources.map((s) => path.basename(s)).joi
 
 function summary(d) {
 	const n = (k, label) => `${d[k].length} ${label}`;
-	return [n('members', 'members'), n('alumni', 'alumni'), n('news', 'news items'), n('publications', 'publications'), n('patents', 'patents')].join(', ') + '.';
+	return [n('members', 'members'), n('alumni', 'alumni'), n('news', 'news items'), n('publications', 'publications'), n('patents', 'patents'), n('gallery', 'gallery photos')].join(', ') + '.';
 }
 
 function log(msg) {

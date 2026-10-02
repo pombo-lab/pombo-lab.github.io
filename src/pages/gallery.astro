@@ -1,0 +1,251 @@
+---
+import PageHeader from '../components/PageHeader.astro';
+import Page from '../layouts/Page.astro';
+import { asset, formatDate, lab, settings } from '../lib/data';
+import { inline } from '../utils/text';
+
+const photos = lab.gallery;
+const albums = [...new Set(photos.map((p) => p.album).filter(Boolean))];
+// Plain-text caption for alt text and the viewer's screen-reader label.
+const plain = (s: string) => s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, '');
+---
+
+<Page title="Gallery" description={`Photos from the ${settings.labName}.`}>
+	<PageHeader eyebrow="Life in the lab" title="Gallery" intro={settings.galleryIntro} />
+
+	{photos.length === 0 && <p class="empty-note">Photos are coming soon.</p>}
+
+	{albums.length > 0 && (
+		<div class="chips" id="album-filter" role="toolbar" aria-label="Filter photos by album">
+			<button class="chip" data-album="" aria-pressed="true">All photos</button>
+			{albums.map((a) => <button class="chip" data-album={a} aria-pressed="false">{a}</button>)}
+		</div>
+	)}
+
+	<div class="gallery">
+		{photos.map((p, i) => (
+			<figure class="photo" data-album={p.album || undefined}>
+				<button class="open" type="button" data-index={i} aria-label={`Open photo: ${plain(p.caption) || `photo ${i + 1}`}`}>
+					<img src={asset(p.image)} alt={plain(p.caption)} loading="lazy" decoding="async" />
+				</button>
+				{(p.caption || p.date) && (
+					<figcaption>
+						{p.caption && <span set:html={inline(p.caption)} />}
+						{p.date && <time datetime={p.date}>{formatDate(p.date, 'long')}</time>}
+					</figcaption>
+				)}
+			</figure>
+		))}
+	</div>
+
+	<dialog id="lightbox" aria-label="Photo viewer">
+		<button class="lb-close" type="button" aria-label="Close">&times;</button>
+		<button class="lb-nav lb-prev" type="button" aria-label="Previous photo">&#8249;</button>
+		<figure>
+			<img id="lb-img" src="" alt="" />
+			<figcaption>
+				<span id="lb-caption"></span>
+				<span id="lb-meta"></span>
+			</figcaption>
+		</figure>
+		<button class="lb-nav lb-next" type="button" aria-label="Next photo">&#8250;</button>
+	</dialog>
+
+	<script
+		is:inline
+		type="application/json"
+		id="gallery-data"
+		set:html={JSON.stringify(
+			photos.map((p) => ({
+				src: asset(p.image),
+				alt: plain(p.caption),
+				caption: inline(p.caption),
+				meta: [p.date && formatDate(p.date, 'long'), p.credit && `Photo: ${p.credit}`].filter(Boolean).join(' · '),
+			})),
+		).replace(/</g, '\\u003c')}
+	/>
+</Page>
+
+<script>
+	type Photo = { src: string; alt: string; caption: string; meta: string };
+	const data: Photo[] = JSON.parse(document.getElementById('gallery-data')?.textContent || '[]');
+	const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
+	const img = document.getElementById('lb-img') as HTMLImageElement | null;
+	const caption = document.getElementById('lb-caption');
+	const meta = document.getElementById('lb-meta');
+	let current = 0;
+
+	// Only photos visible under the current album filter take part in prev/next.
+	const visible = () =>
+		[...document.querySelectorAll<HTMLElement>('.photo')]
+			.filter((f) => !f.hidden)
+			.map((f) => Number(f.querySelector<HTMLElement>('.open')!.dataset.index));
+
+	function show(i: number) {
+		const p = data[i];
+		if (!p || !dialog || !img) return;
+		current = i;
+		img.src = p.src;
+		img.alt = p.alt;
+		caption!.innerHTML = p.caption; // built at build time from the spreadsheet, already escaped
+		meta!.textContent = p.meta;
+		if (!dialog.open) dialog.showModal();
+	}
+	function step(d: number) {
+		const v = visible();
+		const at = v.indexOf(current);
+		if (v.length) show(v[(at + d + v.length) % v.length]);
+	}
+
+	document.querySelectorAll<HTMLButtonElement>('.photo .open').forEach((b) => b.addEventListener('click', () => show(Number(b.dataset.index))));
+	dialog?.querySelector('.lb-close')?.addEventListener('click', () => dialog.close());
+	dialog?.querySelector('.lb-prev')?.addEventListener('click', () => step(-1));
+	dialog?.querySelector('.lb-next')?.addEventListener('click', () => step(1));
+	dialog?.addEventListener('click', (e) => {
+		if (e.target === dialog) dialog.close(); // click on the backdrop
+	});
+	document.addEventListener('keydown', (e) => {
+		if (!dialog?.open) return;
+		if (e.key === 'ArrowLeft') step(-1);
+		if (e.key === 'ArrowRight') step(1);
+	});
+
+	const bar = document.getElementById('album-filter');
+	bar?.addEventListener('click', (e) => {
+		const btn = (e.target as Element).closest('.chip') as HTMLButtonElement | null;
+		if (!btn) return;
+		const album = btn.dataset.album || '';
+		bar.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === btn)));
+		document.querySelectorAll<HTMLElement>('.photo').forEach((f) => {
+			f.hidden = !!album && f.dataset.album !== album;
+		});
+	});
+</script>
+
+<style>
+	/* masonry-style columns keep each photo's own shape */
+	.gallery {
+		columns: 3 260px;
+		column-gap: 1rem;
+	}
+	.photo {
+		break-inside: avoid;
+		margin: 0 0 1rem;
+	}
+	.photo[hidden] {
+		display: none;
+	}
+	.open {
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: zoom-in;
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.open img {
+		display: block;
+		width: 100%;
+		height: auto;
+		transition: transform 0.3s ease;
+	}
+	.open:hover img,
+	.open:focus-visible img {
+		transform: scale(1.03);
+	}
+	.photo figcaption {
+		margin-top: 0.4rem;
+		font-size: 0.85rem;
+		line-height: 1.45;
+		color: var(--color-text-muted);
+	}
+	.photo time {
+		display: block;
+		font-size: 0.75rem;
+		margin-top: 0.15rem;
+	}
+
+	#lightbox {
+		max-width: min(1100px, 94vw);
+		max-height: 94vh;
+		padding: 0;
+		border: 0;
+		border-radius: 12px;
+		background: var(--color-bg);
+		color: var(--color-text-main);
+		overflow: visible;
+	}
+	#lightbox::backdrop {
+		background: rgba(0, 0, 0, 0.82);
+	}
+	#lightbox figure {
+		margin: 0;
+	}
+	#lb-img {
+		display: block;
+		max-width: min(1100px, 94vw);
+		max-height: 80vh;
+		width: auto;
+		height: auto;
+		margin: 0 auto;
+		border-radius: 12px 12px 0 0;
+	}
+	#lightbox figcaption {
+		padding: 0.75rem 1rem 1rem;
+		font-size: 0.95rem;
+	}
+	#lb-meta {
+		display: block;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		margin-top: 0.2rem;
+	}
+	.lb-close,
+	.lb-nav {
+		position: absolute;
+		border: 0;
+		background: rgba(0, 0, 0, 0.55);
+		color: #fff;
+		cursor: pointer;
+		border-radius: 999px;
+		width: 44px;
+		height: 44px;
+		font-size: 1.8rem;
+		line-height: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.lb-close {
+		top: -14px;
+		right: -14px;
+		font-size: 1.6rem;
+	}
+	.lb-nav {
+		top: 40%;
+	}
+	.lb-prev {
+		left: -22px;
+	}
+	.lb-next {
+		right: -22px;
+	}
+	.lb-close:hover,
+	.lb-nav:hover {
+		background: var(--color-accent);
+	}
+	@media (max-width: 640px) {
+		.lb-prev {
+			left: 4px;
+		}
+		.lb-next {
+			right: 4px;
+		}
+		.lb-close {
+			top: 4px;
+			right: 4px;
+		}
+	}
+</style>

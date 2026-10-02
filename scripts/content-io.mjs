@@ -258,8 +258,11 @@ function convertUrl(def, text, imageFolder) {
 	if (t.startsWith('/') || t.startsWith('#')) return { value: t };
 	if (imageFolder && /^[^\s/]+\.(jpe?g|png|webp|gif|svg|avif)$/i.test(t)) {
 		const rel = `/${imageFolder}/${t}`;
-		const missing = !fs.existsSync(path.join(PUBLIC_DIR, imageFolder, t));
-		return { value: rel, warning: missing ? `image "${t}" was not found in public/${imageFolder}/.` : undefined };
+		const file = path.join(PUBLIC_DIR, imageFolder, t);
+		if (!fs.existsSync(file)) return { value: rel, warning: `image "${t}" was not found in public/${imageFolder}/.` };
+		const mb = fs.statSync(file).size / 1e6;
+		if (mb > 2) return { value: rel, warning: `image "${t}" is ${mb.toFixed(1)} MB, which will load slowly. Resize it to about 2000 pixels wide before uploading.` };
+		return { value: rel };
 	}
 	if (/^[^\s]+\.[a-z]{2,}(\/\S*)?$/i.test(t)) return { value: `https://${t}` };
 	return { error: `"${def.label}" doesn't look like a web address or file name (found "${t}").` };
@@ -420,6 +423,7 @@ export function toSiteData(model) {
 		news: visible(model.news).sort((a, b) => b.date.localeCompare(a.date)),
 		publications: visible(model.publications).sort((a, b) => b.year - a.year),
 		patents: visible(model.patents).sort((a, b) => b.year - a.year),
+		gallery: visible(model.gallery),
 	};
 }
 
@@ -479,7 +483,7 @@ function addReadme(wb) {
 	put('New line in a cell', 'Excel on Windows: Alt+Enter. Excel on Mac: Control+Option+Return. Google Sheets: Ctrl+Enter (Cmd+Enter on Mac). Each line becomes its own paragraph or bullet point.');
 	put('Links in text', 'Write [link text](https://example.org). Email addresses and pages on this site (e.g. [our papers](/publications)) work too.');
 	put('Bold text', 'Wrap words in double stars: **like this**.');
-	put('Photos', 'Upload the photo to public/images/people on GitHub, then type just its file name, e.g. "jane-doe.jpg".');
+	put('Photos', 'Upload the photo on GitHub, then type just its file name, e.g. "jane-doe.jpg". People photos go in public/images/people, Gallery photos in public/images/gallery. Resize large phone photos to about 2000 pixels wide first.');
 	put('Column help', 'Hover over a column name (the small red triangle) to see what it is for.');
 	put();
 	put('Tabs', null, { bold: true, size: 13 });

@@ -17,6 +17,7 @@ export interface Settings {
 	teamIntro: string;
 	alumniIntro: string;
 	newsIntro: string;
+	galleryIntro: string;
 	publicationsIntro: string;
 	patentsIntro: string;
 }
@@ -93,6 +94,14 @@ export interface Patent {
 	link: string;
 }
 
+export interface GalleryItem {
+	image: string;
+	caption: string;
+	date: string;
+	album: string;
+	credit: string;
+}
+
 export interface LabData {
 	settings: Settings;
 	sites: Site[];
@@ -102,6 +111,7 @@ export interface LabData {
 	news: NewsItem[];
 	publications: Publication[];
 	patents: Patent[];
+	gallery: GalleryItem[];
 }
 
 export const lab = raw as unknown as LabData;
