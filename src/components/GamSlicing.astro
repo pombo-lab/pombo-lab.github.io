@@ -173,10 +173,8 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		function update(dt: number, now: number) {
 			manual = ptr.over; // stay in hover mode while the cursor rests on the nucleus
 			if (manual) {
-				// aim the slice with the cursor; the nucleus turns a little with it
+				// aim the slice with the cursor; the nucleus holds still while hovered
 				bladeY += ((ptr.y - NY) / R - bladeY) * 0.25;
-				const yaw = angles[0] + ((ptr.x - NX) / R) * 0.02;
-				angles = [yaw, angles[1], angles[2]];
 			} else {
 				phaseT += dt;
 				if (phase === 'turn') {
