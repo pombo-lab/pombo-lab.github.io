@@ -156,7 +156,7 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		let lit = new Set<number>();
 		let flash: number[] = [];
 		let flashT = 0;
-		const ptr = { x: 0, y: 0, over: false, lastMove: -1e9 };
+		const ptr = { x: 0, y: 0, over: false };
 		let manual = false;
 
 		const ease = (t: number) => t * t * (3 - 2 * t);
@@ -172,7 +172,7 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		}
 
 		function update(dt: number, now: number) {
-			manual = ptr.over && now - ptr.lastMove < 4000;
+			manual = ptr.over; // stay in hover mode while the cursor rests on the nucleus
 			if (manual) {
 				// aim the slice with the cursor; the nucleus turns a little with it
 				bladeY += ((ptr.y - NY) / R - bladeY) * 0.25;
@@ -275,15 +275,23 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 		function drawMap() {
 			const cell = MW / M;
 			const flashSet = new Set(flash);
+			// While hovering, preview the current slice: every pair of loci it
+			// contains is a contact it would add to the map.
+			const preview = manual ? lit : null;
 			for (let i = 0; i < M; i++) {
 				for (let j = i; j < M; j++) {
 					const cx = MX + ((i + j + 1) / 2) * cell;
 					const cy = MY - ((j - i) / 2) * cell - cell / 2;
 					const r = cell / 2 + 0.3;
 					const v = i === j ? 0.95 : Math.min(1, Math.pow(Math.max(0, npmi(i, j) - 0.05) / 0.5, 1.4));
-					const hot = flashT > 0 && flashSet.has(i) && flashSet.has(j);
-					ctx.fillStyle = hot ? `rgb(${CB.join(',')})` : theme.accent;
-					ctx.globalAlpha = hot ? 0.25 + 0.6 * flashT * Math.max(v, 0.3) : 0.03 + 0.92 * v;
+					const flashed = flashT > 0 && flashSet.has(i) && flashSet.has(j);
+					const previewed = !!preview && preview.has(i) && preview.has(j);
+					ctx.fillStyle = flashed || previewed ? `rgb(${CB.join(',')})` : theme.accent;
+					ctx.globalAlpha = flashed
+						? 0.35 + 0.6 * flashT * Math.max(v, 0.3)
+						: previewed
+							? 0.45 + 0.4 * Math.max(v, 0.2)
+							: 0.03 + 0.92 * v;
 					ctx.beginPath();
 					ctx.moveTo(cx, cy - r);
 					ctx.lineTo(cx + r, cy);
@@ -331,7 +339,6 @@ const colors = [hex(currentSites[0]?.color, [43, 92, 184]), hex(currentSites[1]?
 			ptr.x = e.clientX - r.left;
 			ptr.y = e.clientY - r.top;
 			ptr.over = overNucleus(ptr.x, ptr.y);
-			if (ptr.over) ptr.lastMove = performance.now();
 			cv.parentElement!.style.cursor = ptr.over ? 'crosshair' : '';
 		});
 		cv.parentElement!.addEventListener('pointerleave', () => (ptr.over = false));
