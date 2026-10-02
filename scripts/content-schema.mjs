@@ -35,7 +35,6 @@ export const KEY_VALUE_SHEETS = [
 			{ key: 'heroText', label: 'Homepage introduction', type: 'multiline', help: 'Paragraph under the homepage headline.' },
 			{ key: 'about', label: 'Footer blurb', type: 'multiline', help: 'Short description in the footer of every page.' },
 			{ key: 'email', label: 'Contact email', required: true, type: 'url', help: 'Main lab contact address.' },
-			{ key: 'highlightAuthors', label: 'Bold author names', type: 'multiline', list: true, help: 'Author names to show in bold in publication lists. One per line, exactly as written in the Authors column (e.g. "Pombo, A.").' },
 			{ key: 'labDescription', label: 'Lab description', type: 'multiline', help: 'The "About the lab" text on the homepage. One paragraph per line.' },
 			{ key: 'researchIntro', label: 'Research description', type: 'multiline', help: 'The Research page text. The first paragraph is also shown on the homepage.' },
 			{ key: 'teamIntro', label: 'Team introduction', type: 'multiline', help: 'Text at the top of the Team page.' },

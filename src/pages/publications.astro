@@ -3,7 +3,6 @@ import PageHeader from '../components/PageHeader.astro';
 import Page from '../layouts/Page.astro';
 import { href, lab, settings } from '../lib/data';
 import { toBibtex } from '../utils/bibtex';
-import { highlightAuthors } from '../utils/text';
 
 const pubs = lab.publications;
 const years = [...new Set(pubs.map((p) => p.year))];
@@ -33,7 +32,7 @@ const LINKS = [
 				<article class="publication-item" data-featured={p.featured ? 'true' : undefined}>
 					{p.featured && <span class="pill featured-pill">Featured</span>}
 					<span class="pub-title">{p.title}</span>
-					{p.authors && <div class="pub-authors" set:html={highlightAuthors(p.authors, settings.highlightAuthors)} />}
+					{p.authors && <div class="pub-authors">{p.authors}</div>}
 					<div class="pub-venue">
 						<em>{p.journal}</em>{p.details && <span> · {p.details}</span>} · {p.year}
 					</div>

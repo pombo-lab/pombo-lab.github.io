@@ -45,10 +45,3 @@ export const paragraphs = (src: string | undefined | null) =>
 		.split(/\n+/)
 		.map((l) => l.trim())
 		.filter(Boolean);
-
-/** Bolds the lab's own authors in an author list. */
-export function highlightAuthors(authors: string, names: string[]) {
-	let html = esc(authors);
-	for (const n of names.filter(Boolean)) html = html.split(esc(n)).join(`<strong>${esc(n)}</strong>`);
-	return html;
-}

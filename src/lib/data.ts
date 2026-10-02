@@ -11,7 +11,6 @@ export interface Settings {
 	heroText: string;
 	about: string;
 	email: string;
-	highlightAuthors: string[];
 	labDescription: string;
 	researchIntro: string;
 	teamIntro: string;
