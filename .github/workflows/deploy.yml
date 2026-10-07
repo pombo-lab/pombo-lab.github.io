@@ -14,9 +14,13 @@ permissions:
   pages: write
   id-token: write
 
+# Pushes to main queue behind a deploy that is already running instead of
+# cancelling it: a cancelled run can leave its Pages deployment in progress,
+# which makes the next deploy fail. Only the newest queued push is kept.
+# Pull request builds don't deploy, so those can still be cancelled.
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
