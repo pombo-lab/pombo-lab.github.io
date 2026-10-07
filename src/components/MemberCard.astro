@@ -10,10 +10,12 @@ const { member } = Astro.props;
 const site = siteFor(member.site);
 const fallback = generateFallbackAvatar(member.name);
 const avatar = asset(member.photo);
+// Skip the site name when the department already names the site (e.g. "MDC · BIMSB").
+const siteNamed = site && [site.short, site.name].some((n) => n && member.department.includes(n));
 const payload = {
 	name: member.name,
 	title: member.position,
-	role: [member.department, site?.name].filter(Boolean).join(' · '),
+	role: [member.department, siteNamed ? '' : site?.name].filter(Boolean).join(' · '),
 	bio: member.focus,
 	avatar,
 	fallback,
