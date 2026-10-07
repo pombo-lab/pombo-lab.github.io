@@ -133,13 +133,13 @@ export const TABLE_SHEETS = [
 	{
 		name: 'Gallery',
 		key: 'gallery',
-		description: 'Photos on the Gallery page, shown in this order. Upload each photo to public/images/gallery on GitHub first, then add a row with its file name.',
+		description: 'Photos on the Gallery page. The website groups them by year, newest first. Upload each photo to public/images/gallery on GitHub first, then add a row with its file name.',
 		columns: [
 			{ key: 'image', label: 'Image', type: 'url', required: true, width: 28, help: 'File name of a photo in public/images/gallery (e.g. "retreat-2026.jpg"), or a full web address. Photos about 2000 pixels wide load quickly.' },
-			{ key: 'caption', label: 'Caption', type: 'multiline', width: 60, help: 'Shown under the photo when it is opened, and used as its description for screen readers.' },
-			{ key: 'date', label: 'Date', type: 'date', width: 13, help: 'Optional, e.g. 2026-06-02.' },
-			{ key: 'album', label: 'Album', width: 20, help: 'Optional group name, e.g. "Lab retreat 2026". If any photo has one, the page shows buttons to filter by album.' },
-			{ key: 'credit', label: 'Credit', width: 24, help: 'Optional photographer or source.' },
+			{ key: 'title', label: 'Title', width: 36, help: 'Shown above the photo, e.g. "Lab Retreat". The month and year from Date are added after it.' },
+			{ key: 'caption', label: 'Caption', type: 'multiline', width: 50, help: 'Optional line under the title, e.g. who is in the photo.' },
+			{ key: 'date', label: 'Date', type: 'date', width: 13, help: 'e.g. 2026-06-02. Decides which year the photo is listed under. Photos without a date go at the end.' },
+			{ key: 'credit', label: 'Credit', width: 28, help: 'Optional, shown under the photo, e.g. "Photos by Qi Yu et al."' },
 			SHOW,
 		],
 	},

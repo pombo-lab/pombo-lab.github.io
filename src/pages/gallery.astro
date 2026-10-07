@@ -1,12 +1,23 @@
 ---
 import PageHeader from '../components/PageHeader.astro';
 import Page from '../layouts/Page.astro';
-import { asset, formatDate, lab, settings } from '../lib/data';
+import { asset, lab, settings } from '../lib/data';
 import { inline } from '../utils/text';
 
-const photos = lab.gallery;
-const albums = [...new Set(photos.map((p) => p.album).filter(Boolean))];
-// Plain-text caption for alt text and the viewer's screen-reader label.
+// Newest first; undated photos go in a final group.
+const photos = [...lab.gallery].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+const groups: { year: string; photos: typeof photos }[] = [];
+for (const p of photos) {
+	const year = p.date ? p.date.slice(0, 4) : 'More';
+	const g = groups.at(-1);
+	if (g?.year === year) g.photos.push(p);
+	else groups.push({ year, photos: [p] });
+}
+const monthYear = (iso: string) =>
+	new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const heading = (p: (typeof photos)[number]) =>
+	[p.title, p.date && (p.title ? `(${monthYear(p.date)})` : monthYear(p.date))].filter(Boolean).join(' ');
+// Plain text for alt text.
 const plain = (s: string) => s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, '');
 ---
 
@@ -15,237 +26,219 @@ const plain = (s: string) => s.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/
 
 	{photos.length === 0 && <p class="empty-note">Photos are coming soon.</p>}
 
-	{albums.length > 0 && (
-		<div class="chips" id="album-filter" role="toolbar" aria-label="Filter photos by album">
-			<button class="chip" data-album="" aria-pressed="true">All photos</button>
-			{albums.map((a) => <button class="chip" data-album={a} aria-pressed="false">{a}</button>)}
-		</div>
+	{groups.length > 1 && (
+		<nav class="year-pills" aria-label="Jump to year">
+			{groups.map((g) => <a href={`#year-${g.year}`} data-year={g.year}>{g.year}</a>)}
+		</nav>
 	)}
 
-	<div class="gallery">
-		{photos.map((p, i) => (
-			<figure class="photo" data-album={p.album || undefined}>
-				<button class="open" type="button" data-index={i} aria-label={`Open photo: ${plain(p.caption) || `photo ${i + 1}`}`}>
-					<img src={asset(p.image)} alt={plain(p.caption)} loading="lazy" decoding="async" />
-				</button>
-				{(p.caption || p.date) && (
-					<figcaption>
-						{p.caption && <span set:html={inline(p.caption)} />}
-						{p.date && <time datetime={p.date}>{formatDate(p.date, 'long')}</time>}
-					</figcaption>
-				)}
-			</figure>
-		))}
+	<div class="timeline">
+		<div class="years">
+			{groups.map((g) => (
+				<section id={`year-${g.year}`} class="year">
+					<h2>{g.year}</h2>
+					{g.photos.map((p) => (
+						<figure class="photo">
+							{heading(p) && <h3>{heading(p)}</h3>}
+							{p.caption && <p class="subtitle" set:html={inline(p.caption)} />}
+							<a href={asset(p.image)} target="_blank" rel="noopener noreferrer">
+								<img src={asset(p.image)} alt={plain(heading(p) || p.caption)} loading="lazy" decoding="async" />
+								<span class="sr-only">(opens in new tab)</span>
+							</a>
+							{p.credit && <figcaption set:html={inline(p.credit)} />}
+						</figure>
+					))}
+				</section>
+			))}
+		</div>
+
+		{groups.length > 1 && (
+			<nav class="year-nav" aria-label="Year navigation">
+				<p>Years</p>
+				{groups.map((g) => <a href={`#year-${g.year}`} data-year={g.year}>{g.year}</a>)}
+			</nav>
+		)}
 	</div>
-
-	<dialog id="lightbox" aria-label="Photo viewer">
-		<button class="lb-close" type="button" aria-label="Close">&times;</button>
-		<button class="lb-nav lb-prev" type="button" aria-label="Previous photo">&#8249;</button>
-		<figure>
-			<img id="lb-img" src="" alt="" />
-			<figcaption>
-				<span id="lb-caption"></span>
-				<span id="lb-meta"></span>
-			</figcaption>
-		</figure>
-		<button class="lb-nav lb-next" type="button" aria-label="Next photo">&#8250;</button>
-	</dialog>
-
-	<script
-		is:inline
-		type="application/json"
-		id="gallery-data"
-		set:html={JSON.stringify(
-			photos.map((p) => ({
-				src: asset(p.image),
-				alt: plain(p.caption),
-				caption: inline(p.caption),
-				meta: [p.date && formatDate(p.date, 'long'), p.credit && `Photo: ${p.credit}`].filter(Boolean).join(' · '),
-			})),
-		).replace(/</g, '\\u003c')}
-	/>
 </Page>
 
 <script>
-	type Photo = { src: string; alt: string; caption: string; meta: string };
-	const data: Photo[] = JSON.parse(document.getElementById('gallery-data')?.textContent || '[]');
-	const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
-	const img = document.getElementById('lb-img') as HTMLImageElement | null;
-	const caption = document.getElementById('lb-caption');
-	const meta = document.getElementById('lb-meta');
-	let current = 0;
+	// Highlight the year currently in view, in both the sidebar and the phone pill bar.
+	const sections = [...document.querySelectorAll<HTMLElement>('.year')];
+	const links = [...document.querySelectorAll<HTMLAnchorElement>('.year-nav a, .year-pills a')];
+	const pills = document.querySelector<HTMLElement>('.year-pills');
+	let active = '';
 
-	// Only photos visible under the current album filter take part in prev/next.
-	const visible = () =>
-		[...document.querySelectorAll<HTMLElement>('.photo')]
-			.filter((f) => !f.hidden)
-			.map((f) => Number(f.querySelector<HTMLElement>('.open')!.dataset.index));
-
-	function show(i: number) {
-		const p = data[i];
-		if (!p || !dialog || !img) return;
-		current = i;
-		img.src = p.src;
-		img.alt = p.alt;
-		caption!.innerHTML = p.caption; // built at build time from the spreadsheet, already escaped
-		meta!.textContent = p.meta;
-		if (!dialog.open) dialog.showModal();
-	}
-	function step(d: number) {
-		const v = visible();
-		const at = v.indexOf(current);
-		if (v.length) show(v[(at + d + v.length) % v.length]);
-	}
-
-	document.querySelectorAll<HTMLButtonElement>('.photo .open').forEach((b) => b.addEventListener('click', () => show(Number(b.dataset.index))));
-	dialog?.querySelector('.lb-close')?.addEventListener('click', () => dialog.close());
-	dialog?.querySelector('.lb-prev')?.addEventListener('click', () => step(-1));
-	dialog?.querySelector('.lb-next')?.addEventListener('click', () => step(1));
-	dialog?.addEventListener('click', (e) => {
-		if (e.target === dialog) dialog.close(); // click on the backdrop
-	});
-	document.addEventListener('keydown', (e) => {
-		if (!dialog?.open) return;
-		if (e.key === 'ArrowLeft') step(-1);
-		if (e.key === 'ArrowRight') step(1);
-	});
-
-	const bar = document.getElementById('album-filter');
-	bar?.addEventListener('click', (e) => {
-		const btn = (e.target as Element).closest('.chip') as HTMLButtonElement | null;
-		if (!btn) return;
-		const album = btn.dataset.album || '';
-		bar.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === btn)));
-		document.querySelectorAll<HTMLElement>('.photo').forEach((f) => {
-			f.hidden = !!album && f.dataset.album !== album;
+	function update() {
+		const line = 160;
+		let current = sections.find((s) => {
+			const r = s.getBoundingClientRect();
+			return r.top <= line && r.bottom > line;
 		});
-	});
+		if (!current && sections.length && sections[0].getBoundingClientRect().top > line) current = sections[0];
+		if (!current && sections.length) current = sections[sections.length - 1];
+		const year = current?.id.replace('year-', '') || '';
+		if (year === active) return;
+		active = year;
+		for (const a of links) {
+			const on = a.dataset.year === year;
+			a.classList.toggle('active', on);
+			if (on) a.setAttribute('aria-current', 'true');
+			else a.removeAttribute('aria-current');
+			if (on && pills?.contains(a)) pills.scrollTo({ left: a.offsetLeft - pills.offsetWidth / 2 + a.offsetWidth / 2, behavior: 'smooth' });
+		}
+	}
+	if (sections.length) {
+		addEventListener('scroll', update, { passive: true });
+		update();
+	}
 </script>
 
 <style>
-	/* masonry-style columns keep each photo's own shape */
-	.gallery {
-		columns: 3 260px;
-		column-gap: 1rem;
+	.timeline {
+		display: flex;
+		gap: 2rem;
+		align-items: flex-start;
+	}
+	.years {
+		flex: 1;
+		min-width: 0;
+	}
+	.year {
+		scroll-margin-top: 6rem;
+		margin-bottom: 4rem;
+	}
+	.year h2 {
+		display: block;
+		width: 100%;
+		font-size: 1.6rem;
+		padding-bottom: 0.5rem;
+		margin-bottom: 1.5rem;
+		border-bottom: 2px solid var(--color-accent);
 	}
 	.photo {
-		break-inside: avoid;
-		margin: 0 0 1rem;
+		margin: 0 0 2.75rem;
+		text-align: center;
 	}
-	.photo[hidden] {
-		display: none;
-	}
-	.open {
-		display: block;
-		width: 100%;
-		padding: 0;
-		border: 0;
-		background: none;
-		cursor: zoom-in;
-		border-radius: 10px;
-		overflow: hidden;
-	}
-	.open img {
-		display: block;
-		width: 100%;
-		height: auto;
-		transition: transform 0.3s ease;
-	}
-	.open:hover img,
-	.open:focus-visible img {
-		transform: scale(1.03);
-	}
-	.photo figcaption {
-		margin-top: 0.4rem;
-		font-size: 0.85rem;
-		line-height: 1.45;
-		color: var(--color-text-muted);
-	}
-	.photo time {
-		display: block;
-		font-size: 0.75rem;
-		margin-top: 0.15rem;
-	}
-
-	#lightbox {
-		max-width: min(1100px, 94vw);
-		max-height: 94vh;
-		padding: 0;
-		border: 0;
-		border-radius: 12px;
-		background: var(--color-bg);
+	.photo h3 {
+		font-family: inherit;
+		font-size: 1.1rem;
+		font-weight: 600;
 		color: var(--color-text-main);
-		overflow: visible;
+		margin-bottom: 0.4rem;
 	}
-	#lightbox::backdrop {
-		background: rgba(0, 0, 0, 0.82);
+	.photo .subtitle {
+		color: var(--color-text-muted);
+		margin: 0 0 0.75rem;
 	}
-	#lightbox figure {
-		margin: 0;
-	}
-	#lb-img {
+	.photo a {
 		display: block;
-		max-width: min(1100px, 94vw);
-		max-height: 80vh;
+	}
+	.photo img {
+		display: block;
+		max-width: 100%;
+		max-height: 600px;
 		width: auto;
 		height: auto;
 		margin: 0 auto;
-		border-radius: 12px 12px 0 0;
+		border-radius: 8px;
+		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+		transition: box-shadow 0.2s ease;
 	}
-	#lightbox figcaption {
-		padding: 0.75rem 1rem 1rem;
-		font-size: 0.95rem;
+	.photo a:hover img,
+	.photo a:focus-visible img {
+		box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.15);
 	}
-	#lb-meta {
-		display: block;
-		font-size: 0.8rem;
+	.photo figcaption {
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
 		color: var(--color-text-muted);
-		margin-top: 0.2rem;
 	}
-	.lb-close,
-	.lb-nav {
+	.sr-only {
 		position: absolute;
-		border: 0;
-		background: rgba(0, 0, 0, 0.55);
-		color: #fff;
-		cursor: pointer;
-		border-radius: 999px;
-		width: 44px;
-		height: 44px;
-		font-size: 1.8rem;
-		line-height: 1;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
+	}
+
+	/* Desktop: sticky list of years on the right */
+	.year-nav {
+		position: sticky;
+		top: 6rem;
+		flex: 0 0 7rem;
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
-	.lb-close {
-		top: -14px;
-		right: -14px;
-		font-size: 1.6rem;
+	.year-nav p {
+		font-size: 0.8rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--color-text-muted);
+		margin: 0 0 0.5rem;
+		padding-left: 0.9rem;
 	}
-	.lb-nav {
-		top: 40%;
+	.year-nav a,
+	.year-pills a {
+		color: var(--color-text-muted);
+		text-decoration: none;
+		transition: all 0.15s ease;
 	}
-	.lb-prev {
-		left: -22px;
+	.year-nav a {
+		padding: 0.55rem 0.9rem;
+		border-radius: 8px;
+		font-size: 1.05rem;
+		font-weight: 500;
 	}
-	.lb-next {
-		right: -22px;
+	.year-nav a:hover {
+		color: var(--color-accent);
+		background: var(--color-accent-light);
 	}
-	.lb-close:hover,
-	.lb-nav:hover {
+	.year-nav a.active {
+		color: var(--color-bg);
 		background: var(--color-accent);
 	}
-	@media (max-width: 640px) {
-		.lb-prev {
-			left: 4px;
+
+	/* Phones: scrolling row of year pills under the header */
+	.year-pills {
+		display: none;
+	}
+	@media (max-width: 768px) {
+		.year-nav {
+			display: none;
 		}
-		.lb-next {
-			right: 4px;
+		.year-pills {
+			display: flex;
+			gap: 0.4rem;
+			overflow-x: auto;
+			scrollbar-width: none;
+			position: sticky;
+			top: 72px;
+			z-index: 10;
+			margin: 0 -1rem 1.5rem;
+			padding: 0.5rem 1rem;
+			background: var(--color-bg);
+			border-bottom: 1px solid var(--color-border);
 		}
-		.lb-close {
-			top: 4px;
-			right: 4px;
+		.year-pills::-webkit-scrollbar {
+			display: none;
+		}
+		.year-pills a {
+			flex-shrink: 0;
+			padding: 0.35rem 0.9rem;
+			font-size: 0.85rem;
+			border: 1px solid var(--color-border);
+			border-radius: 999px;
+		}
+		.year-pills a.active {
+			background: var(--color-accent);
+			border-color: var(--color-accent);
+			color: var(--color-bg);
+		}
+		.year {
+			scroll-margin-top: 8rem;
 		}
 	}
 </style>

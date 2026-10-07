@@ -37,7 +37,7 @@ You don't need to touch any code to update the site.
 | Add a paper                 | Add a row to **Publications**. Set `Featured` to `yes` to show it on the homepage.            |
 | Post news                   | Add a row to **News**. Dates must be written `2026-06-02` (year-month-day).                  |
 | Hide something temporarily  | Set its `Show` column to `no`.                                                               |
-| Add a gallery photo         | Upload it to `public/images/gallery/`, then add a row to **Gallery** with its file name and a caption. |
+| Add a gallery photo         | Upload it to `public/images/gallery/`, then add a row to **Gallery** with its file name, a title and the date. |
 | Add a photo                 | Upload it to `public/images/people/`, then put its file name (e.g. `jane-doe.jpg`) in `Photo`. |
 
 ### Formatting inside cells

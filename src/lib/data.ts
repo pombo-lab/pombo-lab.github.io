@@ -96,9 +96,9 @@ export interface Patent {
 
 export interface GalleryItem {
 	image: string;
+	title: string;
 	caption: string;
 	date: string;
-	album: string;
 	credit: string;
 }
 
